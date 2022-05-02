@@ -38,67 +38,33 @@ def encode_id(id: str):
 ## Feed API
 @app.route("/feeds", methods=["GET"])
 def get_feeds():
-	try:
-		feeds = reader.get_feeds()
-		return jsonify([feed_to_dict(feed) for feed in feeds])
-	except StorageError as err:
-		logging.error(err.message)
-		abort(500)
+	feeds = reader.get_feeds()
+	return jsonify([feed_to_dict(feed) for feed in feeds])
 
 @app.route("/feeds/<encoded_id>", methods=["GET"])
 def get_feed(encoded_id):
-	try:
-		feed_id = decode_id(encoded_id)
-		feed = reader.get_feed(feed_id)
-		return feed_to_dict(feed)
-	except FeedNotFoundError:
-		abort(404)
-	except StorageError as err:
-		logging.error(err.message)
-		abort(500)
+	feed_id = decode_id(encoded_id)
+	feed = reader.get_feed(feed_id)
+	return feed_to_dict(feed)
 
 @app.route("/feeds/<encoded_id>", methods=["PUT"])
 def update_feed(encoded_id):
-	try:
-		feed_id = decode_id(encoded_id)
-		reader.update_feed(feed_id)
-		return Response(status=200)
-	except FeedNotFoundError:
-		abort(404)
-	except ParseError as err:
-		abort(Response(err.message, status=400))
-	except StorageError as err:
-		logging.error(err.message)
-		abort(500)
+	feed_id = decode_id(encoded_id)
+	reader.update_feed(feed_id)
+	return Response(status=200)
 
 @app.route("/feeds/<encoded_id>", methods=["POST"])
 def add_feed(encoded_id):
-	try:
-		feed_id = decode_url(encoded_id)
-		reader.add_feed(feed_id)
-		reader.update_feed(feed_id)
-		return Response(200)
-	except FeedExistsError:
-		abort(409)
-	except InvalidFeedURLError as err:
-		abort(Response(err.message, status=400))
-	except ParseError as err:
-		abort(Response(err.message, status=400))
-	except StorageError as err:
-		logging.error(err.message)
-		abort(500)
+	feed_id = decode_id(encoded_id)
+	reader.add_feed(feed_id)
+	reader.update_feed(feed_id)
+	return Response(status=200)
 
 @app.route("/feeds/<encoded_id>", methods=["DELETE"])
 def delete_feed(encoded_id):
-	try:
-		feed_id = decode_id(encoded_id)
-		reader.delete_feed(feed_id)
-		return Response(status=200)
-	except FeedNotFoundError:
-		abort(404)
-	except StorageError:
-		logging.error(err.message)
-		abort(500)
+	feed_id = decode_id(encoded_id)
+	reader.delete_feed(feed_id)
+	return Response(status=200)
 	
 ## Entry API
 @app.route("/entries")
@@ -108,9 +74,19 @@ def get_entries():
 
 
 ## Error handler
-@app.errorhandler(HTTPException)
+@app.errorhandler(Exception)
 def handle_exception(e):
-	response = e.get_response()
-	response.data = e.name
-	response.content_type = "text/plain"
-	return response
+	if isinstance(e, FeedNotFoundError):
+		return Response(status=404)
+	elif isinstance(e, FeedExistsError):
+		return Response(status=409)
+	elif isinstance(e, InvalidFeedURLError):
+		return Response(err.message, status=400)
+	elif isinstance(e, ParseError):
+		return Response(err.message, status=400)
+	elif isinstance(e, HTTPException):
+		return Response(status=e.code)
+	else:
+		logging.error(e)
+		return Response(status=500)
+	
