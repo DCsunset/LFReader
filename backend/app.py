@@ -3,10 +3,17 @@ from flask import Flask, request, abort, Response, jsonify
 from werkzeug.exceptions import HTTPException
 import logging
 import base64
+import threading
 
 
 # each thread must have a different reader because of SQLite3
-reader = make_reader("db.sqlite")
+readers = {}
+
+def get_reader():
+	thread_id = threading.local()
+	if not (thread_id in readers):
+		readers[thread_id] = make_reader("db.sqlite")
+	return readers[thread_id]
 
 app = Flask(__name__)
 
@@ -38,23 +45,27 @@ def encode_id(id: str):
 ## Feed API
 @app.route("/feeds", methods=["GET"])
 def get_feeds():
+	reader = get_reader()
 	feeds = reader.get_feeds()
 	return jsonify([feed_to_dict(feed) for feed in feeds])
 
 @app.route("/feeds/<encoded_id>", methods=["GET"])
 def get_feed(encoded_id):
+	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	feed = reader.get_feed(feed_id)
 	return feed_to_dict(feed)
 
 @app.route("/feeds/<encoded_id>", methods=["PUT"])
 def update_feed(encoded_id):
+	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	reader.update_feed(feed_id)
 	return Response(status=200)
 
 @app.route("/feeds/<encoded_id>", methods=["POST"])
 def add_feed(encoded_id):
+	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	reader.add_feed(feed_id)
 	reader.update_feed(feed_id)
@@ -62,6 +73,7 @@ def add_feed(encoded_id):
 
 @app.route("/feeds/<encoded_id>", methods=["DELETE"])
 def delete_feed(encoded_id):
+	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	reader.delete_feed(feed_id)
 	return Response(status=200)
@@ -69,6 +81,7 @@ def delete_feed(encoded_id):
 ## Entry API
 @app.route("/entries")
 def get_entries():
+	reader = get_reader()
 	entries = reader.get_entries()
 	return jsonify([entry_to_dict(entry) for entry in entries])
 
