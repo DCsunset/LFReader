@@ -4,7 +4,13 @@ from werkzeug.exceptions import HTTPException
 import logging
 import base64
 import threading
+import os 
 
+logging.basicConfig(level=logging.INFO)
+
+# the path of the database (default to ./db.sqlite)
+YAFR_DB = os.getenv("YAFR_DB", "db.sqlite")
+logging.info(f"Database path: {YAFR_DB}")
 
 # each thread must have a different reader because of SQLite3
 readers = {}
@@ -12,7 +18,7 @@ readers = {}
 def get_reader():
 	thread_id = threading.local()
 	if not (thread_id in readers):
-		readers[thread_id] = make_reader("db.sqlite")
+		readers[thread_id] = make_reader(YAFR_DB)
 	return readers[thread_id]
 
 app = Flask(__name__)
