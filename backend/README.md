@@ -19,3 +19,11 @@ For production, install `waitress` and run:
 ```sh
 waitress-serve --host 127.0.0.1 --port 3000 app:app
 ```
+
+To change the database path (default to `./db.sqlite`),
+set the environment variable `YAFR_DB`:
+
+```sh
+export YAFR_DB=$HOME/db.sqlite
+waitress-serve --host 127.0.0.1 --port 3000 app:app
+```
