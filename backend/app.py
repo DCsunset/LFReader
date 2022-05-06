@@ -1,6 +1,8 @@
 from reader import make_reader, Feed, Entry, FeedNotFoundError, StorageError, FeedExistsError, InvalidFeedURLError, ParseError
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
 import base64
 import threading
@@ -106,6 +108,15 @@ async def invalid_feed_url_error(request, err: InvalidFeedURLError):
 	return PlainTextResponse(err.message, status_code=400)
 
 @app.exception_handler(ParseError)
-async def parse_error(e, ParseError):
+async def parse_error(err, ParseError):
 	return PlainTextResponse(err.message, status_code=400)
 	
+## Overwrite default error handler
+@app.exception_handler(StarletteHTTPException)
+async def http_exception(request, err: StarletteHTTPException):
+	return PlainTextResponse(str(err.detail), status_code=err.status_code)
+
+@app.exception_handler(RequestValidationError)
+async def request_validation_error(request, err: RequestValidationError):
+	return PlainTextResponse(str(err), status_code=400)
+
