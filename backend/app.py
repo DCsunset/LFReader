@@ -43,8 +43,16 @@ def entry_to_dict(entry: Entry):
 		"author": entry.author,
 	}
 
+class DecodeError(Exception):
+	"""An error occurred when decoding the id
+	"""
+	pass
+
 def decode_id(data: str):
-	return base64.decodebytes(data.encode("utf-8")).decode("utf-8")
+	try:
+		return base64.decodebytes(data.encode("utf-8")).decode("utf-8")
+	except:
+		raise DecodeError("Invalid ID")
 
 def encode_id(id: str):
 	return base64.encodebytes(data.encode("utf-8")).decode("utf-8")
@@ -108,8 +116,12 @@ async def invalid_feed_url_error(request, err: InvalidFeedURLError):
 	return PlainTextResponse(err.message, status_code=400)
 
 @app.exception_handler(ParseError)
-async def parse_error(err, ParseError):
+async def parse_error(request, err: ParseError):
 	return PlainTextResponse(err.message, status_code=400)
+
+@app.exception_handler(DecodeError)
+async def decode_error(request, err: DecodeError):
+	return PlainTextResponse(str(err), status_code=400)
 	
 ## Overwrite default error handler
 @app.exception_handler(StarletteHTTPException)
