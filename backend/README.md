@@ -8,16 +8,16 @@ First, install all the dependencies (you could also use `venv` here):
 pip install -r requirements.txt
 ```
 
-For development, start the app using flask:
+For development, start the app using `uvicorn`:
 
 ```sh
-flask run --host 127.0.0.1 --port 3000
+uvicorn app:app --reload --port 3000
 ```
 
-For production, install `waitress` and run:
+For production, remove the `--reload` option:
 
 ```sh
-waitress-serve --host 127.0.0.1 --port 3000 app:app
+uvicorn app:app --host 0.0.0.0 --port 3000
 ```
 
 To change the database path (default to `./db.sqlite`),
@@ -25,5 +25,6 @@ set the environment variable `YAFR_DB`:
 
 ```sh
 export YAFR_DB=$HOME/db.sqlite
-waitress-serve --host 127.0.0.1 --port 3000 app:app
+uvicorn app:app --host 0.0.0.0 --port 3000
 ```
+
