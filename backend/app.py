@@ -1,6 +1,6 @@
 from reader import make_reader, Feed, Entry, FeedNotFoundError, StorageError, FeedExistsError, InvalidFeedURLError, ParseError
-from flask import Flask, request, abort, Response, jsonify
-from werkzeug.exceptions import HTTPException
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import PlainTextResponse
 import logging
 import base64
 import threading
@@ -12,6 +12,8 @@ logging.basicConfig(level=logging.INFO)
 YAFR_DB = os.getenv("YAFR_DB", "db.sqlite")
 logging.info(f"Database path: {YAFR_DB}")
 
+app = FastAPI()
+
 # each thread must have a different reader because of SQLite3
 readers = {}
 
@@ -20,8 +22,6 @@ def get_reader():
 	if not (thread_id in readers):
 		readers[thread_id] = make_reader(YAFR_DB)
 	return readers[thread_id]
-
-app = Flask(__name__)
 
 def feed_to_dict(feed: Feed):
 	return {
@@ -49,63 +49,63 @@ def encode_id(id: str):
 
 
 ## Feed API
-@app.route("/feeds", methods=["GET"])
-def get_feeds():
+@app.get("/feeds")
+async def get_feeds():
 	reader = get_reader()
 	feeds = reader.get_feeds()
-	return jsonify([feed_to_dict(feed) for feed in feeds])
+	return [feed_to_dict(feed) for feed in feeds]
 
-@app.route("/feeds/<encoded_id>", methods=["GET"])
-def get_feed(encoded_id):
+@app.get("/feeds/{encoded_id}")
+async def get_feed(encoded_id):
 	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	feed = reader.get_feed(feed_id)
 	return feed_to_dict(feed)
 
-@app.route("/feeds/<encoded_id>", methods=["PUT"])
-def update_feed(encoded_id):
+@app.put("/feeds/{encoded_id}")
+async def update_feed(encoded_id):
 	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	reader.update_feed(feed_id)
-	return Response(status=200)
+	return {}
 
-@app.route("/feeds/<encoded_id>", methods=["POST"])
-def add_feed(encoded_id):
+@app.post("/feeds/{encoded_id}")
+async def add_feed(encoded_id):
 	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	reader.add_feed(feed_id)
 	reader.update_feed(feed_id)
-	return Response(status=200)
+	return {}
 
-@app.route("/feeds/<encoded_id>", methods=["DELETE"])
-def delete_feed(encoded_id):
+@app.delete("/feeds/{encoded_id}")
+async def delete_feed(encoded_id):
 	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	reader.delete_feed(feed_id)
-	return Response(status=200)
+	return {}
 	
 ## Entry API
-@app.route("/entries")
-def get_entries():
+@app.get("/entries")
+async def get_entries():
 	reader = get_reader()
 	entries = reader.get_entries()
-	return jsonify([entry_to_dict(entry) for entry in entries])
+	return [entry_to_dict(entry) for entry in entries]
 
 
-## Error handler
-@app.errorhandler(Exception)
-def handle_exception(e):
-	if isinstance(e, FeedNotFoundError):
-		return Response(status=404)
-	elif isinstance(e, FeedExistsError):
-		return Response(status=409)
-	elif isinstance(e, InvalidFeedURLError):
-		return Response(err.message, status=400)
-	elif isinstance(e, ParseError):
-		return Response(err.message, status=400)
-	elif isinstance(e, HTTPException):
-		return Response(status=e.code)
-	else:
-		logging.error(e)
-		return Response(status=500)
+## Error handlers
+@app.exception_handler(FeedNotFoundError)
+async def feed_not_foundi_error(request, err: FeedNotFoundError):
+	return PlainTextResponse(err.message, status_code=404)
+
+@app.exception_handler(FeedExistsError)
+async def feed_exists_error(request, err: FeedExistsError):
+	return PlainTextResponse(err.message, status_code=409)
+
+@app.exception_handler(InvalidFeedURLError)
+async def invalid_feed_url_error(request, err: InvalidFeedURLError):
+	return PlainTextResponse(err.message, status_code=400)
+
+@app.exception_handler(ParseError)
+async def parse_error(e, ParseError):
+	return PlainTextResponse(err.message, status_code=400)
 	
