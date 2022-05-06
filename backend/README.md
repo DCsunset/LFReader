@@ -18,6 +18,8 @@ For production, remove the `--reload` option:
 
 ```sh
 uvicorn app:app --host 0.0.0.0 --port 3000
+# or disable OpenAPI and docs
+YAFR_NO_OPENAPI=1 uvicorn app:app --host 0.0.0.0 --port 3000
 ```
 
 To change the database path (default to `./db.sqlite`),

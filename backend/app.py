@@ -12,9 +12,15 @@ logging.basicConfig(level=logging.INFO)
 
 # the path of the database (default to ./db.sqlite)
 YAFR_DB = os.getenv("YAFR_DB", "db.sqlite")
+YAFR_NO_OPENAPI = os.getenv("YAFR_NO_OPENAPI")
 logging.info(f"Database path: {YAFR_DB}")
 
-app = FastAPI()
+fastapi_args = {}
+if YAFR_NO_OPENAPI is not None:
+	# Disable openapi and docs in production
+	fastapi_args["openapi_url"] = None
+
+app = FastAPI(**fastapi_args)
 
 # each thread must have a different reader because of SQLite3
 readers = {}
