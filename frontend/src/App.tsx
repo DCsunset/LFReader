@@ -24,9 +24,7 @@ const theme = createTheme({
 });
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
+ return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <h6>Hello, wold</h6>
@@ -34,4 +32,4 @@ function App() {
   )
 }
 
-export default App
+export default App;
