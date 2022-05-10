@@ -2,6 +2,7 @@ from reader import make_reader, Feed, Entry, FeedNotFoundError, StorageError, Fe
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import PlainTextResponse
 from fastapi.exceptions import RequestValidationError
+from fastapi.encoders import jsonable_encoder
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
 import base64
@@ -31,24 +32,6 @@ def get_reader():
 		readers[thread_id] = make_reader(YAFR_DB)
 	return readers[thread_id]
 
-def feed_to_dict(feed: Feed):
-	return {
-		"url": feed.url,
-		"title": feed.title,
-		"subtitle": feed.subtitle,
-		"author": feed.author,
-		"updated": feed.updated
-	}
-
-def entry_to_dict(entry: Entry):
-	return {
-		"id": entry.id,
-		"updated": entry.updated,
-		"title": entry.title,
-		"summary": entry.summary,
-		"author": entry.author,
-	}
-
 class DecodeError(Exception):
 	"""An error occurred when decoding the id
 	"""
@@ -69,14 +52,14 @@ def encode_id(id: str):
 async def get_feeds():
 	reader = get_reader()
 	feeds = reader.get_feeds()
-	return [feed_to_dict(feed) for feed in feeds]
+	return jsonable_encoder(feeds)
 
 @app.get("/feeds/{encoded_id}")
 async def get_feed(encoded_id):
 	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	feed = reader.get_feed(feed_id)
-	return feed_to_dict(feed)
+	return jsonable_encoder(feed)
 
 @app.put("/feeds/{encoded_id}")
 async def update_feed(encoded_id):
@@ -105,7 +88,7 @@ async def delete_feed(encoded_id):
 async def get_entries():
 	reader = get_reader()
 	entries = reader.get_entries()
-	return [entry_to_dict(entry) for entry in entries]
+	return jsonable_encoder(entries)
 
 
 ## Error handlers
