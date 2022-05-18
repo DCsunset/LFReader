@@ -46,20 +46,23 @@ def decode_id(data: str):
 def encode_id(id: str):
 	return base64.encodebytes(data.encode("utf-8")).decode("utf-8")
 
+def json_encode(obj, **kwargs):
+	return jsonable_encoder(jsonable_encoder(obj), **kwargs)
+
 
 ## Feed API
 @app.get("/feeds")
 async def get_feeds():
 	reader = get_reader()
 	feeds = reader.get_feeds()
-	return jsonable_encoder(feeds)
+	return json_encode(feeds, exclude_none=True)
 
 @app.get("/feeds/{encoded_id}")
 async def get_feed(encoded_id):
 	reader = get_reader()
 	feed_id = decode_id(encoded_id)
 	feed = reader.get_feed(feed_id)
-	return jsonable_encoder(feed)
+	return json_encode(feed, exclude_none=True)
 
 @app.put("/feeds/{encoded_id}")
 async def update_feed(encoded_id):
@@ -88,7 +91,7 @@ async def delete_feed(encoded_id):
 async def get_entries():
 	reader = get_reader()
 	entries = reader.get_entries()
-	return jsonable_encoder(entries)
+	return json_encode(entries, exclude={"feed"}, exclude_none=True)
 
 
 ## Error handlers
