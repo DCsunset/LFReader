@@ -1,6 +1,8 @@
 import { atom } from "recoil";
+import { Notification } from "../types/states";
 
-export const notificationListState = atom({
-	key: "NotificationList",
-	default: [] as string[]
+// Only keeps the latest notification
+export const notificationState = atom<Notification | null>({
+	key: "Notification",
+	default: null
 });
