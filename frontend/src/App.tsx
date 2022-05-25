@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { blue, green } from "@mui/material/colors";
 import './App.css'
+import Layout from './components/Layout';
 
 const theme = createTheme({
   typography: {
@@ -27,7 +28,10 @@ function App() {
  return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <h6>Hello, wold</h6>
+
+     <Layout>
+        <h6>Hello, world</h6>
+      </Layout>
     </ThemeProvider>
   )
 }

@@ -1,15 +1,17 @@
 import { useRecoilState } from "recoil";
 import { notificationState } from "../states/app";
 import { Notification } from "../types/states";
-import { Alert, AppBar, Box, Snackbar, Toolbar } from "@mui/material";
+import { Alert, AppBar, Box, Snackbar, Toolbar, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
+import Icon from "@mdi/react";
+import { mdiRss } from "@mdi/js";
 
 interface Props {
 	children?: any
 }
 
 function Layout(props: Props) {
-	const [notification, setNotifiction] = useRecoilState(notificationState);
+	const [notification, setNotification] = useRecoilState(notificationState);
 	// Local cache of notification (delayed destruction and update)
 	const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -18,7 +20,7 @@ function Layout(props: Props) {
 	useEffect(() => {
 		if (notification && !currentNotification) {
 			setCurrentNotification(notification);
-			setNotifiction(null);
+			setNotification(null);
 			setSnackbarOpen(true);
 		}
 		else if (notification && currentNotification && snackbarOpen) {
@@ -47,8 +49,14 @@ function Layout(props: Props) {
 			flexDirection: "column"
 		}}>
 			<AppBar position="sticky">
-				<Toolbar style={{ minHeight: "56px" }}>
-					yafr
+				<Toolbar style={{ minHeight: "48px" }}>
+					<Icon
+						path={mdiRss}
+						size={1}
+					/>
+					<Typography variant="h6" sx={{ ml: 1 }}>
+						yafr
+					</Typography>
 				</Toolbar>
 			</AppBar>
 
@@ -62,7 +70,7 @@ function Layout(props: Props) {
 				TransitionProps={{
 					onExited: handleSnackbarExited
 				}}
-				autoHideDuration={5000}
+				autoHideDuration={6000}
 			>
 				<Alert
 					variant="filled"
