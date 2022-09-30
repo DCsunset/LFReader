@@ -78,7 +78,7 @@ async def get_entries():
 
 ## Error handlers
 @app.exception_handler(FeedNotFoundError)
-async def feed_not_foundi_error(request, err: FeedNotFoundError):
+async def feed_not_found_error(request, err: FeedNotFoundError):
 	return PlainTextResponse(err.message, status_code=404)
 
 @app.exception_handler(FeedExistsError)
