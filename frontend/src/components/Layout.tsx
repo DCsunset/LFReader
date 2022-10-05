@@ -134,7 +134,8 @@ function Layout(props: Props) {
 					>
 						<Icon
 							path={mdiRss}
-							size={1}
+							size={1.2}
+							color="#ee802f"
 						/>
 						<Typography variant="h5" sx={{ ml: 0.5 }}>
 							yafr
