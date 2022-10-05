@@ -17,9 +17,14 @@ function Layout(props: Props) {
 	// Local cache of notification (delayed destruction and update)
 	const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
-	const [drawerOpen, setDrawerOpen] = useState(false);
 	const theme = useTheme();
 	const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
+	const [drawerOpen, setDrawerOpen] = useState(!smallDevice);
+
+	useEffect(() => {
+		// Reset to default state
+		setDrawerOpen(!smallDevice);
+	}, [smallDevice])
 
 	// Update notification on change
 	useEffect(() => {
@@ -112,7 +117,9 @@ function Layout(props: Props) {
 						}
 					}}
 					// For better performance
-					keepMounted={true}
+					ModalProps={{
+						keepMounted: true
+					}}
 					open={drawerOpen}
 					onClose={() => setDrawerOpen(false)}
 				>
