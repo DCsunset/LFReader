@@ -5,6 +5,7 @@ import { Alert, AppBar, Box, Divider, Drawer, IconButton, Snackbar, Toolbar, Typ
 import { useEffect, useState } from "react";
 import Icon from "@mdi/react";
 import { mdiMenu, mdiRss } from "@mdi/js";
+import FeedList from "./FeedList";
 
 interface Props {
 	children?: any
@@ -123,16 +124,24 @@ function Layout(props: Props) {
 					open={drawerOpen}
 					onClose={() => setDrawerOpen(false)}
 				>
-					<Toolbar>
+					<Box
+						sx={{
+							display: "flex",
+							alignItems: "center",
+							justifyContent: "center",
+							p: 1,
+						}}
+					>
 						<Icon
 							path={mdiRss}
 							size={1}
 						/>
-						<Typography variant="h6" sx={{ ml: 1 }}>
+						<Typography variant="h5" sx={{ ml: 0.5 }}>
 							yafr
 						</Typography>
-					</Toolbar>
-					<Divider />
+					</Box>
+
+					<FeedList />
 				</Drawer>
 			</Box>
 
