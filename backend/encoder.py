@@ -1,5 +1,6 @@
 from fastapi.encoders import jsonable_encoder
 import dataclasses
+import base64
 from reader import Entry
 
 class DecodeError(Exception):
@@ -19,12 +20,10 @@ def encode_data(data, **kwargs):
 		Entry: lambda e: entry_encoder(e, **kwargs)
 	}
 	return jsonable_encoder(data, custom_encoder=custom_encoder, **kwargs)
-
-def encode_id(id: str):
-	return base64.encodebytes(data.encode("utf-8")).decode("utf-8")
 	
 def decode_id(data: str):
 	try:
-		return base64.decodebytes(data.encode("utf-8")).decode("utf-8")
+		# add enough padding or it may raise an exception
+		return base64.urlsafe_b64decode((data + "==").encode("utf-8")).decode("utf-8")
 	except:
 		raise DecodeError("Invalid ID")

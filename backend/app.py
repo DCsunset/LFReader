@@ -4,10 +4,9 @@ from fastapi.responses import PlainTextResponse
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
-import base64
 import threading
 import os 
-from encoder import encode_data, encode_id, decode_id, DecodeError
+from encoder import encode_data, decode_id, DecodeError
 
 logging.basicConfig(level=logging.INFO)
 
