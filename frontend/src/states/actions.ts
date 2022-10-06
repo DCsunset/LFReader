@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Base64 } from "js-base64";
 
 export interface Feed {
 	url: string,
@@ -38,22 +39,30 @@ export interface Entry {
 	version?: string
 };
 
+function encodeId(url: string) {
+	// url-safe encoding (note: without padding)
+	return Base64.encode(url, true);
+}
+
 export async function getFeeds() {
 	const { data } = await axios.get("/feeds");
 	return data as Feed[];
 }
 
-export async function getFeed(feedId: string) {
-	const { data } = await axios.get(`/feeds/${feedId}`);
+export async function getFeed(feedUrl: string) {
+	const id = encodeId(feedUrl);
+	const { data } = await axios.get(`/feeds/${id}`);
 	return data as Feed;
 }
 
-export async function updateFeed(feedId: string) {
-	await axios.put(`/feeds/${feedId}`);
+export async function updateFeed(feedUrl: string) {
+	const id = encodeId(feedUrl);
+	await axios.put(`/feeds/${id}`);
 }
 
-export async function deleteFeed(feedId: string) {
-	await axios.delete(`/feeds/${feedId}`);
+export async function deleteFeed(feedUrl: string) {
+	const id = encodeId(feedUrl);
+	await axios.delete(`/feeds/${id}`);
 }
 
 export async function getEntries() {
