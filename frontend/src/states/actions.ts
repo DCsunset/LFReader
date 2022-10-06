@@ -45,27 +45,27 @@ function encodeId(url: string) {
 }
 
 export async function getFeeds() {
-	const { data } = await axios.get("/feeds");
+	const { data } = await axios.get("/api/feeds");
 	return data as Feed[];
 }
 
 export async function getFeed(feedUrl: string) {
 	const id = encodeId(feedUrl);
-	const { data } = await axios.get(`/feeds/${id}`);
+	const { data } = await axios.get(`/api/feeds/${id}`);
 	return data as Feed;
 }
 
 export async function updateFeed(feedUrl: string) {
 	const id = encodeId(feedUrl);
-	await axios.put(`/feeds/${id}`);
+	await axios.put(`/api/feeds/${id}`);
 }
 
 export async function deleteFeed(feedUrl: string) {
 	const id = encodeId(feedUrl);
-	await axios.delete(`/feeds/${id}`);
+	await axios.delete(`/api/feeds/${id}`);
 }
 
 export async function getEntries() {
-	const { data } = await axios.get(`/entries`);
+	const { data } = await axios.get(`/api/entries`);
 	return data as Entry[];
 }
