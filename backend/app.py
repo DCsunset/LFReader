@@ -6,7 +6,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
 import threading
 import os 
-from encoder import decode_id, DecodeError
+from encoder import decode_id, encode_entry, encode_feed, DecodeError
 from pydantic import BaseModel
 import dataclasses
 
@@ -54,10 +54,10 @@ Get feeds
 @app.get("/feeds")
 async def get_feeds_api():
 	reader = get_reader()
-	feeds = map(
+	feeds = list(map(
 		lambda f: add_feed_tags(reader, f),
 		reader.get_feeds()
-	)
+	))
 	return encode_feed(feeds)
 
 """
@@ -121,10 +121,10 @@ async def delete_feed_api(encoded_id):
 @app.get("/entries")
 async def get_entries_api():
 	reader = get_reader()
-	entries = map(
+	entries = list(map(
 		lambda e: add_entry_feed_url(reader, e),
 		reader.get_entries()
-	)
+	))
 	return encode_entry(entries)
 
 
