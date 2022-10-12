@@ -6,8 +6,9 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
 import threading
 import os 
-from encoder import encode_data, decode_id, DecodeError
+from encoder import decode_id, DecodeError
 from pydantic import BaseModel
+import dataclasses
 
 logging.basicConfig(level=logging.INFO)
 
@@ -37,6 +38,15 @@ def get_reader() -> Reader:
 class FeedArgs(BaseModel):
 	tags: list[str] | None = None
 
+def add_feed_tags(reader: Reader, feed: Feed):
+	data = dataclasses.asdict(feed)
+	data["tags"] = list(reader.get_tag_keys(feed.url))
+	return data
+
+def add_entry_feed_url(reader: Reader, entry: Entry):
+	data = dataclasses.asdict(entry)
+	data["feed_url"] = entry.feed_url
+	return data
 
 """
 Get feeds
@@ -44,8 +54,11 @@ Get feeds
 @app.get("/feeds")
 async def get_feeds_api():
 	reader = get_reader()
-	feeds = reader.get_feeds()
-	return encode_data(feeds, exclude_none=True)
+	feeds = map(
+		lambda f: add_feed_tags(reader, f),
+		reader.get_feeds()
+	)
+	return encode_feed(feeds)
 
 """
 Get a feed
@@ -54,8 +67,8 @@ Get a feed
 async def get_feed_api(encoded_id: str):
 	reader = get_reader()
 	feed_url = decode_id(encoded_id)
-	feed = reader.get_feed(feed_url)
-	return encode_data(feed, exclude_none=True)
+	feed = add_feed_tags(reader, reader.get_feed(feed_url))
+	return encode_feed(feed)
 
 
 def update_feed(reader: Reader, feed_url: str, args: FeedArgs):
@@ -104,14 +117,19 @@ async def delete_feed_api(encoded_id):
 	return {}
 	
 ## Entry API
+
 @app.get("/entries")
 async def get_entries_api():
 	reader = get_reader()
-	entries = reader.get_entries()
-	return encode_data(entries, exclude={"feed"}, exclude_none=True)
+	entries = map(
+		lambda e: add_entry_feed_url(reader, e),
+		reader.get_entries()
+	)
+	return encode_entry(entries)
 
 
 ## Error handlers
+
 @app.exception_handler(FeedNotFoundError)
 async def feed_not_found_error(request, err: FeedNotFoundError):
 	return PlainTextResponse(err.message, status_code=404)

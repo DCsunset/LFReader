@@ -1,26 +1,25 @@
 from fastapi.encoders import jsonable_encoder
 import dataclasses
 import base64
-from reader import Entry
+from reader import Entry, Feed
 
 class DecodeError(Exception):
 	"""An error occurred when decoding the id
 	"""
-	pass
+pass
 
-def entry_encoder(entry: Entry, **kwargs):
-	obj = dataclasses.asdict(entry)
-	# Add feed_url manually because it's a getter
-	obj["feed_url"] = entry.feed_url
-	return jsonable_encoder(obj, **kwargs)
-	
+"""
+Encode one or a list of feeds
+"""
+def encode_feed(data):
+	return jsonable_encoder(data, exclude_none=True)
 
-def encode_data(data, **kwargs):
-	custom_encoder = {
-		Entry: lambda e: entry_encoder(e, **kwargs)
-	}
-	return jsonable_encoder(data, custom_encoder=custom_encoder, **kwargs)
-	
+"""
+Encode one or a list of entries
+"""
+def encode_entry(data):
+	return jsonable_encoder(entries, exclude={"feed"}, exclude_none=True)
+		
 def decode_id(data: str):
 	try:
 		# add enough padding or it may raise an exception
