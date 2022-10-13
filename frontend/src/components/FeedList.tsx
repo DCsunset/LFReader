@@ -1,18 +1,90 @@
-import { Box, List, ListItem } from "@mui/material";
+import { mdiChevronRight } from "@mdi/js";
+import { Box, Collapse, IconButton, List, ListItem, ListItemButton } from "@mui/material";
 import { useEffect, useState } from "react";
-import { getFeeds, Feed } from "../states/actions";
+import { Icon } from "@mdi/react";
+import { getFeeds } from "../states/actions";
+import { getTags, Feed, filterByTag } from "../types/feed";
 import fetchIcon from "../utils/fetchIcon";
 
 export interface FeedWithIcon extends Feed {
 	icon?: string
 };
 
+/**
+ * Feed Tag (including feeds of this tag)
+ */
+function FeedTag(props: {
+	/// Tag name
+	tag: string,
+	/// Feeds of this tag
+	feeds: FeedWithIcon[],
+}) {
+	const [open, setOpen] = useState(false);
+
+	const showFeeds = () => {
+		// TODO
+		console.log("showed");
+	};
+
+	return (
+		<>
+			<ListItemButton
+				sx={{ p: 0.5 }}
+				onClick={ () => showFeeds()}
+			>
+				<Box sx={{
+					display: "flex",
+					alignItems: "center"
+				}}>
+					<IconButton
+						size="small"
+						onClick={e => {
+							// Don't call the upper callback
+							e.stopPropagation();
+							setOpen(!open);
+						}}
+					>
+						<Icon
+							path={mdiChevronRight}
+							size={1}
+							style={{
+								transform: `rotate(${open ? "90deg" : "0"})`,
+								transition: "transform 0.2s"
+							}}
+						/>
+					</IconButton>
+					{props.tag}
+				</Box>
+			</ListItemButton>
+			<Collapse in={open}>
+				{props.feeds.map(feed => (
+					<ListItemButton key={feed.url} sx={{ p: 0.5, pl: 4 }}>
+						{feed.icon &&
+							<Box
+								component="img"
+								src={feed.icon}
+								sx={{
+									width: 20,
+									height: 20,
+									mr: 1
+								}}
+							/>
+						}
+						{feed.title ?? feed.link ?? feed.url}
+					</ListItemButton>
+				))}
+			</Collapse>
+		</>
+	);
+}
+
 function FeedList() {
 	const [feeds, setFeeds] = useState<FeedWithIcon[]>([]);
 
+	// TODO: use SWR to optimize data fetching
 	useEffect(() => {
 		const fetchFeeds = async () => {
-			const origFeeds= await getFeeds();
+			const origFeeds = await getFeeds();
 			const newFeeds = await Promise.all(
 				origFeeds.map(async feed => ({
 					...feed,
@@ -25,27 +97,17 @@ function FeedList() {
 		fetchFeeds();
 	}, []);
 
-	// useEffect(() => {
-	// 	console.log(feeds)
-	// }, [feeds]);
+	// All tags
+	const tags = getTags(feeds);
 
 	return (
 		<List>
-			{feeds.map(feed => (
-				<ListItem key={feed.url}>
-					{feed.icon &&
-						<Box
-							component="img"
-							src={feed.icon}
-							sx={{
-								width: 20,
-								height: 20,
-								mr: 1
-							}}
-						/>
-					}
-					{feed.title ?? feed.link ?? feed.url}
-				</ListItem>
+			{tags.map(tag => (
+				<FeedTag
+					key={tag || "Unsorted"}
+					tag={tag || "Unsorted"}
+					feeds={filterByTag(feeds, tag)}
+				/>
 			))}
 		</List>
 	);

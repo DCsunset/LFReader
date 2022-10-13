@@ -1,9 +1,9 @@
 import { useRecoilState } from "recoil";
 import { notificationState } from "../states/app";
 import { Notification } from "../types/states";
-import { Alert, AppBar, Box, Divider, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
-import Icon from "@mdi/react";
+import { Icon } from "@mdi/react";
 import { mdiMenu, mdiRss } from "@mdi/js";
 import FeedList from "./FeedList";
 
@@ -89,7 +89,7 @@ function Layout(props: Props) {
 					// Keep padding consistent
 					px: { sm: 2 }
 				}}>
-					<IconButton onClick={() => setDrawerOpen(val => !val)}>
+					<IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
 						<Icon
 							path={mdiMenu}
 							size={1}
