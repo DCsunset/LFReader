@@ -1,43 +1,6 @@
 import axios from "axios";
 import { Base64 } from "js-base64";
-
-export interface Feed {
-	url: string,
-	link?: string,
-	title?: string,
-	subtitle?: string,
-	added: string,
-	last_updated?: string,
-	updated?: string,
-	updates_enabled: boolean,
-	version?: string
-};
-
-export interface Content {
-	value: string,
-	type?: string,
-	language?: string
-};
-
-export interface Entry {
-	/// Used as feed id
-	feed_url: string,
-	id: string,
-	link: string,
-	title?: string,
-	subtitle?: string,
-	author?: string,
-	published?: string,
-	summary?: string,
-	content: Content[],
-	read: boolean,
-	important: boolean,
-	added: string,
-	last_updated: string,
-	updated?: string,
-	updates_enabled: boolean,
-	version?: string
-};
+import { Feed, Entry } from "../types/feed";
 
 function encodeId(url: string) {
 	// url-safe encoding (note: without padding)

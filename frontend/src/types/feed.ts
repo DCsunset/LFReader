@@ -1,8 +1,9 @@
 /**
  * Feed type definition based on python library `reader`
  */
-export type Feed = {
+export interface Feed {
 	url: string,
+	tags: string[],
 	updated?: string,
 	title?: string,
 	link?: string,
@@ -18,20 +19,51 @@ export type Feed = {
 /**
  * Entry type definition based on python library `reader`
  */
-export type Entry = {
+export interface Entry {
+	/// Used as feed id
+	feed_url: string,
 	id: string,
-	updated?: string,
+	link: string,
 	title?: string,
-	link?: string,
+	subtitle?: string,
 	author?: string,
 	published?: string,
 	summary?: string,
+	content: Content[],
 	read: boolean,
-	read_modified?: string,
 	important: boolean,
-	important_modified?: string,
 	added: string,
-	added_by: "feed" | "user",
 	last_updated: string,
-	original_feed_url: string,
+	updated?: string,
+	updates_enabled: boolean,
+	version?: string
 };
+
+export interface Content {
+	value: string,
+	type?: string,
+	language?: string
+};
+
+/** Get all tags from feeds */
+export function getTags(feeds: Feed[]) {
+	const tags = feeds.reduce(
+		(prev, feed) => {
+			feed.tags.forEach(t => prev.add(t));
+			return prev;
+		},
+		new Set<string>()
+	)
+	// null represents no tag
+	return [...tags, null];
+}
+
+export function filterByTag<T extends Feed>(feeds: T[], tag: string | null) {
+	return feeds.filter(feed => {
+		if (tag === null) {
+			// Unsorted
+			return feed.tags.length === 0;
+		}
+		return feed.tags.includes(tag);
+	});
+}
