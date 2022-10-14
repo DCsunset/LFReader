@@ -5,9 +5,17 @@ import { Icon } from "@mdi/react";
 import { getFeeds } from "../states/actions";
 import { getTags, Feed, filterByTag } from "../types/feed";
 import fetchIcon from "../utils/fetchIcon";
+import { useSetRecoilState } from "recoil";
+import { titleState } from "../states/app";
 
 export interface FeedWithIcon extends Feed {
 	icon?: string
+};
+
+interface ActiveItem {
+	/// A single feed or a tag
+	type: "feed" | "tag",
+	title: string
 };
 
 /**
@@ -20,17 +28,21 @@ function FeedTag(props: {
 	feeds: FeedWithIcon[],
 }) {
 	const [open, setOpen] = useState(false);
+	const setTitle = useSetRecoilState(titleState);
 
-	const showFeeds = () => {
-		// TODO
-		console.log("showed");
+	const showItem = (item: ActiveItem) => {
+		setTitle(item.title);
+		// TODO: show feed or group
 	};
 
 	return (
 		<>
 			<ListItemButton
 				sx={{ p: 0.5 }}
-				onClick={ () => showFeeds()}
+				onClick={() => showItem({
+					type: "tag",
+					title: props.tag
+				})}
 			>
 				<Box sx={{
 					display: "flex",
@@ -58,7 +70,14 @@ function FeedTag(props: {
 			</ListItemButton>
 			<Collapse in={open}>
 				{props.feeds.map(feed => (
-					<ListItemButton key={feed.url} sx={{ p: 0.5, pl: 4 }}>
+					<ListItemButton
+						key={feed.url}
+						sx={{ p: 0.5, pl: 4 }}
+						onClick={() => showItem({
+							type: "feed",
+							title: feed.title ?? feed.link ?? feed.url
+						})}
+					>
 						{feed.icon &&
 							<Box
 								component="img"

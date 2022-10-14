@@ -1,5 +1,5 @@
-import { useRecoilState } from "recoil";
-import { notificationState } from "../states/app";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { notificationState, titleState } from "../states/app";
 import { Notification } from "../types/states";
 import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
@@ -15,6 +15,7 @@ const drawerWidth = 240;
 
 function Layout(props: Props) {
 	const [notification, setNotification] = useRecoilState(notificationState);
+	const title = useRecoilValue(titleState);
 	// Local cache of notification (delayed destruction and update)
 	const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -96,7 +97,7 @@ function Layout(props: Props) {
 						/>
 					</IconButton>
 					<Typography variant="h6" sx={{ ml: 1 }}>
-						Title
+						{title}
 					</Typography>
 				</Toolbar>
 			</AppBar>

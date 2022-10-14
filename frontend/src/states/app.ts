@@ -3,6 +3,11 @@ import { Notification } from "../types/states";
 
 // Only keeps the latest notification
 export const notificationState = atom<Notification | null>({
-	key: "Notification",
+	key: "notification",
 	default: null
+});
+
+export const titleState = atom<string>({
+	key: "title",
+	default: ""
 });
