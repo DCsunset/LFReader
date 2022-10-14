@@ -6,8 +6,3 @@ export const notificationState = atom<Notification | null>({
 	key: "notification",
 	default: null
 });
-
-export const titleState = atom<string>({
-	key: "title",
-	default: ""
-});

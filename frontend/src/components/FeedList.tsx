@@ -1,12 +1,11 @@
 import { mdiChevronRight } from "@mdi/js";
-import { Box, Collapse, IconButton, List, ListItem, ListItemButton } from "@mui/material";
+import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Icon } from "@mdi/react";
 import { getFeeds } from "../states/actions";
 import { getTags, Feed, filterByTag } from "../types/feed";
 import fetchIcon from "../utils/fetchIcon";
-import { useSetRecoilState } from "recoil";
-import { titleState } from "../states/app";
+import { useNavigate, useParams } from "react-router-dom";
 
 export interface FeedWithIcon extends Feed {
 	icon?: string
@@ -28,10 +27,10 @@ function FeedTag(props: {
 	feeds: FeedWithIcon[],
 }) {
 	const [open, setOpen] = useState(false);
-	const setTitle = useSetRecoilState(titleState);
+	const param = useParams();
+	const navigate = useNavigate();
 
 	const showItem = (item: ActiveItem) => {
-		setTitle(item.title);
 		// TODO: show feed or group
 	};
 
@@ -39,10 +38,7 @@ function FeedTag(props: {
 		<>
 			<ListItemButton
 				sx={{ p: 0.5 }}
-				onClick={() => showItem({
-					type: "tag",
-					title: props.tag
-				})}
+				onClick={() => navigate(`/tag/${props.tag}`)}
 			>
 				<Box sx={{
 					display: "flex",
@@ -73,10 +69,7 @@ function FeedTag(props: {
 					<ListItemButton
 						key={feed.url}
 						sx={{ p: 0.5, pl: 4 }}
-						onClick={() => showItem({
-							type: "feed",
-							title: feed.title ?? feed.link ?? feed.url
-						})}
+						onClick={() => navigate(`/feed/${feed.title}`)}
 					>
 						{feed.icon &&
 							<Box

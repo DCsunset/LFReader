@@ -1,21 +1,18 @@
 import { useRecoilState, useRecoilValue } from "recoil";
-import { notificationState, titleState } from "../states/app";
+import { notificationState } from "../states/app";
 import { Notification } from "../types/states";
 import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Icon } from "@mdi/react";
+import { Outlet, useParams } from "react-router-dom";
 import { mdiMenu, mdiRss } from "@mdi/js";
 import FeedList from "./FeedList";
 
-interface Props {
-	children?: any
-}
-
 const drawerWidth = 240;
 
-function Layout(props: Props) {
+function Layout() {
+	const params = useParams();
 	const [notification, setNotification] = useRecoilState(notificationState);
-	const title = useRecoilValue(titleState);
 	// Local cache of notification (delayed destruction and update)
 	const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
 	const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -97,7 +94,7 @@ function Layout(props: Props) {
 						/>
 					</IconButton>
 					<Typography variant="h6" sx={{ ml: 1 }}>
-						{title}
+						{params.title || "Home"}
 					</Typography>
 				</Toolbar>
 			</AppBar>
@@ -173,7 +170,7 @@ function Layout(props: Props) {
 				height: "100%",
 				...responsiveStyles
 			}}>
-				{props.children}
+				<Outlet />
 			</Box>
 		</Box>
 	);
