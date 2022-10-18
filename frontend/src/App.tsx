@@ -7,7 +7,7 @@ import {
 import './App.css'
 import Layout from './components/Layout';
 import HomePage from './components/HomePage';
-import EntryList from './components/EntryList';
+import EntryListLayout from './components/EntryListLayout';
 import { Children } from "react";
 
 const theme = createTheme({
@@ -43,9 +43,9 @@ const router = createBrowserRouter([
 				element: <HomePage />
 			},
 			{
-				// Entry list of a feed
+				// Entry list of a feed or a tag
 				path: ":type/:title",
-				element: <EntryList />
+				element: <EntryListLayout />
 			},
 		]
 	}

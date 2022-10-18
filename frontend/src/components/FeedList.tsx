@@ -1,5 +1,5 @@
 import { mdiChevronRight } from "@mdi/js";
-import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
+import { Box, Collapse, IconButton, List, ListItemButton, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Icon } from "@mdi/react";
 import { getFeeds } from "../states/actions";
@@ -37,8 +37,13 @@ function FeedTag(props: {
 	return (
 		<>
 			<ListItemButton
-				sx={{ p: 0.5 }}
-				onClick={() => navigate(`/tag/${props.tag}`)}
+				sx={{ py: 0, px: 0.5 }}
+				onClick={() => {
+					if (!open) {
+						setOpen(true);
+					}
+					navigate(`/tag/${props.tag}`);
+				}}
 			>
 				<Box sx={{
 					display: "flex",
@@ -61,7 +66,15 @@ function FeedTag(props: {
 							}}
 						/>
 					</IconButton>
-					{props.tag}
+					<span>{props.tag}</span>
+					<Box sx={{
+						ml: 0.8,
+						mt: 0.1,
+						fontSize: "0.75rem",
+						display: "inline"
+					}}>
+						({props.feeds.length})
+					</Box>
 				</Box>
 			</ListItemButton>
 			<Collapse in={open}>
@@ -114,6 +127,10 @@ function FeedList() {
 
 	return (
 		<List>
+			<FeedTag
+				tag="All"
+				feeds={feeds}
+			/>
 			{tags.map(tag => (
 				<FeedTag
 					key={tag || "Unsorted"}

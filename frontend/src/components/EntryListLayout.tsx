@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 
-function EntryList() {
+function EntryListLayout() {
 	const params = useParams();
 	// TODO: validate type in params
 	console.log(params);
@@ -12,4 +12,4 @@ function EntryList() {
 	);
 }
 
-export default EntryList;
+export default EntryListLayout;
