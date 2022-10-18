@@ -71,7 +71,12 @@ async def get_feed_api(encoded_id: str):
 	return encode_feed(feed)
 
 
-def update_feed(reader: Reader, feed_url: str, args: FeedArgs):
+def update_feed(reader: Reader, feed_url: str, args: FeedArgs | None):
+	reader.update_feed(feed_url)
+
+	if args is None:
+		return
+
 	# set tag
 	if args.tags is not None:
 		orig_tags = reader.get_tag_keys(feed_url)
@@ -82,14 +87,12 @@ def update_feed(reader: Reader, feed_url: str, args: FeedArgs):
 		for tag in args.tags:
 			reader.set_tag(feed_url, tag)
 
-	reader.update_feed(feed_url)
-
 
 """
 Update a feed
 """
 @app.put("/feeds/{encoded_id}")
-async def update_feed_api(encoded_id: str, args: FeedArgs):
+async def update_feed_api(encoded_id: str, args: FeedArgs | None = None):
 	feed_url = decode_id(encoded_id)
 	reader = get_reader()
 	update_feed(reader, feed_url, args)
@@ -99,7 +102,7 @@ async def update_feed_api(encoded_id: str, args: FeedArgs):
 Add a new feed
 """
 @app.post("/feeds/{encoded_id}")
-async def add_feed_api(encoded_id: str, args: FeedArgs):
+async def add_feed_api(encoded_id: str, args: FeedArgs | None = None):
 	reader = get_reader()
 	feed_url = decode_id(encoded_id)
 	reader.add_feed(feed_url)
