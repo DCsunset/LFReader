@@ -3,7 +3,7 @@ import { Box, Collapse, IconButton, List, ListItemButton, Typography } from "@mu
 import { useEffect, useState } from "react";
 import { Icon } from "@mdi/react";
 import { getFeeds } from "../states/actions";
-import { getTags, Feed, filterByTag } from "../types/feed";
+import { getFeedTags, Feed, filterFeedsByTag } from "../types/feed";
 import fetchIcon from "../utils/fetchIcon";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -123,7 +123,7 @@ function FeedList() {
 	}, []);
 
 	// All tags
-	const tags = getTags(feeds);
+	const tags = getFeedTags(feeds);
 
 	return (
 		<List>
@@ -135,7 +135,7 @@ function FeedList() {
 				<FeedTag
 					key={tag || "Unsorted"}
 					tag={tag || "Unsorted"}
-					feeds={filterByTag(feeds, tag)}
+					feeds={filterFeedsByTag(feeds, tag)}
 				/>
 			))}
 		</List>

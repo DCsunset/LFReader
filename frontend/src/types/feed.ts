@@ -46,7 +46,7 @@ export interface Content {
 };
 
 /** Get all tags from feeds */
-export function getTags(feeds: Feed[]) {
+export function getFeedTags(feeds: Feed[]) {
 	const tags = feeds.reduce(
 		(prev, feed) => {
 			feed.tags.forEach(t => prev.add(t));
@@ -58,7 +58,7 @@ export function getTags(feeds: Feed[]) {
 	return [...tags, null];
 }
 
-export function filterByTag<T extends Feed>(feeds: T[], tag: string | null) {
+export function filterFeedsByTag<T extends Feed>(feeds: T[], tag: string | null) {
 	return feeds.filter(feed => {
 		if (tag === null) {
 			// Unsorted
