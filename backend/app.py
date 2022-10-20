@@ -35,8 +35,15 @@ def get_reader() -> Reader:
 
 ## Feed API
 
-class FeedArgs(BaseModel):
+class FeedUpdateArgs(BaseModel):
 	tags: list[str] | None = None
+
+class FeedQueryArgs(BaseModel):
+	# query by tag in reader library
+	tags: None | bool | list[str|bool|list[str | bool]] = None
+	# a specific feed url
+	feed: str | None = None
+
 
 def add_feed_tags(reader: Reader, feed: Feed):
 	data = dataclasses.asdict(feed)
@@ -52,11 +59,14 @@ def add_entry_feed_url(reader: Reader, entry: Entry):
 Get feeds
 """
 @app.get("/feeds")
-async def get_feeds_api():
+async def get_feeds_api(args: FeedQueryArgs | None = None):
 	reader = get_reader()
+	tags = getattr(args, "tags", None)
+	feed = getattr(args, "feed", None)
+
 	feeds = list(map(
 		lambda f: add_feed_tags(reader, f),
-		reader.get_feeds()
+		reader.get_feeds(feed=feed, tags=tags)
 	))
 	return encode_feed(feeds)
 
@@ -71,7 +81,7 @@ async def get_feed_api(encoded_id: str):
 	return encode_feed(feed)
 
 
-def update_feed(reader: Reader, feed_url: str, args: FeedArgs | None):
+def update_feed(reader: Reader, feed_url: str, args: FeedUpdateArgs | None):
 	reader.update_feed(feed_url)
 
 	if args is None:
@@ -92,7 +102,7 @@ def update_feed(reader: Reader, feed_url: str, args: FeedArgs | None):
 Update a feed
 """
 @app.put("/feeds/{encoded_id}")
-async def update_feed_api(encoded_id: str, args: FeedArgs | None = None):
+async def update_feed_api(encoded_id: str, args: FeedUpdateArgs | None = None):
 	feed_url = decode_id(encoded_id)
 	reader = get_reader()
 	update_feed(reader, feed_url, args)
@@ -102,7 +112,7 @@ async def update_feed_api(encoded_id: str, args: FeedArgs | None = None):
 Add a new feed
 """
 @app.post("/feeds/{encoded_id}")
-async def add_feed_api(encoded_id: str, args: FeedArgs | None = None):
+async def add_feed_api(encoded_id: str, args: FeedUpdateArgs | None = None):
 	reader = get_reader()
 	feed_url = decode_id(encoded_id)
 	reader.add_feed(feed_url)
@@ -122,11 +132,14 @@ async def delete_feed_api(encoded_id):
 ## Entry API
 
 @app.get("/entries")
-async def get_entries_api():
+async def get_entries_api(args: FeedQueryArgs | None = None):
 	reader = get_reader()
+	tags = getattr(args, "tags", None)
+	feed = getattr(args, "feed", None)
+	
 	entries = list(map(
 		lambda e: add_entry_feed_url(reader, e),
-		reader.get_entries()
+		reader.get_entries(feed=feed, feed_tags=tags)
 	))
 	return encode_entry(entries)
 
