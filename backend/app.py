@@ -6,7 +6,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 import logging
 import threading
 import os 
-from encoder import decode_id, encode_entry, encode_feed, DecodeError
+from encoder import encode_entry, encode_feed, DecodeError
 from pydantic import BaseModel
 import dataclasses
 
@@ -36,13 +36,16 @@ def get_reader() -> Reader:
 ## Feed API
 
 class FeedUpdateArgs(BaseModel):
+	# specific feed URLs
+	feeds: list[str]
+	# Tags to add
 	tags: list[str] | None = None
 
 class FeedQueryArgs(BaseModel):
-	# query by tag in reader library
-	tags: None | bool | list[str|bool|list[str | bool]] = None
 	# a specific feed url
 	feed: str | None = None
+	# query by tag in reader library
+	tags: None | bool | list[str|bool|list[str|bool]] = None
 
 
 def add_feed_tags(reader: Reader, feed: Feed):
@@ -70,63 +73,51 @@ async def get_feeds_api(args: FeedQueryArgs | None = None):
 	))
 	return encode_feed(feeds)
 
-"""
-Get a feed
-"""
-@app.get("/feeds/{encoded_id}")
-async def get_feed_api(encoded_id: str):
-	reader = get_reader()
-	feed_url = decode_id(encoded_id)
-	feed = add_feed_tags(reader, reader.get_feed(feed_url))
-	return encode_feed(feed)
-
-
-def update_feed(reader: Reader, feed_url: str, args: FeedUpdateArgs | None):
-	reader.update_feed(feed_url)
-
-	if args is None:
-		return
-
+def update_feed(reader: Reader, args: FeedUpdateArgs):
 	# set tag
 	if args.tags is not None:
-		orig_tags = reader.get_tag_keys(feed_url)
-		# delete old tags first
-		for tag in orig_tags:
-			reader.delete_tag(feed_url, tag)
-		# add new tags
-		for tag in args.tags:
-			reader.set_tag(feed_url, tag)
+		for feed in args.feeds:
+			orig_tags = reader.get_tag_keys(feed)
+			# delete old tags first
+			for tag in orig_tags:
+				reader.delete_tag(feed, tag)
+			# add new tags
+			for tag in args.tags:
+				reader.set_tag(feed, tag)
+
+	# update feed entries
+	for feed in args.feeds:
+		reader.update_feed(feed)
 
 
 """
-Update a feed
+Update feeds
 """
-@app.put("/feeds/{encoded_id}")
-async def update_feed_api(encoded_id: str, args: FeedUpdateArgs | None = None):
-	feed_url = decode_id(encoded_id)
+@app.put("/feeds")
+async def update_feed_api(encoded_id: str, args: FeedUpdateArgs):
 	reader = get_reader()
-	update_feed(reader, feed_url, args)
+	update_feed(reader, args)
 	return {}
 
 """
-Add a new feed
+Add new feeds
 """
-@app.post("/feeds/{encoded_id}")
-async def add_feed_api(encoded_id: str, args: FeedUpdateArgs | None = None):
+@app.post("/feeds")
+async def add_feeds_api(args: FeedUpdateArgs):
 	reader = get_reader()
-	feed_url = decode_id(encoded_id)
-	reader.add_feed(feed_url)
-	update_feed(reader, feed_url, args)
+	for feed in args.feeds:
+		reader.add_feed(feed)
+	update_feed(reader, args)
 	return {}
 
 """
-Delete a feed
+Delete feeds
 """
-@app.delete("/feeds/{encoded_id}")
-async def delete_feed_api(encoded_id):
+@app.delete("/feeds")
+async def delete_feeds(args: FeedUpdateArgs):
 	reader = get_reader()
-	feed_url = decode_id(encoded_id)
-	reader.delete_feed(feed_url)
+	for feed in args.feeds:
+		reader.delete_feed(feed)
 	return {}
 	
 ## Entry API
