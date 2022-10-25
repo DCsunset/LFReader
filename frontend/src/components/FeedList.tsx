@@ -1,15 +1,10 @@
 import { mdiChevronRight } from "@mdi/js";
-import { Box, Collapse, IconButton, List, ListItemButton, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
+import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
+import { useState } from "react";
 import { Icon } from "@mdi/react";
-import { getFeeds } from "../states/actions";
-import { getFeedTags, Feed, filterFeedsByTag } from "../types/feed";
-import fetchIcon from "../utils/fetchIcon";
+import { FeedWithIcon, useFeeds } from "../states/actions";
+import { getFeedTags, filterFeedsByTag } from "../utils/feed";
 import { useNavigate, useParams } from "react-router-dom";
-
-export interface FeedWithIcon extends Feed {
-	icon?: string
-};
 
 interface ActiveItem {
 	/// A single feed or a tag
@@ -104,23 +99,9 @@ function FeedTag(props: {
 }
 
 function FeedList() {
-	const [feeds, setFeeds] = useState<FeedWithIcon[]>([]);
-
-	// TODO: use SWR to optimize data fetching
-	useEffect(() => {
-		const fetchFeeds = async () => {
-			const origFeeds = await getFeeds();
-			const newFeeds = await Promise.all(
-				origFeeds.map(async feed => ({
-					...feed,
-					icon: feed.link && await fetchIcon(feed.link)
-				} as FeedWithIcon))
-			);
-			setFeeds(newFeeds);
-		}
-
-		fetchFeeds();
-	}, []);
+	// TODO handle errors
+	const { data, error } = useFeeds();
+	const feeds = data ?? [];
 
 	// All tags
 	const tags = getFeedTags(feeds);

@@ -8,7 +8,6 @@ import './App.css'
 import Layout from './components/Layout';
 import HomePage from './components/HomePage';
 import EntryListLayout from './components/EntryListLayout';
-import { Children } from "react";
 
 const theme = createTheme({
 	typography: {
