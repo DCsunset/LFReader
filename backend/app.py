@@ -35,17 +35,14 @@ def get_reader() -> Reader:
 
 ## Feed API
 
+# query type by tag 
+QueryTags = None | bool | list[str|bool|list[str|bool]]
+
 class FeedUpdateArgs(BaseModel):
 	# specific feed URLs
 	feeds: list[str]
 	# Tags to add
 	tags: list[str] | None = None
-
-class FeedQueryArgs(BaseModel):
-	# a specific feed url
-	feed: str | None = None
-	# query by tag in reader library
-	tags: None | bool | list[str|bool|list[str|bool]] = None
 
 
 def add_feed_tags(reader: Reader, feed: Feed):
@@ -62,10 +59,8 @@ def add_entry_feed_url(reader: Reader, entry: Entry):
 Get feeds
 """
 @app.get("/feeds")
-async def get_feeds_api(args: FeedQueryArgs | None = None):
+async def get_feeds_api(feed: str | None = None, tags: QueryTags = None):
 	reader = get_reader()
-	tags = getattr(args, "tags", None)
-	feed = getattr(args, "feed", None)
 
 	feeds = list(map(
 		lambda f: add_feed_tags(reader, f),
@@ -114,19 +109,18 @@ async def add_feeds_api(args: FeedUpdateArgs):
 Delete feeds
 """
 @app.delete("/feeds")
-async def delete_feeds(args: FeedUpdateArgs):
+async def delete_feeds(feeds: list[str]):
 	reader = get_reader()
-	for feed in args.feeds:
+	for feed in feeds:
 		reader.delete_feed(feed)
 	return {}
 	
 ## Entry API
 
 @app.get("/entries")
-async def get_entries_api(args: FeedQueryArgs | None = None):
+# Unpack FeedQueryArgs
+async def get_entries_api(feed: str | None = None, tags: QueryTags = None):
 	reader = get_reader()
-	tags = getattr(args, "tags", None)
-	feed = getattr(args, "feed", None)
 	
 	entries = list(map(
 		lambda e: add_entry_feed_url(reader, e),

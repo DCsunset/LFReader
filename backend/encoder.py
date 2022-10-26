@@ -17,5 +17,5 @@ def encode_feed(data):
 Encode one or a list of entries
 """
 def encode_entry(data):
-	return jsonable_encoder(entries, exclude={"feed"}, exclude_none=True)
+	return jsonable_encoder(data, exclude={"feed"}, exclude_none=True)
 		
