@@ -1,12 +1,13 @@
 import { useRecoilState, useRecoilValue } from "recoil";
 import { notificationState, feedListState } from "../states/app";
 import { Notification } from "../types/states";
-import { Alert, AppBar, Box, CircularProgress, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Icon } from "@mdi/react";
 import { Outlet, useParams } from "react-router-dom";
 import { mdiMenu, mdiRss } from "@mdi/js";
 import FeedList from "./FeedList";
+import Loading from "./Loading";
 import { Params } from "../types/routes";
 
 const drawerWidth = 240;
@@ -157,7 +158,7 @@ function Layout() {
 						</Typography>
 					</Box>
 
-					{feeds ? <FeedList /> : <CircularProgress />}
+					{feeds ? <FeedList /> : <Loading sx={{ mt: 2 }} />}
 				</Drawer>
 			</Box>
 
