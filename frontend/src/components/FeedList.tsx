@@ -4,9 +4,10 @@ import { useState } from "react";
 import { Icon } from "@mdi/react";
 import { FeedWithIcon } from "../states/actions";
 import { getFeedTags, filterFeedsByTag } from "../utils/feed";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { feedListState } from "../states/app";
+import { Base64 } from "js-base64";
 
 interface ActiveItem {
 	/// A single feed or a tag
@@ -24,7 +25,6 @@ function FeedTag(props: {
 	feeds: FeedWithIcon[],
 }) {
 	const [open, setOpen] = useState(false);
-	const param = useParams();
 	const navigate = useNavigate();
 
 	const showItem = (item: ActiveItem) => {
@@ -39,7 +39,7 @@ function FeedTag(props: {
 					if (!open) {
 						setOpen(true);
 					}
-					navigate(`/tag/${encodeURIComponent(props.tag)}`);
+					navigate(`/tag/${Base64.encode(props.tag, true)}`);
 				}}
 			>
 				<Box sx={{
@@ -80,7 +80,7 @@ function FeedTag(props: {
 						key={feed.url}
 						sx={{ p: 0.5, pl: 4 }}
 						onClick={() => navigate(
-							`/feed/${encodeURIComponent(feed.url)}`
+							`/feed/${Base64.encode(feed.url, true)}`
 						)}
 					>
 						{feed.icon &&

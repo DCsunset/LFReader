@@ -1,11 +1,11 @@
 import { List, ListItemButton, Typography } from "@mui/material";
 import { useParams } from "react-router-dom";
 import { useEntries } from "../states/actions";
-import { Params } from "../types/routes";
+import { parseParams } from "../utils/routes";
 
 function EntryList() {
 	// Params should already be validated in parent
-	const params: Params = useParams();
+	const params = parseParams(useParams());
 	const feed = params.type === "feed" ? params.item : undefined;
 	const tags = params.type === "tag" ? [params.item!] : undefined;
 

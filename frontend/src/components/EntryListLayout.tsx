@@ -1,5 +1,4 @@
 import { Grid } from "@mui/material";
-import { useParams } from "react-router-dom";
 import Entry from "./Entry";
 import EntryList from "./EntryList";
 

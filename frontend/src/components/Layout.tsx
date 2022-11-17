@@ -8,14 +8,14 @@ import { Outlet, useParams } from "react-router-dom";
 import { mdiMenu, mdiRss } from "@mdi/js";
 import FeedList from "./FeedList";
 import Loading from "./Loading";
-import { Params } from "../types/routes";
+import { parseParams } from "../utils/routes";
 
 const drawerWidth = 240;
 
 function Layout() {
 	const feeds = useRecoilValue(feedListState);
 	// TODO: validate type in params
-	const params: Params = useParams();
+	const params = parseParams(useParams());
 
 	let title = feeds ? "Home" : "Loading...";
 	if (feeds) {
