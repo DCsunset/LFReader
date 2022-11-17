@@ -43,7 +43,7 @@ const router = createBrowserRouter([
 			},
 			{
 				// Entry list of a feed or a tag
-				path: ":type/:title",
+				path: ":type/:item",
 				element: <EntryListLayout />
 			},
 		]

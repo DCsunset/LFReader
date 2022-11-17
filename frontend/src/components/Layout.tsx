@@ -1,17 +1,34 @@
 import { useRecoilState, useRecoilValue } from "recoil";
-import { notificationState } from "../states/app";
+import { notificationState, feedListState } from "../states/app";
 import { Notification } from "../types/states";
-import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Alert, AppBar, Box, CircularProgress, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Icon } from "@mdi/react";
 import { Outlet, useParams } from "react-router-dom";
 import { mdiMenu, mdiRss } from "@mdi/js";
 import FeedList from "./FeedList";
+import { Params } from "../types/routes";
 
 const drawerWidth = 240;
 
 function Layout() {
-	const params = useParams();
+	const feeds = useRecoilValue(feedListState);
+	// TODO: validate type in params
+	const params: Params = useParams();
+
+	let title = feeds ? "Home" : "Loading...";
+	if (feeds) {
+		if (params.type === "tag") {
+			title = params.item!;
+		}
+		else if (params.type === "feed") {
+			const feedUrl = params.item!;
+			// Should always be found after validation
+			const feed = feeds.find(f => f.url === feedUrl)!;
+			title = feed.title ?? feed.link ?? feed.url;
+		}
+	}
+
 	const [notification, setNotification] = useRecoilState(notificationState);
 	// Local cache of notification (delayed destruction and update)
 	const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
@@ -94,7 +111,7 @@ function Layout() {
 						/>
 					</IconButton>
 					<Typography variant="h6" sx={{ ml: 1 }}>
-						{params.title || "Home"}
+						{title}
 					</Typography>
 				</Toolbar>
 			</AppBar>
@@ -140,7 +157,7 @@ function Layout() {
 						</Typography>
 					</Box>
 
-					<FeedList />
+					{feeds ? <FeedList /> : <CircularProgress />}
 				</Drawer>
 			</Box>
 

@@ -2,9 +2,11 @@ import { mdiChevronRight } from "@mdi/js";
 import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
 import { useState } from "react";
 import { Icon } from "@mdi/react";
-import { FeedWithIcon, useFeeds } from "../states/actions";
+import { FeedWithIcon } from "../states/actions";
 import { getFeedTags, filterFeedsByTag } from "../utils/feed";
 import { useNavigate, useParams } from "react-router-dom";
+import { useRecoilValue } from "recoil";
+import { feedListState } from "../states/app";
 
 interface ActiveItem {
 	/// A single feed or a tag
@@ -37,7 +39,7 @@ function FeedTag(props: {
 					if (!open) {
 						setOpen(true);
 					}
-					navigate(`/tag/${props.tag}`);
+					navigate(`/tag/${encodeURIComponent(props.tag)}`);
 				}}
 			>
 				<Box sx={{
@@ -77,7 +79,9 @@ function FeedTag(props: {
 					<ListItemButton
 						key={feed.url}
 						sx={{ p: 0.5, pl: 4 }}
-						onClick={() => navigate(`/feed/${feed.title}`)}
+						onClick={() => navigate(
+							`/feed/${encodeURIComponent(feed.url)}`
+						)}
 					>
 						{feed.icon &&
 							<Box
@@ -99,10 +103,8 @@ function FeedTag(props: {
 }
 
 function FeedList() {
-	// TODO handle errors
-	const { data, error } = useFeeds();
-	const feeds = data ?? [];
-
+	// This component won't render If feeds is null
+	const feeds = useRecoilValue(feedListState)!;
 	// All tags
 	const tags = getFeedTags(feeds);
 

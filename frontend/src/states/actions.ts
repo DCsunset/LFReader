@@ -17,27 +17,25 @@ export interface FeedWithIcon extends Feed {
 	icon?: string
 };
 
-const fetcher = async (url: string, args: any) => {
+const fetcher = async (url: string, args?: any) => {
 	const res = await axios.get(url, {
 		params: args
 	});
 	return res.data;
 };
 
-// SWR hooks to fetch data
-export const useFeeds = (args?: FeedQueryArgs) => (
-	useSWR<FeedWithIcon[], Error>(["/api/feeds", args], async (url, args) => {
-		const origFeeds = await fetcher(url, args) as Feed[];
-		const newFeeds = await Promise.all(
-			origFeeds.map(async feed => ({
-				...feed,
-				icon: feed.link && await fetchIcon(feed.link)
-			} as FeedWithIcon))
-		);
-		return newFeeds;
-	})
-)
+export const fetchFeeds = async (args?: FeedQueryArgs) => {
+	const origFeeds: Feed[] = await fetcher("/api/feeds", args);
+	const newFeeds = await Promise.all(
+		origFeeds.map(async feed => ({
+			...feed,
+			icon: feed.link && await fetchIcon(feed.link)
+		} as FeedWithIcon))
+	);
+	return newFeeds;
+};
 
+// SWR hook to fetch entries
 export const useEntries = (args?: FeedQueryArgs) => (
 	useSWR<Entry[], Error>(["/api/entries", args], fetcher)
 )
