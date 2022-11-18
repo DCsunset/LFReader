@@ -1,15 +1,44 @@
 import { Grid } from "@mui/material";
-import Entry from "./Entry";
 import EntryList from "./EntryList";
+import { useEntries } from "../states/actions";
+import { useParams } from "react-router-dom";
+import { parseParams } from "../utils/routes";
+import { Entry } from "../utils/feed";
+import { useSetRecoilState } from "recoil";
+import { notificationState } from "../states/app";
+import EntryContent from "./EntryContent";
+import Loading from "./Loading";
 
 function EntryListLayout() {
+	const setNotification = useSetRecoilState(notificationState);
+	// Params should already be validated in parent
+	const params = parseParams(useParams());
+	const feed = params.type === "feed" ? params.item : undefined;
+	const tags = params.type === "tag" ? [params.item!] : undefined;
+
+	// TODO handle errors
+	const { data, error } = useEntries({ feed, tags });
+	const entries = data ?? [];
+
+	// Current entry
+	let entry: Entry | undefined = undefined;
+	if (data && params.entry) {
+		entry = entries.find(e => e.id === params.entry);
+		if (!entry) {
+			setNotification({
+				color: "error",
+				message: "Entry not found"
+			});
+		}
+	}
+	
 	return (
 		<Grid container>
 			<Grid item sm={12} md={4}>
-				<EntryList />
+				{data ? <EntryList entries={entries} /> : <Loading />}
 			</Grid>
 			<Grid item sm={12} md={8}>
-				<Entry />
+				{entry && <EntryContent entry={entry} />}
 			</Grid>
 		</Grid>
 	);

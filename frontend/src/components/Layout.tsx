@@ -188,7 +188,7 @@ function Layout() {
 				height: "100%",
 				...responsiveStyles
 			}}>
-				<Outlet />
+				{feeds ? <Outlet/> : <Loading sx={{ mt: 2 }} />}
 			</Box>
 		</Box>
 	);

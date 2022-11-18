@@ -1,22 +1,22 @@
 import { List, ListItemButton, Typography } from "@mui/material";
-import { useParams } from "react-router-dom";
-import { useEntries } from "../states/actions";
-import { parseParams } from "../utils/routes";
+import { Base64 } from "js-base64";
+import { useNavigate } from "react-router-dom";
+import { Entry } from "../utils/feed";
 
-function EntryList() {
-	// Params should already be validated in parent
-	const params = parseParams(useParams());
-	const feed = params.type === "feed" ? params.item : undefined;
-	const tags = params.type === "tag" ? [params.item!] : undefined;
+interface Props {
+	entries: Entry[]
+}
 
-	// TODO handle errors
-	const { data, error } = useEntries({ feed, tags });
-	const entries = data ?? [];
+function EntryList(props: Props) {
+	const navigate = useNavigate()
 
 	return (
 		<List>
-			{entries.map(e => (
-				<ListItemButton key={e.id}>
+			{props.entries.map(e => (
+				<ListItemButton
+					key={e.id}
+					onClick={() => navigate(Base64.encode(e.id, true))}
+				>
 					<Typography>{e.title}</Typography>
 				</ListItemButton>
 			))}

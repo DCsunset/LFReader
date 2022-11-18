@@ -44,7 +44,14 @@ const router = createBrowserRouter([
 			{
 				// Entry list of a feed or a tag
 				path: ":type/:item",
-				element: <EntryListLayout />
+				element: <EntryListLayout />,
+				children: [
+					{
+						// Optional params (without using another component)
+						path: ":entry",
+						element: null
+					}
+				]
 			},
 		]
 	}
