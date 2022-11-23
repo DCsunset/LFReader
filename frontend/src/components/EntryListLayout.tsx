@@ -1,4 +1,4 @@
-import { Grid } from "@mui/material";
+import { Divider, Grid } from "@mui/material";
 import EntryList from "./EntryList";
 import { useEntries } from "../states/actions";
 import { useParams } from "react-router-dom";
@@ -42,7 +42,16 @@ function EntryListLayout() {
 			>
 				{data ? <EntryList entries={entries} /> : <Loading  sx={{ mt: 2 }} />}
 			</Grid>
-			<Grid item sm={12} md={8}>
+			{/* Don't use up space  */}
+			<Divider orientation="vertical" flexItem sx={{
+				mr: "-1px"
+			}} />
+			<Grid
+				item
+				sm={12}
+				md={8}
+				sx={{ overflow: "auto", height: "100%" }}
+			>
 				{entry && <EntryContent entry={entry} />}
 			</Grid>
 		</Grid>

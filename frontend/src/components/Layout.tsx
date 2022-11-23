@@ -10,7 +10,7 @@ import FeedList from "./FeedList";
 import Loading from "./Loading";
 import { parseParams } from "../utils/routes";
 
-const drawerWidth = "240px";
+const drawerWidth = "220px";
 const appBarHeight = "48px";
 
 function Layout() {
