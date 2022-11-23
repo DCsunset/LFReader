@@ -10,7 +10,8 @@ import FeedList from "./FeedList";
 import Loading from "./Loading";
 import { parseParams } from "../utils/routes";
 
-const drawerWidth = 240;
+const drawerWidth = "240px";
+const appBarHeight = "48px";
 
 function Layout() {
 	const feeds = useRecoilValue(feedListState);
@@ -82,10 +83,10 @@ function Layout() {
 			}),
 			// Leave space for responsive drawer
 			width: {
-				sm: `calc(100% - ${drawerWidth}px)`
+				sm: `calc(100% - ${drawerWidth})`
 			},
 			ml: {
-				sm: `${drawerWidth}px`
+				sm: drawerWidth
 			}
 		})
 	};
@@ -101,7 +102,7 @@ function Layout() {
 				sx={responsiveStyles}
 			>
 				<Toolbar variant="dense" sx={{
-					minHeight: "48px",
+					minHeight: appBarHeight,
 					// Keep padding consistent
 					px: { sm: 2 }
 				}}>
@@ -185,7 +186,7 @@ function Layout() {
 
 			<Box component="main" sx={{
 				flexGrow: 1,
-				height: "100%",
+				height: `calc(100% - ${appBarHeight})`,
 				...responsiveStyles
 			}}>
 				{feeds ? <Outlet/> : <Loading sx={{ mt: 2 }} />}

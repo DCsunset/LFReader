@@ -33,9 +33,14 @@ function EntryListLayout() {
 	}
 	
 	return (
-		<Grid container>
-			<Grid item sm={12} md={4}>
-				{data ? <EntryList entries={entries} /> : <Loading />}
+		<Grid container sx={{ height: "100%" }}>
+			<Grid
+				item
+				sm={12}
+				md={4}
+				sx={{ overflow: "auto", height: "100%" }}
+			>
+				{data ? <EntryList entries={entries} /> : <Loading  sx={{ mt: 2 }} />}
 			</Grid>
 			<Grid item sm={12} md={8}>
 				{entry && <EntryContent entry={entry} />}
