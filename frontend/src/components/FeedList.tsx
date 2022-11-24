@@ -1,4 +1,4 @@
-import { mdiChevronRight } from "@mdi/js";
+import { mdiChevronRight, mdiTag } from "@mdi/js";
 import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
 import { useState } from "react";
 import { Icon } from "@mdi/react";
@@ -23,13 +23,11 @@ function FeedTag(props: {
 	tag: string,
 	/// Feeds of this tag
 	feeds: FeedWithIcon[],
+	/// Hide list of feeds
+	hideList?: boolean
 }) {
 	const [open, setOpen] = useState(false);
 	const navigate = useNavigate();
-
-	const showItem = (item: ActiveItem) => {
-		// TODO: show feed or group
-	};
 
 	return (
 		<>
@@ -46,23 +44,34 @@ function FeedTag(props: {
 					display: "flex",
 					alignItems: "center"
 				}}>
-					<IconButton
-						size="small"
-						onClick={e => {
-							// Don't call the upper callback
-							e.stopPropagation();
-							setOpen(!open);
-						}}
-					>
-						<Icon
-							path={mdiChevronRight}
-							size={1}
-							style={{
-								transform: `rotate(${open ? "90deg" : "0"})`,
-								transition: "transform 0.2s"
+					{props.hideList ? (
+						<Box sx={{
+							p: 1.05,
+							display: "flex",
+							alignItems: "center"
+						}}>
+							<Icon path={mdiTag} size={0.75} />
+						</Box>
+					) : (
+						<IconButton
+							size="small"
+							onClick={e => {
+								// Don't call the upper callback
+								e.stopPropagation();
+								setOpen(!open);
 							}}
-						/>
-					</IconButton>
+						>
+							<Icon
+								path={mdiChevronRight}
+								size={1}
+								style={{
+									transform: `rotate(${open ? "90deg" : "0"})`,
+									transition: "transform 0.2s"
+								}}
+							/>
+						</IconButton>
+					)
+					}
 					<span>{props.tag}</span>
 					<Box sx={{
 						ml: 0.8,
@@ -74,30 +83,32 @@ function FeedTag(props: {
 					</Box>
 				</Box>
 			</ListItemButton>
-			<Collapse in={open}>
-				{props.feeds.map(feed => (
-					<ListItemButton
-						key={feed.url}
-						sx={{ p: 0.5, pl: 4 }}
-						onClick={() => navigate(
-							`/feed/${Base64.encode(feed.url, true)}`
-						)}
-					>
-						{feed.icon &&
-							<Box
-								component="img"
-								src={feed.icon}
-								sx={{
-									width: 20,
-									height: 20,
-									mr: 1
-								}}
-							/>
-						}
-						{feed.title ?? feed.link ?? feed.url}
-					</ListItemButton>
-				))}
-			</Collapse>
+			{!props.hideList &&
+				<Collapse in={open}>
+					{props.feeds.map(feed => (
+						<ListItemButton
+							key={feed.url}
+							sx={{ p: 0.5, pl: 4 }}
+							onClick={() => navigate(
+								`/feed/${Base64.encode(feed.url, true)}`
+							)}
+						>
+							{feed.icon &&
+								<Box
+									component="img"
+									src={feed.icon}
+									sx={{
+										width: 20,
+										height: 20,
+										mr: 1
+									}}
+								/>
+							}
+							{feed.title ?? feed.link ?? feed.url}
+						</ListItemButton>
+					))}
+				</Collapse>
+			}
 		</>
 	);
 }
@@ -113,6 +124,7 @@ function FeedList() {
 			<FeedTag
 				tag="All"
 				feeds={feeds}
+				hideList={true}
 			/>
 			{tags.map(tag => (
 				<FeedTag
