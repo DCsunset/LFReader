@@ -15,6 +15,7 @@
     "@mdi/react": "^1.6.1",
     "@mui/material": "^5.10.7",
     "axios": "^0.27.2",
+    "highlight.js": "^11.7.0",
     "js-base64": "^3.7.3",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
