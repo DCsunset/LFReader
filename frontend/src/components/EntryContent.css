@@ -19,8 +19,19 @@
 /* Code block */
 .yafr-entry-content pre {	
 	margin: 0;
+	font-size: 95%;
 }
-
+/* Reduce padding */
+.yafr-entry-content pre code.hljs{	
+	padding: 0.6rem;
+}
 .yafr-entry-content code {	
 	color: rgba(255, 255, 255, 0.9);
+}
+
+/* Quotes */
+.yafr-entry-content blockquote {
+	border-left: 3px solid #505050;
+	padding-left: 1rem;
+	margin: 0;
 }
