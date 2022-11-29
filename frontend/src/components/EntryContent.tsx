@@ -21,6 +21,7 @@ function EntryContent(props: Props) {
 	// Get corresponding feed
 	const feed = feedMap[entry.feed_url];
 	const date = entry.updated ?? entry.published;
+	console.log(entry.summary)
 
 	const content = sanitizeHtml(
 		entry.summary ??
@@ -28,7 +29,21 @@ function EntryContent(props: Props) {
 		entry.content.reduce((res: string[], c) => {
 			res.push(c.value);
 			return res;
-		}, []).join("\n")
+		}, []).join("\n"), {
+			allowedTags: sanitizeHtml.defaults.allowedTags.concat([
+				"img", "video", "audio"
+			]),
+			transformTags: {
+				"a": sanitizeHtml.simpleTransform("a", {
+					rel: "noopener noreferrer",
+					referrerpolicy: "no-referrer",
+					target: "_blank"
+				}),
+				"img": sanitizeHtml.simpleTransform("img", {
+					loading: "lazy"
+				})
+			}
+		}
 	);
 
 	// Mutating DOM synchronously after it's loaded
@@ -42,7 +57,7 @@ function EntryContent(props: Props) {
 
 	return (
 		<Box
-			sx={{ p: 2 }}
+			sx={{ p: 3 }}
 			className="yafr-entry-content"
 			ref={contentRef}
 		>
