@@ -45,6 +45,10 @@ export interface Content {
 	language?: string
 };
 
+export function getFeedTitle(feed: Feed) {
+	return feed.title ?? feed.link ?? feed.url;
+}
+
 /** Get all tags from feeds */
 export function getFeedTags(feeds: Feed[]) {
 	const tags = feeds.reduce(

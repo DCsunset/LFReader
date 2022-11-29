@@ -1,4 +1,4 @@
-import { atom, AtomEffect } from "recoil";
+import { atom, AtomEffect, selector } from "recoil";
 import { Notification } from "../types/states";
 import { Entry, Feed } from "../utils/feed";
 import { fetchFeeds } from "./actions";
@@ -21,4 +21,18 @@ export const feedListState = atom<Feed[] | null>({
 	key: "feedList",
 	default: null,
 	effects: [initFeedListEffect]
+});
+
+/**
+ * feedMap to quickly look pu feed by url
+ * Use selector for memoization
+ */
+export const feedMapState = selector({
+	key: "feedMap",
+	get: ({ get }) => {
+		const feeds = get(feedListState);
+		const feedMap: { [url: string]: Feed | undefined } = {};
+		feeds?.forEach(f => feedMap[f.url] = f)
+		return feedMap;
+	}
 });

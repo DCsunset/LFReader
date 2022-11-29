@@ -3,7 +3,7 @@ import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
 import { useState } from "react";
 import { Icon } from "@mdi/react";
 import { FeedWithIcon } from "../states/actions";
-import { getFeedTags, filterFeedsByTag } from "../utils/feed";
+import { getFeedTags, filterFeedsByTag, getFeedTitle } from "../utils/feed";
 import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { feedListState } from "../states/app";
@@ -104,7 +104,7 @@ function FeedTag(props: {
 									}}
 								/>
 							}
-							{feed.title ?? feed.link ?? feed.url}
+							{getFeedTitle(feed)}
 						</ListItemButton>
 					))}
 				</Collapse>
