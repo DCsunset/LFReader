@@ -10,6 +10,6 @@ export interface Params {
 // Parse Base64-encoded params
 export const parseParams = (params: Params): Params => ({
 	...params,
-	item: params.item && Base64.decode(params.item),
-	entry: params.entry&& Base64.decode(params.entry)
+	item: params.item && (params.item === "_" ? undefined : Base64.decode(params.item)),
+	entry: params.entry && Base64.decode(params.entry)
 });

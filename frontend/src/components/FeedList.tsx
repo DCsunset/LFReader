@@ -19,8 +19,8 @@ interface ActiveItem {
  * Feed Tag (including feeds of this tag)
  */
 function FeedTag(props: {
-	/// Tag name
-	tag: string,
+	/// Tag name (undefined means all tags)
+	tag?: string,
 	/// Feeds of this tag
 	feeds: FeedWithIcon[],
 	/// Hide list of feeds
@@ -37,7 +37,13 @@ function FeedTag(props: {
 					if (!open) {
 						setOpen(true);
 					}
-					navigate(`/tag/${Base64.encode(props.tag, true)}`);
+					if (props.tag) {
+						navigate(`/tag/${Base64.encode(props.tag, true)}`);
+					}
+					else {
+						// All tags
+						navigate("/");
+					}
 				}}
 			>
 				<Box sx={{
@@ -72,7 +78,7 @@ function FeedTag(props: {
 						</IconButton>
 					)
 					}
-					<span>{props.tag}</span>
+					<span>{props.tag ?? "All"}</span>
 					<Box sx={{
 						ml: 0.8,
 						mt: 0.1,
@@ -121,8 +127,8 @@ function FeedList() {
 
 	return (
 		<List>
+			{/* All tags */}
 			<FeedTag
-				tag="All"
 				feeds={feeds}
 				hideList={true}
 			/>

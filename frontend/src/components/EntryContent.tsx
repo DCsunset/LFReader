@@ -21,7 +21,6 @@ function EntryContent(props: Props) {
 	// Get corresponding feed
 	const feed = feedMap[entry.feed_url];
 	const date = entry.updated ?? entry.published;
-	console.log(entry.summary)
 
 	const content = sanitizeHtml(
 		entry.summary ??

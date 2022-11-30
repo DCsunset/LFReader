@@ -5,8 +5,6 @@ import {
 	RouterProvider
 } from "react-router-dom";
 import Layout from './components/Layout';
-import HomePage from './components/HomePage';
-import EntryListLayout from './components/EntryListLayout';
 
 const theme = createTheme({
 	typography: {
@@ -35,18 +33,12 @@ const router = createBrowserRouter([
 		element: <Layout />,
 		children: [
 			{
-				// Home
-				// index means the same route as parent
-				index: true,
-				element: <HomePage />
-			},
-			{
 				// Entry list of a feed or a tag
 				path: ":type/:item",
-				element: <EntryListLayout />,
+				// Optional params (without using another component)
+				element: null,
 				children: [
 					{
-						// Optional params (without using another component)
 						path: ":entry",
 						element: null
 					}

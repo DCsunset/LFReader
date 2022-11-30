@@ -4,24 +4,27 @@ import { Notification } from "../types/states";
 import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Icon } from "@mdi/react";
-import { Outlet, useParams } from "react-router-dom";
-import { mdiMenu, mdiRss } from "@mdi/js";
+import { useParams } from "react-router-dom";
+import { mdiFormatListBulleted, mdiMenu, mdiRss } from "@mdi/js";
 import FeedList from "./FeedList";
 import Loading from "./Loading";
 import { parseParams } from "../utils/routes";
+import Spacer from "./Spacer";
+import Main from "./Main";
 
 const drawerWidth = "220px";
-const appBarHeight = "48px";
+const appBarHeight = "42px";
 
 function Layout() {
 	const feeds = useRecoilValue(feedListState);
 	// TODO: validate type in params
 	const params = parseParams(useParams());
+	const [showEntryList, setShowEntryList] = useState(true);
 
-	let title = feeds ? "Home" : "Loading...";
+	let title = feeds ? "All" : "Loading...";
 	if (feeds) {
-		if (params.type === "tag") {
-			title = params.item!;
+		if (params.type === "tag" && params.item) {
+			title = params.item;
 		}
 		else if (params.type === "feed") {
 			const feedUrl = params.item!;
@@ -115,6 +118,17 @@ function Layout() {
 					<Typography variant="h6" sx={{ ml: 1 }}>
 						{title}
 					</Typography>
+
+					<Spacer />
+					<IconButton
+						title="Toggle Entry List"
+						onClick={() => setShowEntryList(!showEntryList)}
+					>
+						<Icon
+							path={mdiFormatListBulleted}
+							size={1}
+						/>
+					</IconButton>
 				</Toolbar>
 			</AppBar>
 
@@ -189,7 +203,10 @@ function Layout() {
 				height: `calc(100% - ${appBarHeight})`,
 				...responsiveStyles
 			}}>
-				{feeds ? <Outlet/> : <Loading sx={{ mt: 2 }} />}
+				{feeds
+					? <Main showEntryList={showEntryList} />
+					: <Loading sx={{ mt: 2 }} />
+				}
 			</Box>
 		</Box>
 	);

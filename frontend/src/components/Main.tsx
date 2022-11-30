@@ -1,4 +1,5 @@
-import { Divider, Grid } from "@mui/material";
+import { Collapse, Divider, Theme, useMediaQuery } from "@mui/material";
+import Grid from "@mui/material/Unstable_Grid2";
 import EntryList from "./EntryList";
 import { useEntries } from "../states/actions";
 import { useParams } from "react-router-dom";
@@ -8,9 +9,15 @@ import { useSetRecoilState } from "recoil";
 import { notificationState } from "../states/app";
 import EntryContent from "./EntryContent";
 import Loading from "./Loading";
+import { Box } from "@mui/system";
 
-function EntryListLayout() {
+interface Props {
+	showEntryList: boolean
+}
+
+function Main(props: Props) {
 	const setNotification = useSetRecoilState(notificationState);
+	const smMatch = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
 	// Params should already be validated in parent
 	const params = parseParams(useParams());
 	const feed = params.type === "feed" ? params.item : undefined;
@@ -31,26 +38,52 @@ function EntryListLayout() {
 			});
 		}
 	}
-	
+
 	return (
 		<Grid container sx={{ height: "100%" }}>
 			<Grid
-				item
 				sm={12}
-				md={4}
-				sx={{ overflow: "auto", height: "100%" }}
+				md="auto"
+				sx={{
+					maxWidth: {
+						sx: "initial",
+						md: "300px",
+					},
+					maxHeight: "100%",
+					overflow: "auto"
+				}}
 			>
-				{data ? <EntryList entries={entries} /> : <Loading  sx={{ mt: 2 }} />}
+				<Collapse
+					in={props.showEntryList}
+					orientation={smMatch ? "vertical" : "horizontal"}
+				>
+					<Box sx={{
+						display: "flex",
+						flexDirection: {
+							sm: "column",
+							md: "row"
+						}
+					}}>
+						{data
+							? <EntryList entries={entries} />
+							: <Loading sx={{ mt: 2 }} />
+						}
+
+						<Divider
+							orientation={smMatch ? "horizontal" : "vertical"}
+							flexItem
+						/>
+					</Box>
+				</Collapse>
 			</Grid>
-			{/* Don't use up space  */}
-			<Divider orientation="vertical" flexItem sx={{
-				mr: "-1px"
-			}} />
+
 			<Grid
-				item
 				sm={12}
-				md={8}
-				sx={{ overflow: "auto", height: "100%" }}
+				md
+				sx={{
+					overflow: "auto",
+					height: "100%"
+				}}
 			>
 				{entry && <EntryContent entry={entry} />}
 			</Grid>
@@ -58,4 +91,4 @@ function EntryListLayout() {
 	);
 }
 
-export default EntryListLayout;
+export default Main;
