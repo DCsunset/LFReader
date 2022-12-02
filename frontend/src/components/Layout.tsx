@@ -173,7 +173,7 @@ function Layout() {
 						</Typography>
 					</Box>
 
-					{feeds ? <FeedList /> : <Loading sx={{ mt: 2 }} />}
+					{feeds ? <FeedList /> : <Loading sx={{ height: "100%" }} />}
 				</Drawer>
 			</Box>
 
@@ -203,10 +203,7 @@ function Layout() {
 				height: `calc(100% - ${appBarHeight})`,
 				...responsiveStyles
 			}}>
-				{feeds
-					? <Main showEntryList={showEntryList} />
-					: <Loading sx={{ mt: 2 }} />
-				}
+				<Main showEntryList={showEntryList} />
 			</Box>
 		</Box>
 	);

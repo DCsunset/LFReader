@@ -1,4 +1,4 @@
-import { Collapse, Divider, Theme, useMediaQuery } from "@mui/material";
+import { Collapse, Theme, useMediaQuery, useTheme } from "@mui/material";
 import Grid from "@mui/material/Unstable_Grid2";
 import EntryList from "./EntryList";
 import { useEntries } from "../states/actions";
@@ -17,6 +17,7 @@ interface Props {
 
 function Main(props: Props) {
 	const setNotification = useSetRecoilState(notificationState);
+	const theme = useTheme();
 	const smMatch = useMediaQuery((theme: Theme) => theme.breakpoints.down("md"));
 	// Params should already be validated in parent
 	const params = parseParams(useParams());
@@ -39,14 +40,20 @@ function Main(props: Props) {
 		}
 	}
 
-	return (
+	return data ? (
 		<Grid container sx={{ height: "100%" }}>
 			<Grid
 				sm={12}
 				md="auto"
 				sx={{
+					borderRight: {
+						md: `1px solid ${theme.palette.divider}`
+					},
+					borderBottom: {
+						sm: `1px solid ${theme.palette.divider}`
+					},
 					maxWidth: {
-						sx: "initial",
+						sm: "initial",
 						md: "300px",
 					},
 					maxHeight: "100%",
@@ -64,17 +71,13 @@ function Main(props: Props) {
 							md: "row"
 						}
 					}}>
-						{data
-							? <EntryList entries={entries} />
-							: <Loading sx={{ mt: 2 }} />
-						}
-
-						<Divider
-							orientation={smMatch ? "horizontal" : "vertical"}
-							flexItem
-						/>
+						<EntryList entries={entries} />
 					</Box>
 				</Collapse>
+				{/* <Divider
+					orientation={smMatch ? "horizontal" : "vertical"}
+					sx={{ display: "flex" }}
+				/> */}
 			</Grid>
 
 			<Grid
@@ -88,7 +91,7 @@ function Main(props: Props) {
 				{entry && <EntryContent entry={entry} />}
 			</Grid>
 		</Grid>
-	);
+	) : <Loading sx={{ height: "100%" }} />;
 }
 
 export default Main;
