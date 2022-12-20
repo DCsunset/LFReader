@@ -1,22 +1,23 @@
-import { useRecoilState, useRecoilValue } from "recoil";
+import { useRecoilState } from "recoil";
 import { notificationState, feedListState } from "../states/app";
 import { Notification } from "../types/states";
-import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Stack, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Icon } from "@mdi/react";
 import { useParams } from "react-router-dom";
-import { mdiFormatListBulleted, mdiMenu, mdiRss } from "@mdi/js";
+import { mdiFormatListBulleted, mdiMenu, mdiRefresh, mdiRss, mdiWhiteBalanceSunny } from "@mdi/js";
 import FeedList from "./FeedList";
 import Loading from "./Loading";
 import { parseParams } from "../utils/routes";
 import Spacer from "./Spacer";
 import Main from "./Main";
+import { fetchFeeds, updateFeeds } from "../states/actions.js";
 
 const drawerWidth = "220px";
 const appBarHeight = "42px";
 
 function Layout() {
-	const feeds = useRecoilValue(feedListState);
+	const [feeds, setFeeds] = useRecoilState(feedListState);
 	// TODO: validate type in params
 	const params = parseParams(useParams());
 	const [showEntryList, setShowEntryList] = useState(true);
@@ -59,6 +60,11 @@ function Layout() {
 			setSnackbarOpen(false);
 		}
 	}, [notification, currentNotification, snackbarOpen])
+
+	const updateAndFetchFeeds = async () => {
+		await updateFeeds();
+		setFeeds(await fetchFeeds());
+	};
 
 
 	const handleSnackbarClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
@@ -173,7 +179,30 @@ function Layout() {
 						</Typography>
 					</Box>
 
-					{feeds ? <FeedList /> : <Loading sx={{ height: "100%" }} />}
+					<Box sx={{
+						display: "flex",
+						flexGrow: 1,
+						overflow: "auto"
+					}}>
+						{feeds ? <FeedList /> : <Loading sx={{ height: "100%", width: "100%" }} />}
+					</Box>
+
+					<Stack direction="row-reverse" sx={{
+						m: 1.5
+					}}>
+						<IconButton size="small" title="Update feeds" onClick={updateAndFetchFeeds}>
+							<Icon
+								path={mdiRefresh}
+								size={1.2}
+							/>
+						</IconButton>
+						<IconButton size="small">
+							<Icon
+								path={mdiWhiteBalanceSunny}
+								size={1.2}
+							/>
+						</IconButton>
+					</Stack>
 				</Drawer>
 			</Box>
 
