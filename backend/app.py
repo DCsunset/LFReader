@@ -68,30 +68,34 @@ async def get_feeds_api(feed: str | None = None, tags: QueryTags = None):
 	))
 	return encode_feed(feeds)
 
-def update_feed(reader: Reader, args: FeedUpdateArgs):
-	# set tag
-	if args.tags is not None:
-		for feed in args.feeds:
-			orig_tags = reader.get_tag_keys(feed)
-			# delete old tags first
-			for tag in orig_tags:
-				reader.delete_tag(feed, tag)
-			# add new tags
-			for tag in args.tags:
-				reader.set_tag(feed, tag)
+def update_feeds(reader: Reader, args: FeedUpdateArgs | None):
+	if args is None:
+		# update all feed entries
+		reader.update_feeds()
+	else:
+		# set tag
+		if args.tags is not None:
+			for feed in args.feeds:
+				orig_tags = reader.get_tag_keys(feed)
+				# delete old tags first
+				for tag in orig_tags:
+					reader.delete_tag(feed, tag)
+				# add new tags
+				for tag in args.tags:
+					reader.set_tag(feed, tag)
 
-	# update feed entries
-	for feed in args.feeds:
-		reader.update_feed(feed)
+		# update feed entries
+		for feed in args.feeds:
+			reader.update_feeds(feed=feed)
 
 
 """
 Update feeds
 """
 @app.put("/feeds")
-async def update_feed_api(encoded_id: str, args: FeedUpdateArgs):
+async def update_feeds_api(args: FeedUpdateArgs | None = None):
 	reader = get_reader()
-	update_feed(reader, args)
+	update_feeds(reader, args)
 	return {}
 
 """
@@ -102,7 +106,7 @@ async def add_feeds_api(args: FeedUpdateArgs):
 	reader = get_reader()
 	for feed in args.feeds:
 		reader.add_feed(feed)
-	update_feed(reader, args)
+	update_feeds(reader, args)
 	return {}
 
 """
