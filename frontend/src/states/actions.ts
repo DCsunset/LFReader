@@ -4,7 +4,7 @@ import { Feed, Entry } from "../utils/feed";
 import fetchIcon from "../utils/fetchIcon";
 
 export interface FeedUpdateArgs {
-	feeds: string[],
+	feeds?: string[],
 	tags?: string[]
 }
 
@@ -40,12 +40,12 @@ export const useEntries = (args?: FeedQueryArgs) => (
 	useSWR<Entry[], Error>(["/api/entries", args], fetcher)
 )
 
-export async function updateFeeds(args: FeedUpdateArgs) {
+export async function updateFeeds(args?: FeedUpdateArgs) {
 	await axios.put(`/api/feeds`, args);
 }
 
-export async function deleteFeeds(args: FeedUpdateArgs) {
+export async function deleteFeeds(feeds: string[]) {
 	await axios.delete(`/api/feeds`, {
-		params: args
+		params: { feeds }
 	});
 }
