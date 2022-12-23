@@ -1,4 +1,0 @@
-reader
-fastapi
-uvicorn[standard]
-
