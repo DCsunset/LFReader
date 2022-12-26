@@ -11,3 +11,4 @@ actix-web = "4"
 log = "0.4"
 env_logger = "0.10"
 sqlx = { version = "0.6", features = [ "runtime-actix-native-tls", "sqlite" ] }
+chrono = "0.4"
