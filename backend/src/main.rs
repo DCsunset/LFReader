@@ -1,6 +1,6 @@
 mod feeds;
 mod storage;
-mod app_state;
+mod app;
 
 use actix_web::{
 	web,
@@ -24,7 +24,7 @@ async fn main() -> std::io::Result<()> {
 		.expect("Error opening db");
 
 	HttpServer::new(move || {
-		let state = app_state::AppState {
+		let state = app::AppState {
 			db: db.clone()
 		};
 
