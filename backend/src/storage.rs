@@ -19,53 +19,80 @@ pub async fn open_db(url: &str) -> sqlx::Result<Pool<Sqlite>> {
 }
 
 /**
- * Feed definition in the database
+ * Entry definition
  */
-#[derive(FromRow)]
+struct Entry {
+	id: String,
+	title: Option<Text>,
+	links: Vec<Link>,
+	authors: Vec<Person>,
+	content: Option<Content>,
+	summary: Option<Text>,
+	updated: Option<DateTime<Utc>>,
+	published: Option<DateTime<Utc>>
+}
+
+
+/** Status Bitset */
+pub type StatusType = u32;
+pub struct Status {
+	value: StatusType
+}
+
+impl Status {
+	pub const READ_BIT: StatusType = 1;
+	pub const STARRED_BIT: StatusType = 1 << 1;
+
+	pub fn get(&self, bit: StatusType) -> bool {
+		self.value & bit != 0
+	}
+
+	pub fn set(&mut self, bit: StatusType) {
+		self.value |= bit;
+	}
+}
+/**
+ * Feed definition
+ */
 struct Feed {
 	id: String,
 	title: Option<String>,
 	authors: Vec<Person>,
 	description: Option<String>,
 	/// the URL of the feed website (different from URL of this feed)
-	link: Link,
-	updated: Option<DateTime<Utc>>,
-	published: Option<DateTime<Utc>>,
+	links: Vec<Link>,
 	/// filename for the icon stored in this feed's dir
 	icon: Option<String>,
 	/// filename for the logo stored in this feed's dir
-	logo: Option<String>
-}
-
-/**
- * Entry definition in the database
- */
-#[derive(FromRow)]
-struct Entry {
-	id: String,
-	title: Option<Text>,
+	logo: Option<String>,
 	updated: Option<DateTime<Utc>>,
-	authors: Vec<Person>,
-	content: Option<Content>,
-	summary: Option<Text>
+	published: Option<DateTime<Utc>>,
+
+	/* YAFR Data */
+	/// Tags of this feed
+	tags: Vec<String>,
+	entries: Vec<Entry>,
+	status: Status
 }
 
 pub async fn init_db(db: &Pool<Sqlite>) -> sqlx::Result<()> {
 	let initStmt = r#"
+		-- Feeds
 		CREATE TABLE IF NOT EgISTS feeds(
 			id TEXT PRIMARY KEY title TEXT,
 			authors TEXT,  -- JSON string
 			description TEXT,
 			links TEXT,  -- JSON string
-			updated TIMESTAMP,  -- ISO DateTime
-			published TIMESTAMP,  -- ISO DateTime
 			icon TEXT,  -- name in local filesystem
 			logo TEXT  -- name in local filesystem
+			updated TEXT,  -- ISO DateTime
+			published TEXT,  -- ISO DateTime
 		);
 
+		-- Entries
 		CREATE TABLE IF NOT EXISTS entries(
 			-- Entry data
-			id TEXT PRIMARY KEY,
+			id TEXT NOT NULL,
 			feed TEXT NOT NULL,
 			title TEXT,
 			authors TEXT,  -- JSON string
@@ -76,12 +103,24 @@ pub async fn init_db(db: &Pool<Sqlite>) -> sqlx::Result<()> {
 			published TEXT,  -- ISO DateTime
 
 			-- YAFR data
-			status INTEGER NOT NULL DEFAULT 0,  -- Bitmap(read, starred)
+			status INTEGER NOT NULL DEFAULT 0,  -- Status bitset
 
+			PRIMARY KEY(id, feed),
 			FOREIGN KEY(feed) REFERENCES feeds(id)
 				ON UPDATE CASCADE
 				ON DELETE CASCADE
-			);
+		);
+		
+		-- Feed Tags
+		CREATE TABLE IF NOT EXISTS feed_tags(
+			name TEXT NOT NULL,
+			feed TEXT NOT NULL,
+
+			PRIMARY KEY(name, feed),
+			FOREIGN KEY(feed) REFERENCES feeds(id)
+				ON UPDATE CASCADE
+				ON DELETE CASCADE
+		);
 	"#;
 	
 	sqlx::query(initStmt).execute(db).await?;
