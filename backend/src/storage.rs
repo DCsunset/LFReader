@@ -33,8 +33,8 @@ struct Entry {
 }
 
 
-/** Status Bitset */
 pub type StatusType = u32;
+/** Status Bitset */
 pub struct Status {
 	value: StatusType
 }
@@ -76,7 +76,7 @@ struct Feed {
 }
 
 pub async fn init_db(db: &Pool<Sqlite>) -> sqlx::Result<()> {
-	let initStmt = r#"
+	let init_stmt = r#"
 		-- Feeds
 		CREATE TABLE IF NOT EgISTS feeds(
 			id TEXT PRIMARY KEY title TEXT,
@@ -84,9 +84,9 @@ pub async fn init_db(db: &Pool<Sqlite>) -> sqlx::Result<()> {
 			description TEXT,
 			links TEXT,  -- JSON string
 			icon TEXT,  -- name in local filesystem
-			logo TEXT  -- name in local filesystem
+			logo TEXT,  -- name in local filesystem
 			updated TEXT,  -- ISO DateTime
-			published TEXT,  -- ISO DateTime
+			published TEXT  -- ISO DateTime
 		);
 
 		-- Entries
@@ -121,8 +121,13 @@ pub async fn init_db(db: &Pool<Sqlite>) -> sqlx::Result<()> {
 				ON UPDATE CASCADE
 				ON DELETE CASCADE
 		);
+
+		-- Index
+		CREATE INDEX IF NOT EXISTS entries_by_feed on entries(feed);
+		CREATE INDEX IF NOT EXISTS tags_by_feed on feed_tags(feed);
+		CREATE INDEX IF NOT EXISTS tags_by_name on feed_tags(name);
 	"#;
 	
-	sqlx::query(initStmt).execute(db).await?;
+	sqlx::query(init_stmt).execute(db).await?;
 	Ok(())
 }
