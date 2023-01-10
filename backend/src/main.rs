@@ -1,4 +1,4 @@
-mod feeds;
+mod routes;
 mod storage;
 mod app;
 
@@ -8,10 +8,7 @@ use actix_web::{
 	HttpServer,
 	middleware
 };
-
-// Feeds
-use crate::feeds::get_feeds;
-
+use crate::storage::Storage;
 
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
@@ -22,10 +19,13 @@ async fn main() -> std::io::Result<()> {
 	let db = storage::open_db(&format!("sqlite://{}", db_file))
 		.await
 		.expect("Error opening db");
+	
+	let storage = Storage { db: db };
+	storage.init_db().await.expect("Error initializing db");
 
 	HttpServer::new(move || {
 		let state = app::AppState {
-			db: db.clone()
+			storage: storage.clone()
 		};
 
 		App::new()
@@ -35,7 +35,7 @@ async fn main() -> std::io::Result<()> {
 			.wrap(middleware::NormalizePath::trim())
 			.service(
 				web::scope("/feeds")
-					.service(get_feeds)
+					.service(routes::feeds::get_feeds)
 			)
 	})
 		.bind(("0.0.0.0", 3000))?

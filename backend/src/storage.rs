@@ -4,8 +4,7 @@ use feed_rs::model::{Link, Text, Person, Content};
 use sqlx::{
 	sqlite::{SqlitePoolOptions, SqliteConnectOptions},
 	Pool,
-	Sqlite,
-	FromRow
+	Sqlite
 };
 
 pub async fn open_db(url: &str) -> sqlx::Result<Pool<Sqlite>> {
@@ -21,7 +20,7 @@ pub async fn open_db(url: &str) -> sqlx::Result<Pool<Sqlite>> {
 /**
  * Entry definition
  */
-struct Entry {
+pub struct Entry {
 	id: String,
 	title: Option<Text>,
 	links: Vec<Link>,
@@ -54,7 +53,7 @@ impl Status {
 /**
  * Feed definition
  */
-struct Feed {
+pub struct Feed {
 	id: String,
 	title: Option<String>,
 	authors: Vec<Person>,
@@ -75,59 +74,71 @@ struct Feed {
 	status: Status
 }
 
-pub async fn init_db(db: &Pool<Sqlite>) -> sqlx::Result<()> {
-	let init_stmt = r#"
-		-- Feeds
-		CREATE TABLE IF NOT EgISTS feeds(
-			id TEXT PRIMARY KEY title TEXT,
-			authors TEXT,  -- JSON string
-			description TEXT,
-			links TEXT,  -- JSON string
-			icon TEXT,  -- name in local filesystem
-			logo TEXT,  -- name in local filesystem
-			updated TEXT,  -- ISO DateTime
-			published TEXT  -- ISO DateTime
-		);
-
-		-- Entries
-		CREATE TABLE IF NOT EXISTS entries(
-			-- Entry data
-			id TEXT NOT NULL,
-			feed TEXT NOT NULL,
-			title TEXT,
-			authors TEXT,  -- JSON string
-			summary TEXT, -- JSON string
-			content TEXT, -- JSON string
-			links TEXT,  -- JSON string
-			updated TEXT,  -- ISO DateTime
-			published TEXT,  -- ISO DateTime
-
-			-- YAFR data
-			status INTEGER NOT NULL DEFAULT 0,  -- Status bitset
-
-			PRIMARY KEY(id, feed),
-			FOREIGN KEY(feed) REFERENCES feeds(id)
-				ON UPDATE CASCADE
-				ON DELETE CASCADE
-		);
-		
-		-- Feed Tags
-		CREATE TABLE IF NOT EXISTS feed_tags(
-			name TEXT NOT NULL,
-			feed TEXT NOT NULL,
-
-			PRIMARY KEY(name, feed),
-			FOREIGN KEY(feed) REFERENCES feeds(id)
-				ON UPDATE CASCADE
-				ON DELETE CASCADE
-		);
-
-		-- Index
-		CREATE INDEX IF NOT EXISTS entries_by_feed on entries(feed);
-		CREATE INDEX IF NOT EXISTS tags_by_feed on feed_tags(feed);
-		CREATE INDEX IF NOT EXISTS tags_by_name on feed_tags(name);
-	"#;
-	
-	sqlx::query(init_stmt).execute(db).await?;
-	Ok(())
+#[derive(Clone)]
+pub struct Storage {
+	pub db: Pool<Sqlite>
 }
+
+impl Storage {
+	pub async fn init_db(&self) -> sqlx::Result<()> {
+		let init_stmt = r#"
+			-- Feeds
+			CREATE TABLE IF NOT EgISTS feeds(
+				id TEXT PRIMARY KEY title TEXT,
+				authors TEXT,  -- JSON string
+				description TEXT,
+				links TEXT,  -- JSON string
+				icon TEXT,  -- name in local filesystem
+				logo TEXT,  -- name in local filesystem
+				updated TEXT,  -- ISO DateTime
+				published TEXT  -- ISO DateTime
+			);
+
+			-- Entries
+			CREATE TABLE IF NOT EXISTS entries(
+				-- Entry data
+				id TEXT NOT NULL,
+				feed TEXT NOT NULL,
+				title TEXT,
+				authors TEXT,  -- JSON string
+				summary TEXT, -- JSON string
+				content TEXT, -- JSON string
+				links TEXT,  -- JSON string
+				updated TEXT,  -- ISO DateTime
+				published TEXT,  -- ISO DateTime
+
+				-- YAFR data
+				status INTEGER NOT NULL DEFAULT 0,  -- Status bitset
+
+				PRIMARY KEY(id, feed),
+				FOREIGN KEY(feed) REFERENCES feeds(id)
+					ON UPDATE CASCADE
+					ON DELETE CASCADE
+			);
+			
+			-- Feed Tags
+			CREATE TABLE IF NOT EXISTS feed_tags(
+				name TEXT NOT NULL,
+				feed TEXT NOT NULL,
+
+				PRIMARY KEY(name, feed),
+				FOREIGN KEY(feed) REFERENCES feeds(id)
+					ON UPDATE CASCADE
+					ON DELETE CASCADE
+			);
+
+			-- Index
+			CREATE INDEX IF NOT EXISTS entries_by_feed on entries(feed);
+			CREATE INDEX IF NOT EXISTS tags_by_feed on feed_tags(feed);
+			CREATE INDEX IF NOT EXISTS tags_by_name on feed_tags(name);
+		"#;
+		
+		sqlx::query(init_stmt).execute(&self.db).await?;
+		Ok(())
+	}
+
+	pub async fn get_entries() {
+		
+	}
+}
+
