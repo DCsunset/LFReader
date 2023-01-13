@@ -1,4 +1,5 @@
 mod routes;
+mod types;
 mod storage;
 mod app;
 
