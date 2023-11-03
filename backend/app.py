@@ -10,7 +10,7 @@ from typing import Annotated
 logging.basicConfig(level=logging.INFO)
 
 # the path of the database (default to ./db.sqlite)
-dbFile = os.getenv("YAFR_DB", "db.sqlite")
+dbFile = os.getenv("LFREADER_DB", "db.sqlite")
 
 app = FastAPI()
 storage = Storage(dbFile)
