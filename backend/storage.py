@@ -14,7 +14,8 @@ def parsed_time_to_iso(parsed_time: struct_time | None):
 
 # pack data into JSON string
 def pack_data(value):
-  if value is None:
+  # use None for empty value (e.g. [], "", None)
+  if not value:
     return None
   return json.dumps(value)
 
@@ -168,19 +169,23 @@ class Storage:
     # result is a dict after dict_row_factory
     return self.db.execute("SELECT * FROM feeds").fetchall()
 
-  def delete_feeds(self, feed_urls: list[str]):
-    # TODO
-    pass
-
   def get_entries(self, feed_urls: list[str] | None = None) -> list[dict[str, Any]]:
     if feed_urls is None:
       qs  = ""
     else:
       # use placeholder to prevent SQL injection
       qs = "WHERE feed_url IN ({})".format(", ".join("?"))
-    return self.db.execute(f"SELECT * FROM entries {qs}", ).fetchall()
+    return self.db.execute(f"SELECT * FROM entries {qs}", feed_urls).fetchall()
+
+  def delete_feeds(self, feed_urls: list[str]):
+    qs = "WHERE url IN ({})".format(", ".join("?"))
+    self.db.execute(f"DELETE FROM feeds {qs}", feed_urls)
+    # delete will create a tx. Must commit to save data
+    self.db.commit()
 
   def delete_entries(self, feed_urls: list[str]):
-    # TODO
-    pass
+    qs = "WHERE feed_url IN ({})".format(", ".join("?"))
+    self.db.execute(f"DELETE FROM entries {qs}", feed_urls)
+    # delete will create a tx. Must commit to save data
+    self.db.commit()
 
