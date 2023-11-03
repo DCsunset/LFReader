@@ -6,6 +6,7 @@ import logging
 import os
 from storage import Storage
 from pydantic import BaseModel
+from sqlite3 import DatabaseError
 
 logging.basicConfig(level=logging.INFO)
 
@@ -29,15 +30,7 @@ async def get_feeds_api():
   return storage.get_feeds()
 
 """
-Update feeds
-"""
-@app.put("/feeds")
-async def update_feeds_api(args: FeedArgs | None = None):
-  storage.update_feeds(args and args.feed_urls)
-  return {}
-
-"""
-Add new feeds
+Add (or update) new feeds
 """
 @app.post("/feeds")
 async def add_feeds_api(args: FeedArgs):
@@ -63,9 +56,9 @@ async def get_entries_api(feed_urls: list[str] | None = None):
 
 ## Error handlers
 
-# @app.exception_handler(FeedNotFoundError)
-# async def feed_not_found_error(request, err: FeedNotFoundError):
-# 	return PlainTextResponse(err.message, status_code=404)
+@app.exception_handler(DatabaseError)
+async def db_exception(request, err: DatabaseError):
+  return PlainTextResponse(str(err), status_code=409)
 
 # @app.exception_handler(FeedExistsError)
 # async def feed_exists_error(request, err: FeedExistsError):
