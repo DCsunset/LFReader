@@ -1,241 +1,162 @@
-import { useRecoilState } from "recoil";
-import { notificationState, feedListState } from "../states/app";
-import { Notification } from "../types/states";
-import { Alert, AppBar, Box, Drawer, IconButton, Snackbar, Stack, Toolbar, Typography, useMediaQuery, useTheme } from "@mui/material";
-import { useEffect, useState } from "react";
-import { Icon } from "@mdi/react";
-import { useParams } from "react-router-dom";
-import { mdiFormatListBulleted, mdiMenu, mdiRefresh, mdiRss, mdiWhiteBalanceSunny } from "@mdi/js";
-import FeedList from "./FeedList";
+// Copyright (C) 2022-2023  DCsunset
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import { state } from "../store/state";
+import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack } from "@mui/material";
+import { SnackbarProvider, enqueueSnackbar } from "notistack";
+import { blue } from "@mui/material/colors";
+import Icon from '@mdi/react';
+import { mdiMenu, mdiBrightness4, mdiBrightness7, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh } from '@mdi/js';
+import { useComputed, useSignal, useSignalEffect } from "@preact/signals";
+import SettingsDialog from "./SettingsDialog";
 import Loading from "./Loading";
-import { parseParams } from "../utils/routes";
-import Spacer from "./Spacer";
-import Main from "./Main";
-import { fetchFeeds, updateFeeds } from "../states/actions.js";
+import { getFeeds } from "../store/actions";
 
-const drawerWidth = "220px";
-const appBarHeight = "42px";
+interface Props {
+  children?: any
+}
 
-function Layout() {
-	const [feeds, setFeeds] = useRecoilState(feedListState);
-	// TODO: validate type in params
-	const params = parseParams(useParams());
-	const [showEntryList, setShowEntryList] = useState(true);
+export default function Layout(props: Props) {
+	const smallDevice = useMediaQuery((theme: any) => theme.breakpoints.down("sm"));
+  const dark = useComputed(() => state.settings.value.dark);
+  const settingsDialog = useSignal(false);
+  const drawer = useSignal(!smallDevice);
+  const entryPanel = useSignal(true);
+  const feeds = useComputed(() => state.feeds.value);
 
-	let title = feeds ? "All" : "Loading...";
-	if (feeds) {
-		if (params.type === "tag" && params.item) {
-			title = params.item;
-		}
-		else if (params.type === "feed") {
-			const feedUrl = params.item!;
-			// Should always be found after validation
-			const feed = feeds.find(f => f.url === feedUrl)!;
-			title = feed.title ?? feed.link ?? feed.url;
-		}
-	}
+  const toggleTheme = () => {
+    state.settings.value = {
+      ...state.settings.value,
+      dark: !dark.value
+    };
+  };
 
-	const [notification, setNotification] = useRecoilState(notificationState);
-	// Local cache of notification (delayed destruction and update)
-	const [currentNotification, setCurrentNotification] = useState<Notification | null>(null);
-	const [snackbarOpen, setSnackbarOpen] = useState(false);
-	const theme = useTheme();
-	const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
-	const [drawerOpen, setDrawerOpen] = useState(!smallDevice);
+  useSignalEffect(() => {
+    const notification = state.notification.value;
+    if (notification) {
+      const { text, color } = notification;
+      enqueueSnackbar(text, { variant: color });
+    }
+  });
 
-	useEffect(() => {
-		// Reset to default state
-		setDrawerOpen(!smallDevice);
-	}, [smallDevice])
-
-	// Update notification on change
-	useEffect(() => {
-		if (notification && !currentNotification) {
-			setCurrentNotification(notification);
-			setNotification(null);
-			setSnackbarOpen(true);
-		}
-		else if (notification && currentNotification && snackbarOpen) {
-			// Close an active snack when a new one is adde
-			setSnackbarOpen(false);
-		}
-	}, [notification, currentNotification, snackbarOpen])
-
-	const updateAndFetchFeeds = async () => {
-		await updateFeeds();
-		setFeeds(await fetchFeeds());
-	};
-
-
-	const handleSnackbarClose = (_event: React.SyntheticEvent | Event, reason?: string) => {
-		if (reason === 'clickaway') {
-			return;
-		}
-		setSnackbarOpen(false);
-	};
-
-	// Invalidate local cache only after the snackbar closes completely
-	const handleSnackbarExited = () => {
-		setCurrentNotification(null);
-	};
-
-	const responsiveStyles = {
-		// Keep the animation same as drawer
-		transition: theme.transitions.create(["margin", "width"], {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.leavingScreen
-		}),
-		...(drawerOpen && {
-			transition: theme.transitions.create(["margin", "width"], {
-				easing: theme.transitions.easing.easeOut,
-				duration: theme.transitions.duration.leavingScreen
-			}),
-			// Leave space for responsive drawer
-			width: {
-				sm: `calc(100% - ${drawerWidth})`
-			},
-			ml: {
-				sm: drawerWidth
-			}
-		})
-	};
-
-	return (
-		<Box sx={{
-			height: "100vh",
-			display: "flex",
-			flexDirection: "column"
-		}}>
-			<AppBar
-				position="sticky"
-				sx={responsiveStyles}
-			>
-				<Toolbar variant="dense" sx={{
-					minHeight: appBarHeight,
-					// Keep padding consistent
-					px: { sm: 2 }
-				}}>
-					<IconButton onClick={() => setDrawerOpen(!drawerOpen)}>
+  return (
+    <>
+      {/* Disable backgroundImage to avoid color change in dark theme */}
+      <AppBar sx={{ backgroundColor: blue[700], backgroundImage: "none" }} position="sticky">
+        <Toolbar>
+					<IconButton onClick={() => drawer.value = !drawer.value}>
 						<Icon
 							path={mdiMenu}
 							size={1}
 						/>
 					</IconButton>
-					<Typography variant="h6" sx={{ ml: 1 }}>
-						{title}
-					</Typography>
+          <Typography variant="h6" noWrap flexGrow={1} ml={1.5}>
+            Task.json Web
+          </Typography>
 
-					<Spacer />
 					<IconButton
-						title="Toggle Entry List"
-						onClick={() => setShowEntryList(!showEntryList)}
+						title="Entry Panel"
+						onClick={() => entryPanel.value = !entryPanel}
 					>
 						<Icon
 							path={mdiFormatListBulleted}
 							size={1}
 						/>
 					</IconButton>
-				</Toolbar>
-			</AppBar>
+        </Toolbar>
+      </AppBar>
 
-			<Box
-				component="nav"
-				sx={{
-					width: { sm: drawerWidth },
-					flexShrink: { sm: 0 }
+			<Drawer
+				variant={smallDevice ? "temporary" : "persistent"}
+				anchor="left"
+				// Change width of paper component inside drawer
+				PaperProps={{
+					sx: {
+						width: "240px"
+					}
 				}}
+				// For better performance
+				ModalProps={{
+					keepMounted: true
+				}}
+				open={drawer.value}
+				onClose={() => drawer.value = false}
 			>
-				<Drawer
-					variant={smallDevice ? "temporary" : "persistent"}
-					anchor="left"
-					// Change width of paper component inside drawer
-					PaperProps={{
-						sx: {
-							width: drawerWidth
-						}
-					}}
-					// For better performance
-					ModalProps={{
-						keepMounted: true
-					}}
-					open={drawerOpen}
-					onClose={() => setDrawerOpen(false)}
-				>
-					<Box
-						sx={{
-							display: "flex",
-							alignItems: "center",
-							justifyContent: "center",
-							p: 1,
-						}}
-					>
-						<Icon
-							path={mdiRss}
-							size={1.2}
-							color="#ee802f"
-						/>
-						<Typography variant="h5" sx={{ ml: 0.5 }}>
-							yafr
-						</Typography>
-					</Box>
-
-					<Box sx={{
+				<Box
+					sx={{
 						display: "flex",
-						flexGrow: 1,
-						overflow: "auto"
-					}}>
-						{feeds ? <FeedList /> : <Loading sx={{ height: "100%", width: "100%" }} />}
-					</Box>
-
-					<Stack direction="row-reverse" sx={{
-						m: 1.5
-					}}>
-						<IconButton size="small" title="Update feeds" onClick={updateAndFetchFeeds}>
-							<Icon
-								path={mdiRefresh}
-								size={1.2}
-							/>
-						</IconButton>
-						<IconButton size="small">
-							<Icon
-								path={mdiWhiteBalanceSunny}
-								size={1.2}
-							/>
-						</IconButton>
-					</Stack>
-				</Drawer>
-			</Box>
-
-			<Snackbar
-				anchorOrigin={{
-					horizontal: "center",
-					vertical: "bottom"
-				}}
-				open={snackbarOpen}
-				onClose={handleSnackbarClose}
-				TransitionProps={{
-					onExited: handleSnackbarExited
-				}}
-				autoHideDuration={6000}
-			>
-				<Alert
-					variant="filled"
-					severity={currentNotification?.color}
-					onClose={handleSnackbarClose}
+						alignItems: "center",
+						justifyContent: "center",
+						p: 1,
+					}}
 				>
-					{currentNotification?.message}
-				</Alert>
-			</Snackbar>
+					<Icon
+						path={mdiRss}
+						size={1.2}
+						color="#ee802f"
+					/>
+					<Typography variant="h5" sx={{ ml: 0.5 }}>
+	yafr
+					</Typography>
+				</Box>
 
-			<Box component="main" sx={{
-				flexGrow: 1,
-				height: `calc(100% - ${appBarHeight})`,
-				...responsiveStyles
-			}}>
-				<Main showEntryList={showEntryList} />
-			</Box>
-		</Box>
-	);
+				<Box sx={{
+					display: "flex",
+					flexGrow: 1,
+					overflow: "auto"
+				}}>
+					{/* feeds ? <FeedList /> : <Loading sx={{ height: "100%", width: "100%" }} /> */}
+				</Box>
+
+				<Stack direction="row-reverse" sx={{ m: 1.5 }}>
+					<IconButton size="small" title="Update feeds" onClick={getFeeds}>
+						<Icon
+							path={mdiRefresh}
+							size={1.2}
+						/>
+					</IconButton>
+					<IconButton
+            size="small"
+						color="inherit"
+						title={`Switch to ${dark.value ? "light" : "dark"} mode`}
+						onClick={toggleTheme}
+					>
+						{dark.value ?
+              <Icon path={mdiBrightness4} size={1.2} /> :
+              <Icon path={mdiBrightness7} size={1.2} />}
+					</IconButton>
+
+					<IconButton
+						color="inherit"
+						title="Settings"
+						onClick={() => settingsDialog.value = true}
+					>
+            <Icon path={mdiCog} size={1.2} />
+					</IconButton>
+				</Stack>
+			</Drawer>
+
+
+      <SettingsDialog open={settingsDialog} />
+
+      <SnackbarProvider anchorOrigin={{ horizontal: "center", vertical: "bottom" }} />
+
+      <Box sx={{ my: 3 }}>
+				{props.children}
+      </Box>
+    </>
+  );
 }
 
-export default Layout;

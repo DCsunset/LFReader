@@ -1,61 +1,61 @@
+// Copyright (C) 2022-2023  DCsunset
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import { useComputed } from "@preact/signals";
 import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
-import { blue, green } from "@mui/material/colors";
-import {
-	createBrowserRouter,
-	RouterProvider
-} from "react-router-dom";
+import { Route, Router } from "preact-router";
 import Layout from './components/Layout';
+import { state } from "./store/state";
 
-const theme = createTheme({
-	typography: {
-		fontFamily: [
-			"Open Sans",
-			"sans-serif"
-		].join(",")
-	},
-	palette: {
-		mode: "dark",
-		primary: {
-			main: blue[500],
-			contrastText: "#fff"
-		},
-		secondary: {
-			main: green[500],
-			contrastText: "#fff"
-		},
-	}
-});
+interface PageProps {
+  // query paramters (from preact-router)
+  matches?: {
+    feed_tag?: string,
+    feed?: string,
+    entry?: string
+  },
+};
 
-const router = createBrowserRouter([
-	{
-		// Layout
-		path: "/",
-		element: <Layout />,
-		children: [
-			{
-				// Entry list of a feed or a tag
-				path: ":type/:item",
-				// Optional params (without using another component)
-				element: null,
-				children: [
-					{
-						path: ":entry",
-						element: null
-					}
-				]
-			},
-		]
-	}
-]);
+function Page(props: PageProps) {
+  console.log(props.matches);
+  return (
+    <Layout>
+      Test
+    </Layout>
+  )
+}
+
 
 function App() {
-	return (
-		<ThemeProvider theme={theme}>
-			<CssBaseline />
+  const theme = useComputed(() => {
+    const dark = state.settings.value.dark;
+    return createTheme({
+      palette: {
+        mode: dark ? "dark" : "light"
+      },
+    });
+  });
 
-			<RouterProvider router={router} />
-		</ThemeProvider>
-	)
+	return (
+    <ThemeProvider theme={theme.value}>
+      <CssBaseline />
+      <Router>
+        <Route default component={Page} />
+      </Router>
+    </ThemeProvider>
+  )
 }
 
 export default App;
