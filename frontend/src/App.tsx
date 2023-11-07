@@ -18,10 +18,11 @@ import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { Route, Router } from "preact-router";
 import Layout from './components/Layout';
 import { state } from "./store/state";
+import { useEffect } from "preact/hooks";
 
 interface PageProps {
   // query paramters (from preact-router)
-  matches?: {
+  matches: {
     feed_tag?: string,
     feed?: string,
     entry?: string
@@ -29,7 +30,10 @@ interface PageProps {
 };
 
 function Page(props: PageProps) {
-  console.log(props.matches);
+  useEffect(() => {
+    state.queryParams.value = props.matches;
+    console.log(props.matches);
+  }, [props.matches]);
   return (
     <Layout>
       Test

@@ -61,12 +61,18 @@ export const state = {
 	})),
   feeds: signal<any[]>([]),
   entries: signal<any[]>([]),
+  // query parameters from url
+  queryParams: signal<{
+    feed_tag?: string,
+    feed?: string,
+    entry?: string
+  }>({}),
   notification: signal<Notification | null>(null),
   confirmation: {
     open: signal(false),
     text: signal(""),
     onConfirm: () => {}
-  },
+  }
 };
 
 // Get tags from feeds or entries

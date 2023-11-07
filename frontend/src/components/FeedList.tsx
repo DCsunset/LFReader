@@ -1,3 +1,19 @@
+// Copyright (C) 2022-2023  DCsunset
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 import { mdiChevronRight, mdiTag } from "@mdi/js";
 import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
 import { useState } from "react";
@@ -8,12 +24,6 @@ import { useNavigate } from "react-router-dom";
 import { useRecoilValue } from "recoil";
 import { feedListState } from "../states/app";
 import { Base64 } from "js-base64";
-
-interface ActiveItem {
-	/// A single feed or a tag
-	type: "feed" | "tag",
-	title: string
-};
 
 /**
  * Feed Tag (including feeds of this tag)
