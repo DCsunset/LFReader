@@ -14,141 +14,50 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import { mdiChevronRight, mdiTag } from "@mdi/js";
-import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
-import { useState } from "react";
-import { Icon } from "@mdi/react";
-import { FeedWithIcon } from "../states/actions";
-import { getFeedTags, filterFeedsByTag, getFeedTitle } from "../utils/feed";
-import { useNavigate } from "react-router-dom";
-import { useRecoilValue } from "recoil";
-import { feedListState } from "../states/app";
+import { Box, List, ListItemButton } from "@mui/material";
 import { Base64 } from "js-base64";
+import { route } from "preact-router";
+import { computed, signal } from "@preact/signals";
+import { state } from "../store/state";
 
-/**
- * Feed Tag (including feeds of this tag)
- */
-function FeedTag(props: {
-	/// Tag name (undefined means all tags)
-	tag?: string,
-	/// Feeds of this tag
-	feeds: FeedWithIcon[],
-	/// Hide list of feeds
-	hideList?: boolean
-}) {
-	const [open, setOpen] = useState(false);
-	const navigate = useNavigate();
-
-	return (
-		<>
-			<ListItemButton
-				sx={{ py: 0, px: 0.5 }}
-				onClick={() => {
-					if (!open) {
-						setOpen(true);
-					}
-					if (props.tag) {
-						navigate(`/tag/${Base64.encode(props.tag, true)}`);
-					}
-					else {
-						// All tags
-						navigate("/");
-					}
-				}}
-			>
-				<Box sx={{
-					display: "flex",
-					alignItems: "center"
-				}}>
-					{props.hideList ? (
-						<Box sx={{
-							p: 1.05,
-							display: "flex",
-							alignItems: "center"
-						}}>
-							<Icon path={mdiTag} size={0.75} />
-						</Box>
-					) : (
-						<IconButton
-							size="small"
-							onClick={e => {
-								// Don't call the upper callback
-								e.stopPropagation();
-								setOpen(!open);
-							}}
-						>
-							<Icon
-								path={mdiChevronRight}
-								size={1}
-								style={{
-									transform: `rotate(${open ? "90deg" : "0"})`,
-									transition: "transform 0.2s"
-								}}
-							/>
-						</IconButton>
-					)
-					}
-					<span>{props.tag ?? "All"}</span>
-					<Box sx={{
-						ml: 0.8,
-						mt: 0.1,
-						fontSize: "0.75rem",
-						display: "inline"
-					}}>
-						({props.feeds.length})
-					</Box>
-				</Box>
-			</ListItemButton>
-			{!props.hideList &&
-				<Collapse in={open}>
-					{props.feeds.map(feed => (
-						<ListItemButton
-							key={feed.url}
-							sx={{ p: 0.5, pl: 4 }}
-							onClick={() => navigate(
-								`/feed/${Base64.encode(feed.url, true)}`
-							)}
-						>
-							{feed.icon &&
-								<Box
-									component="img"
-									src={feed.icon}
-									sx={{
-										width: 20,
-										height: 20,
-										mr: 1
-									}}
-								/>
-							}
-							{getFeedTitle(feed)}
-						</ListItemButton>
-					))}
-				</Collapse>
-			}
-		</>
-	);
-}
+const feeds = computed(() => {
+  const excludedTags = state.ui.excludedTags.value;
+  return state.feeds.value.filter(feed => {
+    for (const t of feed.user_data?.tags ?? []) {
+      if (excludedTags.includes(t)) {
+        return false;
+      }
+    }
+    return true;
+  });
+});
 
 function FeedList() {
 	// This component won't render If feeds is null
-	const feeds = useRecoilValue(feedListState)!;
-	// All tags
-	const tags = getFeedTags(feeds);
-
 	return (
-		<List>
-			{/* All tags */}
-			<FeedTag
-				feeds={feeds}
-				hideList={true}
-			/>
-			{tags.map(tag => (
-				<FeedTag
-					key={tag || "Unsorted"}
-					tag={tag || "Unsorted"}
-					feeds={filterFeedsByTag(feeds, tag)}
-				/>
-			))}
+		<List sx={{ width: "100%" }}>
+      {feeds.value.map(feed => (
+        <ListItemButton
+          key={feed.url}
+          sx={{ p: 0.5, pl: 4 }}
+          onClick={() => route(
+            `/?feed=${Base64.encode(feed.url, true)}`
+          )}
+        >
+          {feed.icon &&
+            <Box
+              component="img"
+              src={feed.icon}
+              sx={{
+                width: 20,
+                height: 20,
+                mr: 1
+              }}
+            />
+          }
+          {feed.title}
+        </ListItemButton>
+      ))}
 		</List>
 	);
 }

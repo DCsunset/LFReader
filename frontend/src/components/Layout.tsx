@@ -17,24 +17,32 @@ import { state } from "../store/state";
 import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiBrightness4, mdiBrightness7, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiWhiteBalanceSunny } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiWhiteBalanceSunny } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
-import Loading from "./Loading";
 import { getFeeds } from "../store/actions";
+import FeedList from "./FeedList";
+import { Base64 } from "js-base64";
 
 interface Props {
   children?: any
 }
 
+function getFeedTitle(feed_id: string) {
+  const url = Base64.decode(feed_id);
+  const feeds = state.feeds.value;
+  return feeds.find(v => v.url === url)?.title ?? "";
+}
+
 const drawerWidth = "220px";
-const feeds = computed(() => state.feeds.value);
 const entryPanel = signal(true);
 const dark = computed(() => state.settings.value.dark);
 const settingsDialog = signal(false);
 const title = computed(() => {
   const params = state.queryParams.value;
-  return params.feed_tag ?? params.feed ?? "All";
+  return params.feed_tag ?? (
+    params.feed ? getFeedTitle(params.feed) : "All"
+  );
 });
 
 export default function Layout(props: Props) {
@@ -147,7 +155,7 @@ export default function Layout(props: Props) {
           flexGrow: 1,
           overflow: "auto"
         }}>
-          {/* feeds ? <FeedList /> : <Loading sx={{ height: "100%", width: "100%" }} /> */}
+          <FeedList />
         </Box>
 
         <Stack direction="row-reverse" sx={{ m: 1.5 }}>

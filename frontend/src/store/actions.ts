@@ -27,12 +27,14 @@ export async function getFeeds() {
   try {
     const resp =  await fetch("/api/feeds");
     if (!resp.ok) {
-      handleError(`Error ${resp.status}: ${resp.text}`);
+      const text = await resp.text();
+      handleError(`${resp.statusText}: ${text}`);
+      return;
     }
-    state.feeds = await resp.json();
+    state.feeds.value = await resp.json();
   }
   catch (err: any) {
-    handleError(`Failed to fetch: ${err.messgae}`);
+    handleError(`Failed to fetch: ${err.message}`);
   }
 }
 

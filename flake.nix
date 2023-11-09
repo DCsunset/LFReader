@@ -38,13 +38,13 @@
           # dev server
           backend-dev = createFlakeApp "backend-dev" ''
             cd backend
-            uvicorn app:app --reload --port 3000
+            uvicorn app:app --reload --port 3000 --root-path /api
           '';
 
           # prod server
           backend-prod = createFlakeApp "backend-prod" ''
             cd backend
-            uvicorn app:app --host 0.0.0.0 --port 3000
+            uvicorn app:app --host 0.0.0.0 --port 3000 --root-path /api
           '';
         };
       };

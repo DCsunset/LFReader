@@ -26,6 +26,12 @@ export type Settings = {
 	dark: boolean
 };
 
+export type QueryParams = {
+  feed_tag?: string,
+  feed?: string,
+  entry?: string
+};
+
 function merge(value: any, init: any) {
   if (value?.constructor === Object) {
     // normal JSON-like object
@@ -59,14 +65,13 @@ export const state = {
     pageSize: 20,
 		dark: false
 	})),
+  ui: {
+    excludedTags: signal([] as string[])
+  },
   feeds: signal<any[]>([]),
   entries: signal<any[]>([]),
   // query parameters from url
-  queryParams: signal<{
-    feed_tag?: string,
-    feed?: string,
-    entry?: string
-  }>({}),
+  queryParams: signal<QueryParams>({}),
   notification: signal<Notification | null>(null),
   confirmation: {
     open: signal(false),
@@ -87,8 +92,15 @@ export const computedState = {
   entryTags: computed(() => getTags(state.entries.value))
 };
 
-// Persist state on change
+// Persist settings on change
 effect(() => {
   localStorage.setItem("settings", JSON.stringify(state.settings.value));
 });
+
+// Persist ui states on change
+for (const [key, item] of Object.entries(state.ui)) {
+  effect(() => {
+    localStorage.setItem(`ui.${key}`, JSON.stringify(item.value));
+  });
+}
 

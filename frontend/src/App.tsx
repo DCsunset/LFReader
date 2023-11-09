@@ -19,6 +19,7 @@ import { Route, Router } from "preact-router";
 import Layout from './components/Layout';
 import { state } from "./store/state";
 import { useEffect } from "preact/hooks";
+import { getFeeds } from "./store/actions";
 
 interface PageProps {
   // query paramters (from preact-router)
@@ -32,7 +33,6 @@ interface PageProps {
 function Page(props: PageProps) {
   useEffect(() => {
     state.queryParams.value = props.matches;
-    console.log(props.matches);
   }, [props.matches]);
   return (
     <Layout>
@@ -41,6 +41,8 @@ function Page(props: PageProps) {
   )
 }
 
+// get feeds on startup
+getFeeds();
 
 function App() {
   const theme = useComputed(() => {
