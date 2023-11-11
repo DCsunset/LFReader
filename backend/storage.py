@@ -3,7 +3,7 @@ import logging
 import sys
 import json
 from typing import Iterable, Any
-from itertools import product
+from itertools import product, repeat
 import feedparser
 from datetime import datetime
 from time import mktime, struct_time
@@ -171,11 +171,11 @@ class Storage:
 
   def get_entries(self, feed_urls: list[str] | None = None) -> list[dict[str, Any]]:
     if feed_urls is None:
-      qs  = ""
+      return self.db.execute(f"SELECT * FROM entries").fetchall()
     else:
       # use placeholder to prevent SQL injection
-      qs = "WHERE feed_url IN ({})".format(", ".join("?"))
-    return self.db.execute(f"SELECT * FROM entries {qs}", feed_urls).fetchall()
+      placeholders = ", ".join(repeat("?", len(feed_urls)))
+      return self.db.execute(f"SELECT * FROM entries WHERE feed_url IN ({placeholders})", feed_urls).fetchall()
 
   def delete_feeds(self, feed_urls: list[str]):
     qs = "WHERE url IN ({})".format(", ".join("?"))
