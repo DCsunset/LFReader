@@ -14,12 +14,11 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { useComputed } from "@preact/signals";
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { Box, createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { Route, Router } from "preact-router";
 import Layout from './components/Layout';
 import { state } from "./store/state";
 import { useEffect } from "preact/hooks";
-import { getFeeds } from "./store/actions";
 
 interface PageProps {
   // query paramters (from preact-router)
@@ -34,15 +33,15 @@ function Page(props: PageProps) {
   useEffect(() => {
     state.queryParams.value = props.matches;
   }, [props.matches]);
+
   return (
     <Layout>
-      Test
+      <Box>
+        Test
+      </Box>
     </Layout>
   )
 }
-
-// get feeds on startup
-getFeeds();
 
 function App() {
   const theme = useComputed(() => {

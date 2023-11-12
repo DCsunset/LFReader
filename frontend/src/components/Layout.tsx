@@ -13,59 +13,67 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { state } from "../store/state";
-import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme } from "@mui/material";
+import { computedState, state } from "../store/state";
+import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiWhiteBalanceSunny } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import { getFeeds } from "../store/actions";
 import FeedList from "./FeedList";
-import { Base64 } from "js-base64";
+import EntryList from "./EntryList";
 
 interface Props {
   children?: any
 }
 
-function getFeedTitle(feed_id: string) {
-  const url = Base64.decode(feed_id);
-  const feeds = state.feeds.value;
-  return feeds.find(v => v.url === url)?.title ?? "";
-}
-
-const drawerWidth = "220px";
-const entryPanel = signal(true);
+const feedListWidth = "220px";
+const entryListWidth = "400px";
+const toolbarHeight = "50px";
+const entryList = signal(true);
 const dark = computed(() => state.settings.value.dark);
 const settingsDialog = signal(false);
-const title = computed(() => {
-  const params = state.queryParams.value;
-  return params.feed_tag ?? (
-    params.feed ? getFeedTitle(params.feed) : "All"
-  );
-});
 
 export default function Layout(props: Props) {
   const theme = useTheme();
   const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
-  const drawer = useSignal(!smallDevice);
+  const feedList = useSignal(!smallDevice);
 
-  // Responsive style for persistent drawer
-  const responsiveStyle = useComputed<SxProps>(() => ({
+  // Responsive style for showing feedList
+  const feedListStyle = useComputed<SxProps>(() => ({
     // Make animation same as drawer
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.leavingScreen
     }),
-    ...(drawer.value && {
+    ...(feedList.value && {
       // Make animation same as drawer
       transition: theme.transitions.create(["margin", "width"], {
         easing: theme.transitions.easing.easeOut,
         duration: theme.transitions.duration.enteringScreen
       }),
       // width and margin needed when  persisten drawer is shown
-      width: { sm: `calc(100% - ${drawerWidth})` },
-      ml: { sm: drawerWidth }
+      width: { sm: `calc(100% - ${feedListWidth})` },
+      ml: { sm: feedListWidth }
+    })
+  }));
+
+  const entryListStyle = useComputed<SxProps>(() => ({
+    // Make animation same as drawer
+    transition: theme.transitions.create(["margin", "width"], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen
+    }),
+    ...(entryList.value && {
+      // Make animation same as drawer
+      transition: theme.transitions.create(["margin", "width"], {
+        easing: theme.transitions.easing.easeOut,
+        duration: theme.transitions.duration.enteringScreen
+      }),
+      // width and margin needed when  persisten drawer is shown
+      width: `calc(100% - ${entryListWidth})`,
+      ml: entryListWidth
     })
   }));
 
@@ -88,13 +96,13 @@ export default function Layout(props: Props) {
     <>
       {/* Disable backgroundImage to avoid color change in dark theme */}
       <AppBar
-        sx={responsiveStyle.value}
+        sx={feedListStyle.value}
         position="sticky"
       >
-        <Toolbar variant="dense" sx={{ minHeight: "50px" }}>
+        <Toolbar variant="dense" sx={{ minHeight: toolbarHeight }}>
           <IconButton
             color="inherit"
-            onClick={() => drawer.value = !drawer.value}
+            onClick={() => feedList.value = !feedList.value}
           >
             <Icon
               path={mdiMenu}
@@ -102,13 +110,13 @@ export default function Layout(props: Props) {
             />
           </IconButton>
           <Typography variant="h6" noWrap flexGrow={1} ml={1.5}>
-            {title.value}
+            {computedState.selectedFeed.value?.title ?? "All"}
           </Typography>
 
           <IconButton
             color="inherit"
             title="Entry Panel"
-            onClick={() => entryPanel.value = !entryPanel}
+            onClick={() => entryList.value = !entryList.value}
           >
             <Icon
               path={mdiFormatListBulleted}
@@ -124,13 +132,13 @@ export default function Layout(props: Props) {
         // Change width of paper component inside drawer
         PaperProps={{
           sx: {
-            width: drawerWidth
+            width: feedListWidth
           }
         }}
         // For better performance
         ModalProps={{ keepMounted: true }}
-        open={drawer.value}
-        onClose={() => drawer.value = false}
+        open={feedList.value}
+        onClose={() => feedList.value = false}
       >
         <Box
           sx={{
@@ -195,8 +203,28 @@ export default function Layout(props: Props) {
 
       <SnackbarProvider anchorOrigin={{ horizontal: "center", vertical: "bottom" }} />
 
-      <Box sx={{ my: 3, ...responsiveStyle.value }}>
-        {props.children}
+      <Box sx={feedListStyle.value}>
+        <Slide in={entryList.value} direction="right">
+          <Box sx={{
+            position: "absolute",
+            maxWidth: entryListWidth,
+            flexDirection: {
+              sm: "column",
+              md: "row"
+            },
+            borderRight: `1px solid ${theme.palette.divider}`,
+            height: `calc(100% - ${toolbarHeight})`
+          }}>
+            <EntryList />
+          </Box>
+        </Slide>
+
+        <Box sx={{
+          p: 2,
+          ...entryListStyle.value
+        }}>
+          {props.children}
+        </Box>
       </Box>
     </>
   );

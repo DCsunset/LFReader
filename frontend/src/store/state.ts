@@ -15,6 +15,8 @@
 
 import { computed, effect, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
+import { Entry, Feed, from_feed_id } from "./feed";
+import { fetchData } from "./actions";
 
 export type Notification = {
 	color: AlertColor,
@@ -27,7 +29,6 @@ export type Settings = {
 };
 
 export type QueryParams = {
-  feed_tag?: string,
   feed?: string,
   entry?: string
 };
@@ -68,8 +69,8 @@ export const state = {
   ui: {
     excludedTags: signal([] as string[])
   },
-  feeds: signal<any[]>([]),
-  entries: signal<any[]>([]),
+  feeds: signal<Feed[]>([]),
+  entries: signal<Entry[]>([]),
   // query parameters from url
   queryParams: signal<QueryParams>({}),
   notification: signal<Notification | null>(null),
@@ -87,9 +88,47 @@ function getTags(items: any[]) {
     .filter(v => v);
 }
 
+// Feeds to show in FeedList
+const filteredFeeds = computed(() => {
+  const excludedTags = state.ui.excludedTags.value;
+  return state.feeds.value.filter(feed => {
+    for (const t of feed.user_data?.tags ?? []) {
+      if (excludedTags.includes(t)) {
+        return false;
+      }
+    }
+    return true;
+  });
+});
+
+// active feed
+const selectedFeed = computed(() => {
+  const feed_id  = state.queryParams.value.feed;
+  if (!feed_id) {
+    return undefined;
+  }
+  return from_feed_id(state.feeds.value, feed_id);
+});
+
+const filteredEntries = computed(() => {
+  const entries = state.entries.value;
+  const selectedUrl = selectedFeed.value?.url;
+  if (selectedUrl) {
+    return entries.filter(v => v.feed_url === selectedUrl);
+  }
+  else {
+    // show entries of filtered feeds
+    const urls = new Set(filteredFeeds.value.map(f => f.url));
+    return entries.filter(v => urls.has(v.feed_url));
+  }
+});
+
 export const computedState = {
   feedTags: computed(() => getTags(state.feeds.value)),
-  entryTags: computed(() => getTags(state.entries.value))
+  entryTags: computed(() => getTags(state.entries.value)),
+  selectedFeed,
+  filteredFeeds,
+  filteredEntries
 };
 
 // Persist settings on change
@@ -103,4 +142,7 @@ for (const [key, item] of Object.entries(state.ui)) {
     localStorage.setItem(`ui.${key}`, JSON.stringify(item.value));
   });
 }
+
+// fetch data on mount
+fetchData();
 

@@ -24,20 +24,33 @@ function handleError(msg: string) {
 }
 
 export async function getFeeds() {
-  try {
-    const resp =  await fetch("/api/feeds");
-    if (!resp.ok) {
-      const text = await resp.text();
-      handleError(`${resp.statusText}: ${text}`);
-      return;
-    }
-    state.feeds.value = await resp.json();
+  const resp =  await fetch("/api/feeds");
+  if (!resp.ok) {
+    const text = await resp.text();
+    handleError(`${resp.statusText}: ${text}`);
+    return;
   }
-  catch (err: any) {
+  state.feeds.value = await resp.json();
+}
+
+export async function getEntries() {
+  const resp =  await fetch("/api/entries");
+  if (!resp.ok) {
+    const text = await resp.text();
+    handleError(`${resp.statusText}: ${text}`);
+    return;
+  }
+  state.entries.value = await resp.json();
+}
+
+export async function fetchData() {
+  try {
+    await Promise.all([
+      getFeeds(),
+      getEntries()
+    ]);
+  } catch (err: any) {
     handleError(`Failed to fetch: ${err.message}`);
   }
 }
 
-export async function getEntries() {
-
-}
