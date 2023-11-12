@@ -19,7 +19,7 @@ storage = Storage(dbFile)
 
 class FeedArgs(BaseModel):
   # specific feed URLs
-  feed_urls: list[str]
+  feed_urls: list[str] | None = None
 
 """
 Get feeds
@@ -32,8 +32,8 @@ async def get_feeds_api() -> list[dict]:
 Add (or update) new feeds
 """
 @app.post("/feeds")
-async def add_feeds_api(args: FeedArgs) -> dict:
-  storage.add_feeds(args.feed_urls)
+async def update_feeds_api(args: FeedArgs) -> dict:
+  storage.update_feeds(args.feed_urls)
   return {}
 
 """

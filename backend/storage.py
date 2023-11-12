@@ -21,7 +21,7 @@ def pack_data(value):
 
 # unpack JSON data in row
 def unpack_data(key, value):
-  json_fields = { "user_data", "enclosures", "contents" }
+  json_fields = { "user_data", "enclosures", "contents", "summary" }
   if key in json_fields:
     return value and json.loads(value)
   else:
@@ -71,7 +71,7 @@ class Storage:
           link TEXT,
           author TEXT,
           title TEXT,
-          summary TEXT,
+          summary TEXT,  -- JSON string
           contents TEXT,  -- JSON string
           enclosures TEXT,  -- JSON string
           published_at TEXT,  -- ISO DateTime
@@ -96,8 +96,13 @@ class Storage:
       logging.critical(f"Error init db: {e}")
       sys.exit(1)
 
-  def add_feeds(self, feed_urls: Iterable[str]):
-    feeds = map(lambda url: (url, feedparser.parse(url)), feed_urls)
+  """
+  Add or Update feeds.
+  If no args, update all feeds
+  """
+  def update_feeds(self, feed_urls: Iterable[str] | None):
+    urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
+    feeds = map(lambda url: (url, feedparser.parse(url)), urls)
     now = datetime.now().astimezone().isoformat()
     update_feed_field = partial(sql_update_field, "feeds")
     update_entry_field = partial(sql_update_field, "entries")
@@ -133,7 +138,7 @@ class Storage:
       )
       self.db.executemany(
         f'''
-        INSERT OR REPLACE INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
           ON CONFLICT(feed_url, id) DO UPDATE SET
             {update_entry_field("link")},
             {update_entry_field("author")},
@@ -152,7 +157,7 @@ class Storage:
           e.get("link"),
           e.get("author"),
           e.get("title"),
-          e.get("summary"),
+          pack_data(e.get("summary_detail")),
           pack_data(e.get("content")),
           pack_data(e.get("enclosures")),
           parsed_time_to_iso(e.get("published_parsed")),
@@ -164,6 +169,10 @@ class Storage:
       )
     # insert will create a tx. Must commit to save data
     self.db.commit()
+
+  def get_feed_urls(self) -> list[str]:
+    # result is a dict after dict_row_factory
+    return self.db.execute("SELECT url FROM feeds").fetchall()
 
   def get_feeds(self) -> list[dict[str, Any]]:
     # result is a dict after dict_row_factory
