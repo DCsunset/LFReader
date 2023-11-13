@@ -1,8 +1,22 @@
-import { List, ListItemButton, SxProps, Typography } from "@mui/material";
-import { route } from "preact-router";
+// Copyright (C) 2022-2023  DCsunset
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import { Box, List, ListItemButton, SxProps, Typography } from "@mui/material";
 import { computedState, state } from "../store/state";
 import { toEntryId } from "../store/feed";
-import { effect } from "@preact/signals";
+import { updateQueryParams } from "../store/actions";
 
 function EntryList() {
 	return (
@@ -11,13 +25,17 @@ function EntryList() {
 			height: "100%",
 		}}>
 			{computedState.filteredEntries.value.map(e => {
-        const entry_id = toEntryId(e);
+        const entryId = toEntryId(e);
         return (
 				  <ListItemButton
-					  key={entry_id}
-					  onClick={() => route(`/?entry=${entry_id}`)}
+					  key={entryId}
+					  onClick={() => updateQueryParams({ entry: entryId })}
 				  >
-					  <Typography>{e.title}</Typography>
+            <Box sx={{
+              fontStyle: e.title ? undefined : "italic"
+            }}>
+              {e.title || "(No title)"}
+            </Box>
 				  </ListItemButton>
         )
 			})}

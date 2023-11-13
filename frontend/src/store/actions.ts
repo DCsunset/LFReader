@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
-import { state } from "./state";
+import { route } from "preact-router";
+import { QueryParams, state } from "./state";
 
 function handleError(msg: string) {
   state.notification.value = {
@@ -52,5 +52,19 @@ export async function fetchData() {
   } catch (err: any) {
     handleError(`Failed to fetch: ${err.message}`);
   }
+}
+
+// update query params
+export function updateQueryParams(params: QueryParams) {
+  // merge with original params
+  const newParams = {
+    ...state.queryParams.peek(),
+    ...params,
+  };
+  // remove undefined fields
+  Object.keys(newParams).forEach(
+    k => newParams[k] === undefined && delete newParams[k]
+  );
+  route(`/?${new URLSearchParams(newParams)}`);
 }
 

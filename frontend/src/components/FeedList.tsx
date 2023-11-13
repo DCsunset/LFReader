@@ -13,23 +13,43 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import { Box, List, ListItemButton } from "@mui/material";
-import { route } from "preact-router";
-import { computedState } from "../store/state";
+import { computedState, state } from "../store/state";
 import { toFeedId } from "../store/feed";
+import { updateQueryParams } from "../store/actions";
+import { effect } from "@preact/signals";
+
+effect(() => {
+  console.log(computedState.filteredEntries.value)
+})
 
 function FeedList() {
-	// This component won't render If feeds is null
+  const feeds = computedState.filteredFeeds.value;
+  const entries = state.entries.value;
+
 	return (
 		<List sx={{ width: "100%" }}>
-      {computedState.filteredFeeds.value.map(feed => {
-        const feed_id = toFeedId(feed);
+      <ListItemButton
+        sx={{ p: 0.5, pl: 4 }}
+        onClick={() => updateQueryParams({ feed: undefined })}
+      >
+        <span>All</span>
+        <Box sx={{
+          ml: 0.8,
+          mt: 0.1,
+          fontSize: "0.85rem",
+          display: "inline"
+        }}>
+          ({entries.length})
+        </Box>
+      </ListItemButton>
+      {feeds.map(feed => {
+        const feedId = toFeedId(feed);
         return (
           <ListItemButton
-            key={feed_id}
+            key={feedId}
             sx={{ p: 0.5, pl: 4 }}
-            onClick={() => route(`/?feed=${feed_id}`)}
+            onClick={() => updateQueryParams({ feed: feedId })}
           >
             {feed.icon &&
               <Box
@@ -42,7 +62,15 @@ function FeedList() {
                 }}
               />
             }
-            {feed.title}
+            <span>{feed.title}</span>
+            <Box sx={{
+              ml: 0.8,
+              mt: 0.1,
+              fontSize: "0.85rem",
+              display: "inline"
+            }}>
+              ({entries.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
+            </Box>
           </ListItemButton>
         );
       })}
