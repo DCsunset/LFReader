@@ -29,7 +29,7 @@ interface Props {
 }
 
 const feedListWidth = "220px";
-const entryListWidth = "400px";
+const entryListWidth = "360px";
 const toolbarHeight = "50px";
 const entryList = signal(true);
 const dark = computed(() => state.settings.value.dark);
@@ -206,21 +206,24 @@ export default function Layout(props: Props) {
       <Box sx={feedListStyle.value}>
         <Slide in={entryList.value} direction="right">
           <Box sx={{
+            // must be absolute to make main body able to occupy the same space
             position: "absolute",
             maxWidth: entryListWidth,
             flexDirection: {
               sm: "column",
               md: "row"
             },
-            borderRight: `1px solid ${theme.palette.divider}`,
-            height: `calc(100% - ${toolbarHeight})`
+            height: `calc(100vh - ${toolbarHeight})`,
+            borderRight: `1px solid ${theme.palette.divider}`
           }}>
             <EntryList />
           </Box>
         </Slide>
 
         <Box sx={{
-          p: 2,
+          p: 3,
+          height: `calc(100vh - ${toolbarHeight})`,
+          overflowY: "scroll",
           ...entryListStyle.value
         }}>
           {props.children}

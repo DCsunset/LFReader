@@ -17,14 +17,14 @@
 import { Box, List, ListItemButton } from "@mui/material";
 import { route } from "preact-router";
 import { computedState } from "../store/state";
-import { to_feed_id } from "../store/feed";
+import { toFeedId } from "../store/feed";
 
 function FeedList() {
 	// This component won't render If feeds is null
 	return (
 		<List sx={{ width: "100%" }}>
       {computedState.filteredFeeds.value.map(feed => {
-        const feed_id = to_feed_id(feed);
+        const feed_id = toFeedId(feed);
         return (
           <ListItemButton
             key={feed_id}

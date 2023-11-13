@@ -13,12 +13,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { useComputed } from "@preact/signals";
-import { Box, createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { computed, useComputed } from "@preact/signals";
+import { Box, createTheme, CssBaseline, Divider, ThemeProvider, Typography } from "@mui/material";
 import { Route, Router } from "preact-router";
 import Layout from './components/Layout';
-import { state } from "./store/state";
+import { computedState, state } from "./store/state";
 import { useEffect } from "preact/hooks";
+import { toEntryId } from "./store/feed";
 
 interface PageProps {
   // query paramters (from preact-router)
@@ -29,16 +30,37 @@ interface PageProps {
   },
 };
 
+const currentContents = computed(() => {
+  const entry = computedState.selectedEntry.value;
+  const summary = entry?.summary?.value;
+  const contents = entry?.contents?.map(v => v.value);
+  return contents || (summary ? [summary] : []);
+});
+const currentEntryId = computed(() => {
+  return toEntryId(computedState.selectedEntry.value);
+})
+
 function Page(props: PageProps) {
   useEffect(() => {
     state.queryParams.value = props.matches;
   }, [props.matches]);
+  const entry = computedState.selectedEntry.value;
 
   return (
     <Layout>
-      <Box>
-        Test
-      </Box>
+      {entry &&
+        <Box>
+          <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
+            {entry.title}
+          </Typography>
+          <Divider sx={{ mb: 1 }} />
+          {currentContents.value.map((v, i) => (
+            <div
+              key={`${currentEntryId.value} ${i}`}
+              dangerouslySetInnerHTML={{ __html: v }}
+            />
+          ))}
+        </Box>}
     </Layout>
   )
 }

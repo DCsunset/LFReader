@@ -1,7 +1,7 @@
 import { List, ListItemButton, SxProps, Typography } from "@mui/material";
 import { route } from "preact-router";
 import { computedState, state } from "../store/state";
-import { to_entry_id } from "../store/feed";
+import { toEntryId } from "../store/feed";
 import { effect } from "@preact/signals";
 
 function EntryList() {
@@ -11,11 +11,11 @@ function EntryList() {
 			height: "100%",
 		}}>
 			{computedState.filteredEntries.value.map(e => {
-        const entry_id = to_entry_id(e);
+        const entry_id = toEntryId(e);
         return (
 				  <ListItemButton
 					  key={entry_id}
-					  onClick={() => route(`/?entry=/${entry_id}`)}
+					  onClick={() => route(`/?entry=${entry_id}`)}
 				  >
 					  <Typography>{e.title}</Typography>
 				  </ListItemButton>

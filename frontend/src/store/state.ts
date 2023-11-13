@@ -15,7 +15,7 @@
 
 import { computed, effect, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
-import { Entry, Feed, from_feed_id } from "./feed";
+import { Entry, Feed, fromEntryId, fromFeedId } from "./feed";
 import { fetchData } from "./actions";
 
 export type Notification = {
@@ -107,7 +107,16 @@ const selectedFeed = computed(() => {
   if (!feed_id) {
     return undefined;
   }
-  return from_feed_id(state.feeds.value, feed_id);
+  return fromFeedId(state.feeds.value, feed_id);
+});
+
+// active entry
+const selectedEntry = computed(() => {
+  const entry_id = state.queryParams.value.entry;
+  if (!entry_id) {
+    return undefined;
+  }
+  return fromEntryId(state.entries.value, entry_id);
 });
 
 const filteredEntries = computed(() => {
@@ -127,6 +136,7 @@ export const computedState = {
   feedTags: computed(() => getTags(state.feeds.value)),
   entryTags: computed(() => getTags(state.entries.value)),
   selectedFeed,
+  selectedEntry,
   filteredFeeds,
   filteredEntries
 };
