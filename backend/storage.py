@@ -8,6 +8,10 @@ import feedparser
 from datetime import datetime
 from time import mktime, struct_time
 from functools import partial
+import aiohttp
+
+# local import
+from archive import Archiver
 
 def parsed_time_to_iso(parsed_time: struct_time | None):
   return parsed_time and datetime.utcfromtimestamp(mktime(parsed_time)).isoformat()
@@ -37,11 +41,13 @@ def sql_update_field(table: str, field: str):
   return f"{field} = COALESCE(excluded.{field}, {table}.{field})"
 
 class Storage:
-  def __init__(self, dbFile: str):
-    self.db = sqlite3.connect(dbFile)
+  def __init__(self, db_file: str, archive_dir: str, archive_url: str, user_agent: str):
+    self.db = sqlite3.connect(db_file)
     self.db.row_factory = dict_row_factory
     self.init_db()
-    logging.info(f"Database path: {dbFile}")
+    self.archiver = Archiver(archive_dir, archive_url)
+    self.user_agent = user_agent
+    logging.info(f"Database path: {db_file}")
 
   def init_db(self):
     try:
@@ -96,79 +102,98 @@ class Storage:
       logging.critical(f"Error init db: {e}")
       sys.exit(1)
 
+  async def archive_content(self, session, content, base_url: str | None):
+    if not content:
+      return None
+    if content.type != "text/plain":
+      content["value"] = await self.archiver.archive_html(session, content.value, base_url)
+    return content
+
+  async def archive_contents(self, session, contents, base_url: str | None):
+    if not contents:
+      return None
+    # TODO: parallelize archiving
+    for content in contents:
+      await self.archive_content(session, content, base_url)
+    return contents
+
   """
-  Add or Update feeds.
+  Add or update feeds.
   If no args, update all feeds
   """
-  def update_feeds(self, feed_urls: Iterable[str] | None):
-    urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
-    feeds = map(lambda url: (url, feedparser.parse(url)), urls)
-    now = datetime.now().astimezone().isoformat()
-    update_feed_field = partial(sql_update_field, "feeds")
-    update_entry_field = partial(sql_update_field, "entries")
+  async def update_feeds(self, feed_urls: Iterable[str] | None):
+    async with iohttp.ClientSession(headers={"User-Agent": self.user_agent}) as session:
+      urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
+      feeds = map(lambda url: (url, feedparser.parse(url, resolve_relative_uris=False)), urls)
+      now = datetime.now().astimezone().isoformat()
+      update_feed_field = partial(sql_update_field, "feeds")
+      update_entry_field = partial(sql_update_field, "entries")
 
-    for url, f in feeds:
-      self.db.execute(
-        f'''
-        INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(url) DO UPDATE SET
-            {update_feed_field("link")},
-            {update_feed_field("author")},
-            {update_feed_field("title")},
-            {update_feed_field("subtitle")},
-            {update_feed_field("logo")},
-            {update_feed_field("published_at")},
-            {update_feed_field("updated_at")},
-            -- extra metadata
-            {update_feed_field("fetched_at")}
-        ''',
-        (
-          url,
-          f.feed.get("link"),
-          f.feed.get("author"),
-          f.feed.get("title"),
-          f.feed.get("subtitle"),
-          f.feed.get("logo"),
-          parsed_time_to_iso(f.feed.get("published_parsed")),
-          parsed_time_to_iso(f.feed.get("updated_parsed")),
-          now,
-          now,
-          None
+      for url, f in feeds:
+        self.db.execute(
+          f'''
+          INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(url) DO UPDATE SET
+              {update_feed_field("link")},
+              {update_feed_field("author")},
+              {update_feed_field("title")},
+              {update_feed_field("subtitle")},
+              {update_feed_field("logo")},
+              {update_feed_field("published_at")},
+              {update_feed_field("updated_at")},
+              -- extra metadata
+              {update_feed_field("fetched_at")}
+          ''',
+          (
+            url,
+            f.feed.get("link"),
+            f.feed.get("author"),
+            f.feed.get("title"),
+            f.feed.get("subtitle"),
+            f.feed.get("logo"),
+            parsed_time_to_iso(f.feed.get("published_parsed")),
+            parsed_time_to_iso(f.feed.get("updated_parsed")),
+            now,
+            now,
+            None
+          )
         )
-      )
-      self.db.executemany(
-        f'''
-        INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-          ON CONFLICT(feed_url, id) DO UPDATE SET
-            {update_entry_field("link")},
-            {update_entry_field("author")},
-            {update_entry_field("title")},
-            {update_entry_field("summary")},
-            {update_entry_field("contents")},
-            {update_entry_field("enclosures")},
-            {update_entry_field("published_at")},
-            {update_entry_field("updated_at")},
-            -- extra metadata
-            {update_entry_field("fetched_at")}
-        ''',
-        map(lambda e: (
-          url,
-          e.id,
-          e.get("link"),
-          e.get("author"),
-          e.get("title"),
-          pack_data(e.get("summary_detail")),
-          pack_data(e.get("content")),
-          pack_data(e.get("enclosures")),
-          parsed_time_to_iso(e.get("published_parsed")),
-          parsed_time_to_iso(e.get("updated_parsed")),
-          now,
-          now,
-          None
-        ), f.entries)
-      )
-    # insert will create a tx. Must commit to save data
-    self.db.commit()
+
+        # TODO: parallelize fetching
+        for e in f.entries:
+          self.db.execute(
+            f'''
+            INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+              ON CONFLICT(feed_url, id) DO UPDATE SET
+                {update_entry_field("link")},
+                {update_entry_field("author")},
+                {update_entry_field("title")},
+                {update_entry_field("summary")},
+                {update_entry_field("contents")},
+                {update_entry_field("enclosures")},
+                {update_entry_field("published_at")},
+                {update_entry_field("updated_at")},
+                -- extra metadata
+                {update_entry_field("fetched_at")}
+            ''',
+            (
+              url,
+              e.id,
+              e.get("link"),
+              e.get("author"),
+              e.get("title"),
+              pack_data(await self.archive_content(session, e.get("summary_detail"), e.get("link"))),
+              pack_data(await self.archive_contents(session, e.get("content"), e.get("link"))),
+              pack_data(e.get("enclosures")),
+              parsed_time_to_iso(e.get("published_parsed")),
+              parsed_time_to_iso(e.get("updated_parsed")),
+              now,
+              now,
+              None
+            )
+          )
+      # insert will create a tx. Must commit to save data
+      self.db.commit()
 
   def get_feed_urls(self) -> list[str]:
     # result is a dict after dict_row_factory

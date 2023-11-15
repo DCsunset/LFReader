@@ -2,6 +2,7 @@ from fastapi import FastAPI, Query
 from fastapi.responses import PlainTextResponse
 import logging
 import os
+from pathlib import Path
 from storage import Storage
 from pydantic import BaseModel
 from sqlite3 import DatabaseError
@@ -10,10 +11,16 @@ from typing import Annotated
 logging.basicConfig(level=logging.INFO)
 
 # the path of the database (default to ./db.sqlite)
-dbFile = os.getenv("LFREADER_DB", "db.sqlite")
+db_file = os.getenv("LFREADER_DB", "db.sqlite")
+archive_dir = os.getenv("LFREADER_ARCHIVE", "archives")
+# default to: Chrome 119.0.0, Windows
+# set user agent to prevent being blocked by source sites
+user_agent = os.getenv("USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
 
-app = FastAPI()
-storage = Storage(dbFile)
+Path(archive_dir).mkdir(parents=True, exist_ok=True)
+
+app = FastAPI(root_path="/api")
+storage = Storage(db_file, archive_dir, "/static/archives/", user_agent)
 
 ## Feed API
 
@@ -33,7 +40,7 @@ Add (or update) new feeds
 """
 @app.post("/feeds")
 async def update_feeds_api(args: FeedArgs) -> dict:
-  storage.update_feeds(args.feed_urls)
+  await storage.update_feeds(args.feed_urls)
   return {}
 
 """
