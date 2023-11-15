@@ -102,19 +102,19 @@ class Storage:
       logging.critical(f"Error init db: {e}")
       sys.exit(1)
 
-  async def archive_content(self, session, content, base_url: str | None):
+  async def archive_content(self, session, feed_url: str, content, base_url: str | None):
     if not content:
       return None
-    if content.type != "text/plain":
-      content["value"] = await self.archiver.archive_html(session, content.value, base_url)
+    if content.get("type") != "text/plain":
+      content["value"] = await self.archiver.archive_html(session, feed_url, content.get("value"), base_url)
     return content
 
-  async def archive_contents(self, session, contents, base_url: str | None):
+  async def archive_contents(self, session, feed_url: str, contents, base_url: str | None):
     if not contents:
       return None
     # TODO: parallelize archiving
     for content in contents:
-      await self.archive_content(session, content, base_url)
+      await self.archive_content(session, feed_url, content, base_url)
     return contents
 
   """
@@ -122,7 +122,7 @@ class Storage:
   If no args, update all feeds
   """
   async def update_feeds(self, feed_urls: Iterable[str] | None):
-    async with iohttp.ClientSession(headers={"User-Agent": self.user_agent}) as session:
+    async with aiohttp.ClientSession(headers={"User-Agent": self.user_agent}) as session:
       urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
       feeds = map(lambda url: (url, feedparser.parse(url, resolve_relative_uris=False)), urls)
       now = datetime.now().astimezone().isoformat()
@@ -182,8 +182,8 @@ class Storage:
               e.get("link"),
               e.get("author"),
               e.get("title"),
-              pack_data(await self.archive_content(session, e.get("summary_detail"), e.get("link"))),
-              pack_data(await self.archive_contents(session, e.get("content"), e.get("link"))),
+              pack_data(await self.archive_content(session, url, e.get("summary_detail"), e.get("link"))),
+              pack_data(await self.archive_contents(session, url, e.get("content"), e.get("link"))),
               pack_data(e.get("enclosures")),
               parsed_time_to_iso(e.get("published_parsed")),
               parsed_time_to_iso(e.get("updated_parsed")),
@@ -216,6 +216,8 @@ class Storage:
     self.db.execute(f"DELETE FROM feeds {qs}", feed_urls)
     # delete will create a tx. Must commit to save data
     self.db.commit()
+    # delete archived resources
+    self.archiver.delete_archives(feed_urls)
 
   def delete_entries(self, feed_urls: list[str]):
     qs = "WHERE feed_url IN ({})".format(", ".join("?"))

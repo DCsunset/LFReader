@@ -2,7 +2,6 @@ from fastapi import FastAPI, Query
 from fastapi.responses import PlainTextResponse
 import logging
 import os
-from pathlib import Path
 from storage import Storage
 from pydantic import BaseModel
 from sqlite3 import DatabaseError
@@ -17,10 +16,8 @@ archive_dir = os.getenv("LFREADER_ARCHIVE", "archives")
 # set user agent to prevent being blocked by source sites
 user_agent = os.getenv("USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
 
-Path(archive_dir).mkdir(parents=True, exist_ok=True)
-
 app = FastAPI(root_path="/api")
-storage = Storage(db_file, archive_dir, "/static/archives/", user_agent)
+storage = Storage(db_file, archive_dir, "/archives", user_agent)
 
 ## Feed API
 
