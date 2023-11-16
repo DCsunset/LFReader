@@ -199,6 +199,12 @@ class Storage:
     # result is a dict after dict_row_factory
     return self.db.execute("SELECT url FROM feeds").fetchall()
 
+  def get_all(self):
+    return {
+      "feeds": self.get_feeds(),
+      "entries": self.get_entries()
+    }
+
   def get_feeds(self) -> list[dict[str, Any]]:
     # result is a dict after dict_row_factory
     return self.db.execute("SELECT * FROM feeds").fetchall()

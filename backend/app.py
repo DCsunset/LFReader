@@ -19,11 +19,20 @@ user_agent = os.getenv("USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
 app = FastAPI(root_path="/api")
 storage = Storage(db_file, archive_dir, "/archives", user_agent)
 
-## Feed API
-
-class FeedArgs(BaseModel):
+class UpdateArgs(BaseModel):
   # specific feed URLs
   feed_urls: list[str] | None = None
+
+class AllData(BaseModel):
+  feeds: list[dict]
+  entries: list[dict]
+
+"""
+Get all data
+"""
+@app.get("/")
+async def get_feeds_api() -> AllData:
+  return storage.get_all()
 
 """
 Get feeds
@@ -33,27 +42,27 @@ async def get_feeds_api() -> list[dict]:
   return storage.get_feeds()
 
 """
-Add (or update) new feeds
+Get entries
 """
-@app.post("/feeds")
-async def update_feeds_api(args: FeedArgs) -> dict:
+@app.get("/entries")
+async def get_entries_api(feed_urls: Annotated[list[str], Query()] | None = None) -> list[dict]:
+  return storage.get_entries(feed_urls)
+
+"""
+Add (or update) new feeds (and their entries)
+"""
+@app.post("/")
+async def update_api(args: UpdateArgs) -> AllData:
   await storage.update_feeds(args.feed_urls)
-  return {}
+  return storage.get_all()
 
 """
 Delete feeds
 """
-@app.delete("/feeds")
-async def delete_entries_api(feed_urls: Annotated[list[str], Query()]) -> dict:
+@app.delete("/")
+async def delete_entries_api(feed_urls: Annotated[list[str], Query()]) -> AllData:
   storage.delete_feeds(feed_urls)
-  return {}
-
-
-## Entry API
-
-@app.get("/entries")
-async def get_entries_api(feed_urls: Annotated[list[str], Query()] | None = None) -> list[dict]:
-  return storage.get_entries(feed_urls)
+  return storage.get_all()
 
 
 ## Error handlers
