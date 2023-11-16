@@ -33,13 +33,14 @@ export async function updateData(feedUrls?: string[]) {
   if (!resp.ok) {
     const text = await resp.text();
     notify("error", `${resp.statusText}: ${text}`)
-    return;
+    return false;
   }
   const data = await resp.json();
   batch(() => {
     state.data.value = data;
     notify("success", "Updated feeds successfully")
   })
+  return true;
 }
 
 export async function fetchData() {

@@ -17,12 +17,13 @@ import { computedState, state } from "../store/state";
 import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import { fetchData, updateData } from "../store/actions";
 import FeedList from "./FeedList";
 import EntryList from "./EntryList";
+import FeedsDialog from "./FeedsDialog";
 
 interface Props {
   children?: any
@@ -34,6 +35,7 @@ const toolbarHeight = "50px";
 const entryList = signal(true);
 const dark = computed(() => state.settings.value.dark);
 const settingsDialog = signal(false);
+const feedsDialog = signal(false);
 
 export default function Layout(props: Props) {
   const theme = useTheme();
@@ -167,7 +169,7 @@ export default function Layout(props: Props) {
           >
             <Icon
               path={mdiRefresh}
-              size={1.2}
+              size={1}
             />
           </IconButton>
           <IconButton
@@ -178,7 +180,18 @@ export default function Layout(props: Props) {
           >
             <Icon
               path={mdiDownload}
-              size={1.2}
+              size={1}
+            />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="inherit"
+            title="Add feeds"
+            onClick={() => feedsDialog.value = true}
+          >
+            <Icon
+              path={mdiPlus}
+              size={1}
             />
           </IconButton>
         </Stack>
@@ -214,6 +227,7 @@ export default function Layout(props: Props) {
       </Drawer>
 
       <SettingsDialog open={settingsDialog} />
+      <FeedsDialog open={feedsDialog} />
 
       <SnackbarProvider anchorOrigin={{ horizontal: "center", vertical: "bottom" }} />
 
