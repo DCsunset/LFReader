@@ -31,7 +31,7 @@ class AllData(BaseModel):
 Get all data
 """
 @app.get("/")
-async def get_feeds_api() -> AllData:
+async def get_data_api() -> AllData:
   return storage.get_all()
 
 """
@@ -60,7 +60,7 @@ async def update_api(args: UpdateArgs) -> AllData:
 Delete feeds
 """
 @app.delete("/")
-async def delete_entries_api(feed_urls: Annotated[list[str], Query()]) -> AllData:
+async def delete_api(feed_urls: Annotated[list[str], Query()]) -> AllData:
   storage.delete_feeds(feed_urls)
   return storage.get_all()
 

@@ -75,5 +75,6 @@ class Archiver:
     for feed_url in feed_urls:
       encoded_feed_url = encode_feed_url(feed_url)
       feed_path = Path(self.archive_dir).joinpath(encoded_feed_url)
-      shutil.rmtree(str(feed_path))
+      if feed_path.exists():
+        shutil.rmtree(str(feed_path))
 
