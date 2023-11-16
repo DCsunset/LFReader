@@ -17,6 +17,7 @@ import { Base64 } from "js-base64";
 
 export type Feed = {
   url: string,
+  link?: string,
   icon?: string,
   title?: string,
   author?: string,
@@ -34,6 +35,7 @@ export type Content = {
 export type Entry = {
   feed_url: string,
   id: string,
+  link?: string,
   title?: string,
   summary?: Content,
   contents?: Content[],

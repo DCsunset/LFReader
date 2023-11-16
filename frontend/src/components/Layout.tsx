@@ -16,6 +16,7 @@
 import { computedState, state } from "../store/state";
 import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
+import { CSSProperties } from "react";
 import Icon from '@mdi/react';
 import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
@@ -37,10 +38,18 @@ const dark = computed(() => state.settings.value.dark);
 const settingsDialog = signal(false);
 const feedsDialog = signal(false);
 
+const anchorNoStyle: CSSProperties = {
+  textDecoration: "inherit",
+  color: "inherit"
+};
+
 export default function Layout(props: Props) {
   const theme = useTheme();
   const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
   const feedList = useSignal(!smallDevice);
+  const selectedFeed = computedState.selectedFeed;
+  const selectedEntry = computedState.selectedEntry;
+  const selectedEntryFeed = computedState.selectedEntryFeed;
 
   // Responsive style for showing feedList
   const feedListStyle = useComputed<SxProps>(() => ({
@@ -112,7 +121,32 @@ export default function Layout(props: Props) {
             />
           </IconButton>
           <Typography variant="h6" noWrap flexGrow={1} ml={1.5}>
-            {computedState.selectedFeed.value?.title ?? "All"}
+            {selectedEntry.value ?
+              <>
+                <a
+                  href={selectedEntryFeed.value?.link}
+                  target="_blank"
+                  style={anchorNoStyle}>
+                  {selectedEntryFeed.value?.title || ""}
+                </a>
+                <Box sx={{display: "inline", mx: "0.75rem" }}>
+                  |
+                </Box>
+                <a
+                  href={selectedEntry.value?.link}
+                  target="_blank"
+                  style={anchorNoStyle}
+                >
+                  {selectedEntry.value?.title || ""}
+                </a>
+              </> :
+              <a
+                href={selectedFeed.value?.link}
+                target="_blank"
+                style={anchorNoStyle}>
+                {selectedFeed.value?.title || "All"}
+              </a>
+            }
           </Typography>
 
           <IconButton

@@ -26,7 +26,7 @@ function FeedList() {
 		<List sx={{ width: "100%" }}>
       <ListItemButton
         sx={{ p: 0.5, pl: 4 }}
-        onClick={() => updateQueryParams({ feed: undefined })}
+        onClick={() => updateQueryParams({ feed: undefined, entry: undefined })}
       >
         <span>All</span>
         <Box sx={{
@@ -44,7 +44,7 @@ function FeedList() {
           <ListItemButton
             key={feedId}
             sx={{ p: 0.5, pl: 4 }}
-            onClick={() => updateQueryParams({ feed: feedId })}
+            onClick={() => updateQueryParams({ feed: feedId, entry: undefined })}
           >
             {feed.icon &&
               <Box

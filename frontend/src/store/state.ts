@@ -121,6 +121,12 @@ const selectedEntry = computed(() => {
   return fromEntryId(state.data.value.entries, entry_id);
 });
 
+// Feed of selected entry
+const selectedEntryFeed = computed(() => {
+  const entry = selectedEntry.value;
+  return entry && state.data.value.feeds.find(f => f.url === entry.feed_url);
+});
+
 const filteredEntries = computed(() => {
   const entries = state.data.value.entries;
   const selectedUrl = selectedFeed.value?.url;
@@ -139,6 +145,7 @@ export const computedState = {
   entryTags: computed(() => getTags(state.data.value.entries)),
   selectedFeed,
   selectedEntry,
+  selectedEntryFeed,
   filteredFeeds,
   filteredEntries
 };
