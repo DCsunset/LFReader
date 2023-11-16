@@ -15,6 +15,8 @@
         # common dependencies
         deps = with pkgs; [
           (python3.withPackages(p: with p; [
+            aiohttp
+            beautifulsoup4
             feedparser
             fastapi
             uvicorn
@@ -38,13 +40,13 @@
           # dev server
           backend-dev = createFlakeApp "backend-dev" ''
             cd backend
-            uvicorn app:app --reload --port 3000 --root-path /api
+            uvicorn app:app --reload --port 3000
           '';
 
           # prod server
           backend-prod = createFlakeApp "backend-prod" ''
             cd backend
-            uvicorn app:app --host 0.0.0.0 --port 3000 --root-path /api
+            uvicorn app:app --host 0.0.0.0 --port 3000
           '';
         };
       };
