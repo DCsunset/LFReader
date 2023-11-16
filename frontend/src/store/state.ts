@@ -69,8 +69,10 @@ export const state = {
   ui: {
     excludedTags: signal([] as string[])
   },
-  feeds: signal<Feed[]>([]),
-  entries: signal<Entry[]>([]),
+  data: signal({
+    feeds: [] as Feed[],
+    entries: [] as Entry[]
+  }),
   // query parameters from url
   queryParams: signal<QueryParams>({}),
   notification: signal<Notification | null>(null),
@@ -91,7 +93,7 @@ function getTags(items: any[]) {
 // Feeds to show in FeedList
 const filteredFeeds = computed(() => {
   const excludedTags = state.ui.excludedTags.value;
-  return state.feeds.value.filter(feed => {
+  return state.data.value.feeds.filter(feed => {
     for (const t of feed.user_data?.tags ?? []) {
       if (excludedTags.includes(t)) {
         return false;
@@ -107,7 +109,7 @@ const selectedFeed = computed(() => {
   if (!feed_id) {
     return undefined;
   }
-  return fromFeedId(state.feeds.value, feed_id);
+  return fromFeedId(state.data.value.feeds, feed_id);
 });
 
 // active entry
@@ -116,11 +118,11 @@ const selectedEntry = computed(() => {
   if (!entry_id) {
     return undefined;
   }
-  return fromEntryId(state.entries.value, entry_id);
+  return fromEntryId(state.data.value.entries, entry_id);
 });
 
 const filteredEntries = computed(() => {
-  const entries = state.entries.value;
+  const entries = state.data.value.entries;
   const selectedUrl = selectedFeed.value?.url;
   if (selectedUrl) {
     return entries.filter(v => v.feed_url === selectedUrl);
@@ -133,8 +135,8 @@ const filteredEntries = computed(() => {
 });
 
 export const computedState = {
-  feedTags: computed(() => getTags(state.feeds.value)),
-  entryTags: computed(() => getTags(state.entries.value)),
+  feedTags: computed(() => getTags(state.data.value.feeds)),
+  entryTags: computed(() => getTags(state.data.value.entries)),
   selectedFeed,
   selectedEntry,
   filteredFeeds,

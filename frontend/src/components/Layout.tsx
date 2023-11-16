@@ -17,10 +17,10 @@ import { computedState, state } from "../store/state";
 import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
-import { getFeeds } from "../store/actions";
+import { fetchData, updateData } from "../store/actions";
 import FeedList from "./FeedList";
 import EntryList from "./EntryList";
 
@@ -154,9 +154,34 @@ export default function Layout(props: Props) {
             color="#ee802f"
           />
           <Typography variant="h5" sx={{ ml: 0.5 }}>
-            yafr
+            LFReader
           </Typography>
         </Box>
+
+        <Stack direction="row-reverse" sx={{ mx: 1.5, mt: 1 }}>
+          <IconButton
+            size="small"
+            color="inherit"
+            title="Reload local feeds"
+            onClick={fetchData}
+          >
+            <Icon
+              path={mdiRefresh}
+              size={1.2}
+            />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="inherit"
+            title="Update feeds"
+            onClick={() => updateData()}
+          >
+            <Icon
+              path={mdiDownload}
+              size={1.2}
+            />
+          </IconButton>
+        </Stack>
 
         <Box sx={{
           display: "flex",
@@ -167,17 +192,6 @@ export default function Layout(props: Props) {
         </Box>
 
         <Stack direction="row-reverse" sx={{ m: 1.5 }}>
-          <IconButton
-            size="small"
-            color="inherit"
-            title="Update feeds"
-            onClick={getFeeds}
-          >
-            <Icon
-              path={mdiRefresh}
-              size={1.2}
-            />
-          </IconButton>
           <IconButton
             size="small"
             color="inherit"

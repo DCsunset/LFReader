@@ -17,15 +17,10 @@ import { Box, List, ListItemButton } from "@mui/material";
 import { computedState, state } from "../store/state";
 import { toFeedId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
-import { effect } from "@preact/signals";
-
-effect(() => {
-  console.log(computedState.filteredEntries.value)
-})
 
 function FeedList() {
   const feeds = computedState.filteredFeeds.value;
-  const entries = state.entries.value;
+  const entries = state.data.value.entries;
 
 	return (
 		<List sx={{ width: "100%" }}>

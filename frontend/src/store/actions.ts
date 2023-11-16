@@ -15,43 +15,45 @@
 
 import { route } from "preact-router";
 import { QueryParams, state } from "./state";
+import { batch } from "@preact/signals";
+import { AlertColor } from "@mui/material";
 
-function handleError(msg: string) {
-  state.notification.value = {
-    color: "error",
-    text: msg
-  };
+export function notify(color: AlertColor, text: string) {
+  state.notification.value = { color, text };
 }
 
-export async function getFeeds() {
-  const resp =  await fetch("/api/feeds");
+export async function updateData(feedUrls?: string[]) {
+  const resp =  await fetch("/api/", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ feed_urls: feedUrls })
+  });
   if (!resp.ok) {
     const text = await resp.text();
-    handleError(`${resp.statusText}: ${text}`);
+    notify("error", `${resp.statusText}: ${text}`)
     return;
   }
-  state.feeds.value = await resp.json();
-}
-
-export async function getEntries() {
-  const resp =  await fetch("/api/entries");
-  if (!resp.ok) {
-    const text = await resp.text();
-    handleError(`${resp.statusText}: ${text}`);
-    return;
-  }
-  state.entries.value = await resp.json();
+  const data = await resp.json();
+  batch(() => {
+    state.data.value = data;
+    notify("success", "Updated feeds successfully")
+  })
 }
 
 export async function fetchData() {
-  try {
-    await Promise.all([
-      getFeeds(),
-      getEntries()
-    ]);
-  } catch (err: any) {
-    handleError(`Failed to fetch: ${err.message}`);
+  const resp =  await fetch("/api/");
+  if (!resp.ok) {
+    const text = await resp.text();
+    notify("error", `${resp.statusText}: ${text}`)
+    return;
   }
+  const data = await resp.json();
+  batch(() => {
+    state.data.value = data;
+    notify("success", "Loaded feeds successfully")
+  })
 }
 
 // update query params

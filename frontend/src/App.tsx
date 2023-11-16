@@ -32,9 +32,7 @@ interface PageProps {
 
 const currentContents = computed(() => {
   const entry = computedState.selectedEntry.value;
-  const summary = entry?.summary?.value;
-  const contents = entry?.contents?.map(v => v.value);
-  return contents || (summary ? [summary] : []);
+  return entry?.contents || (entry?.summary ? [entry?.summary] : []);
 });
 const currentEntryId = computed(() => {
   return toEntryId(computedState.selectedEntry.value);
@@ -49,16 +47,22 @@ function Page(props: PageProps) {
   return (
     <Layout>
       {entry &&
-        <Box>
+        <Box sx={{
+          // prevent images from overflowing
+          "& img": { maxWidth: "85%" }
+        }}>
           <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
             {entry.title}
           </Typography>
           <Divider sx={{ mb: 1 }} />
           {currentContents.value.map((v, i) => (
-            <div
-              key={`${currentEntryId.value} ${i}`}
-              dangerouslySetInnerHTML={{ __html: v }}
-            />
+            // If it's text/plain, content is not sanitized
+            v.type === "text/plain" ?
+              <div>{v.value}</div> :
+              <div
+                key={`${currentEntryId.value} ${i}`}
+                dangerouslySetInnerHTML={{ __html: v.value }}
+              />
           ))}
         </Box>}
     </Layout>

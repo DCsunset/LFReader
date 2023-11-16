@@ -13,8 +13,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, List, ListItemButton, SxProps, Typography } from "@mui/material";
-import { computedState, state } from "../store/state";
+import { Box, List, ListItemButton } from "@mui/material";
+import { computedState } from "../store/state";
 import { toEntryId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
 
