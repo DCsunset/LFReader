@@ -12,6 +12,6 @@ COPY docker/Caddyfile /app/Caddyfile
 COPY --from=frontend-build /app/frontend/dist /app/frontend
 
 EXPOSE 80
-WORKDIR /app
+WORKDIR /app/data
 
 CMD ["./start.sh"]
