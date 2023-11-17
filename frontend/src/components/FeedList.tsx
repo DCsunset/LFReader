@@ -57,9 +57,9 @@ function FeedList() {
                 }}
               />
             }
-            <span>{feed.title}</span>
+            <span style={{ overflowWrap: "anywhere" }}>{feed.title}</span>
             <Box sx={{
-              ml: 0.8,
+              mx: 0.8,
               mt: 0.1,
               fontSize: "0.85rem",
               display: "inline"

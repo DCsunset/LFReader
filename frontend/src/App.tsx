@@ -49,7 +49,12 @@ function Page(props: PageProps) {
       {entry &&
         <Box sx={{
           // prevent images from overflowing
-          "& img": { maxWidth: "85%" }
+          "& img": {
+            maxWidth: "85%",
+            // overwrite existing fixed width and height
+            width: "auto",
+            height: "auto"
+          }
         }}>
           <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
             {entry.title}

@@ -179,9 +179,8 @@ export default function Layout(props: Props) {
         <Box
           sx={{
             display: "flex",
-            alignItems: "center",
             justifyContent: "center",
-            p: 1,
+            p: 2,
           }}
         >
           <Icon
@@ -189,12 +188,12 @@ export default function Layout(props: Props) {
             size={1.2}
             color="#ee802f"
           />
-          <Typography variant="h5" sx={{ ml: 0.5 }}>
+          <Typography variant="h5" sx={{ ml: 1 }}>
             LFReader
           </Typography>
         </Box>
 
-        <Stack direction="row-reverse" sx={{ mx: 1.5, mt: 1 }}>
+        <Stack direction="row-reverse" sx={{ mx: 1.5 }}>
           <IconButton
             size="small"
             color="inherit"

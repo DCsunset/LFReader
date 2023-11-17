@@ -32,7 +32,8 @@ function EntryList() {
 					  onClick={() => updateQueryParams({ entry: entryId })}
 				  >
             <Box sx={{
-              fontStyle: e.title ? undefined : "italic"
+              fontStyle: e.title ? undefined : "italic",
+              overflowWrap: "anywhere"
             }}>
               {e.title || "(No title)"}
             </Box>
