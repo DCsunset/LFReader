@@ -95,8 +95,12 @@ class Storage:
         )
       ''')
       self.db.execute('''
-        -- Indexes for fast lookup
-        CREATE INDEX IF NOT EXISTS entries_by_feed on entries(feed_url)
+        -- Indexes for fast lookup by feed_url
+        CREATE INDEX IF NOT EXISTS entries_by_feed_url on entries(feed_url)
+      ''')
+      self.db.execute('''
+        -- Indexes for accessing entries by updated_at efficiently
+        CREATE INDEX IF NOT EXISTS entries_by_updated_at on entries(updated_at)
       ''')
     except Exception as e:
       logging.critical(f"Error init db: {e}")
@@ -199,23 +203,29 @@ class Storage:
     # result is a dict after dict_row_factory
     return self.db.execute("SELECT url FROM feeds").fetchall()
 
-  def get_all(self):
-    return {
-      "feeds": self.get_feeds(),
-      "entries": self.get_entries()
-    }
-
   def get_feeds(self) -> list[dict[str, Any]]:
     # result is a dict after dict_row_factory
     return self.db.execute("SELECT * FROM feeds").fetchall()
 
-  def get_entries(self, feed_urls: list[str] | None = None) -> list[dict[str, Any]]:
-    if feed_urls is None:
-      return self.db.execute(f"SELECT * FROM entries").fetchall()
-    else:
+  def get_entries(
+      self,
+      feed_urls: list[str] | None = None,
+      offset: int = -1,
+      limit: int = -1
+  ) -> list[dict]:
+    query = "SELECT * FROM entries"
+    args = []
+    if feed_urls is not None:
       # use placeholder to prevent SQL injection
       placeholders = ", ".join(repeat("?", len(feed_urls)))
-      return self.db.execute(f"SELECT * FROM entries WHERE feed_url IN ({placeholders})", feed_urls).fetchall()
+      query += f" WHERE feed_url IN ({placeholders})"
+      args.extend(feed_urls)
+
+    # -1 means no limit or offset
+    query += " ORDER BY updated_at DESC LIMIT ? OFFSET ?"
+    args.extend((limit, offset))
+
+    return self.db.execute(query, args).fetchall()
 
   def delete_feeds(self, feed_urls: list[str]):
     qs = "WHERE url IN ({})".format(", ".join("?"))

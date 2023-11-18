@@ -28,13 +28,6 @@ class AllData(BaseModel):
   entries: list[dict]
 
 """
-Get all data
-"""
-@app.get("/")
-async def get_data_api() -> AllData:
-  return storage.get_all()
-
-"""
 Get feeds
 """
 @app.get("/feeds")
@@ -45,8 +38,13 @@ async def get_feeds_api() -> list[dict]:
 Get entries
 """
 @app.get("/entries")
-async def get_entries_api(feed_urls: Annotated[list[str], Query()] | None = None) -> list[dict]:
-  return storage.get_entries(feed_urls)
+async def get_entries_api(
+    # for list type, must annotate with Query explicitly
+    feed_urls: Annotated[list[str], Query()] | None = None,
+    offset: int = -1,
+    limit: int = -1
+) -> list[dict]:
+  return storage.get_entries(feed_urls, offset, limit)
 
 """
 Add (or update) new feeds (and their entries)
