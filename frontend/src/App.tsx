@@ -13,13 +13,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { computed, useComputed } from "@preact/signals";
+import { computed } from "@preact/signals";
 import { Box, createTheme, CssBaseline, Divider, ThemeProvider, Typography } from "@mui/material";
 import { Route, Router } from "preact-router";
+import { useEffect } from "preact/hooks";
 import Layout from './components/Layout';
 import { computedState, state } from "./store/state";
-import { useEffect } from "preact/hooks";
 import { toEntryId } from "./store/feed";
+import hljs from "highlight.js";
+import "highlight.js/styles/atom-one-dark.min.css";
 
 interface PageProps {
   // query paramters (from preact-router)
@@ -42,6 +44,17 @@ function Page(props: PageProps) {
   useEffect(() => {
     state.queryParams.value = props.matches;
   }, [props.matches]);
+
+  // highligh code on update
+  useEffect(() => {
+    document.querySelectorAll("pre code").forEach((el: HTMLElement) => {
+      hljs.highlightElement(el);
+    });
+    document.querySelectorAll(".highlight pre").forEach((el: HTMLElement) => {
+      el.classList.add("hljs")
+    });
+  });
+
   const entry = computedState.selectedEntry.value;
 
   return (
@@ -74,16 +87,16 @@ function Page(props: PageProps) {
   )
 }
 
-function App() {
-  const theme = useComputed(() => {
-    const dark = state.settings.value.dark;
-    return createTheme({
-      palette: {
-        mode: dark ? "dark" : "light"
-      },
-    });
+const theme = computed(() => {
+  const dark = state.settings.value.dark;
+  return createTheme({
+    palette: {
+      mode: dark ? "dark" : "light"
+    },
   });
+});
 
+function App() {
 	return (
     <ThemeProvider theme={theme.value}>
       <CssBaseline />
