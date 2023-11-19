@@ -245,8 +245,8 @@ export default function Layout(props: Props) {
             onClick={toggleTheme}
           >
             {dark.value ?
-              <Icon path={mdiWeatherNight} size={1.2} /> :
-              <Icon path={mdiWeatherSunny} size={1.2} />}
+              <Icon path={mdiWeatherNight} size={1} /> :
+              <Icon path={mdiWeatherSunny} size={1} />}
           </IconButton>
 
           <IconButton
@@ -254,7 +254,7 @@ export default function Layout(props: Props) {
             title="Settings"
             onClick={() => settingsDialog.value = true}
           >
-            <Icon path={mdiCog} size={1.2} />
+            <Icon path={mdiCog} size={1} />
           </IconButton>
         </Stack>
       </Drawer>

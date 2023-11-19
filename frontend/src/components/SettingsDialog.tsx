@@ -114,7 +114,7 @@ function SettingsDialog(props: Props) {
                   value={pageSize.value}
                   onChange={(event: any) => {
                     const value = event.target.value;
-                    pageSizeError.value = !validNumber(value, 1, 26);
+                    pageSizeError.value = !validNumber(value, 1, Number.MAX_SAFE_INTEGER);
                     pageSize.value = value;
                   }}
                 />

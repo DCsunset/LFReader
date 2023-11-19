@@ -30,7 +30,8 @@ export type Settings = {
 
 export type QueryParams = {
   feed?: string,
-  entry?: string
+  entry?: string,
+  page?: string
 };
 
 function merge(value: any, init: any) {
@@ -141,6 +142,10 @@ const filteredEntries = computed(() => {
 });
 
 export const computedState = {
+  page: computed(() => {
+    const pageInt = parseInt(state.queryParams.value.page);
+    return pageInt > 0 ? pageInt : 1;
+  }),
   feedTags: computed(() => getTags(state.data.value.feeds)),
   entryTags: computed(() => getTags(state.data.value.entries)),
   selectedFeed,

@@ -44,24 +44,29 @@ export async function updateData(feedUrls?: string[]) {
 }
 
 export async function fetchData() {
-  const resp =  await fetch("/api/");
-  if (!resp.ok) {
-    const text = await resp.text();
-    notify("error", `${resp.statusText}: ${text}`)
-    return;
+  const responses  =  await Promise.all([
+    fetch("/api/feeds"),
+    fetch("/api/entries")
+  ]);
+  for (const resp of responses) {
+    if (!resp.ok) {
+      const text = await resp.text();
+      notify("error", `${resp.statusText}: ${text}`)
+      return;
+    }
   }
-  const data = await resp.json();
+  const [feeds, entries] = await Promise.all(responses.map(r => r.json()));
   batch(() => {
-    state.data.value = data;
+    state.data.value = { feeds, entries };
     notify("success", "Loaded feeds successfully")
   })
 }
 
 // update query params
-export function updateQueryParams(params: QueryParams) {
-  // merge with original params
-  const newParams = {
-    ...state.queryParams.peek(),
+export function updateQueryParams(params: QueryParams, reset: boolean = false) {
+  // merge with original params if not resetting
+  const newParams = reset ? params : {
+    ...state.queryParams.value,
     ...params,
   };
   // remove undefined fields
