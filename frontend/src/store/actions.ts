@@ -22,6 +22,22 @@ export function notify(color: AlertColor, text: string) {
   state.notification.value = { color, text };
 }
 
+async function getData() {
+  const responses  =  await Promise.all([
+    fetch("/api/feeds"),
+    fetch("/api/entries")
+  ]);
+  for (const resp of responses) {
+    if (!resp.ok) {
+      const text = await resp.text();
+      notify("error", `${resp.statusText}: ${text}`)
+      return undefined;
+    }
+  }
+  const [feeds, entries] = await Promise.all(responses.map(r => r.json()));
+  return { feeds, entries };
+}
+
 export async function updateData(feedUrls?: string[]) {
   const resp =  await fetch("/api/", {
     method: "POST",
@@ -33,33 +49,26 @@ export async function updateData(feedUrls?: string[]) {
   if (!resp.ok) {
     const text = await resp.text();
     notify("error", `${resp.statusText}: ${text}`)
-    return false;
+    return;
   }
-  const data = await resp.json();
-  batch(() => {
-    state.data.value = data;
-    notify("success", "Updated feeds successfully")
-  })
-  return true;
+
+  const data = await getData();
+  if (data) {
+    batch(() => {
+      state.data.value = data;
+      notify("success", "Updated feeds successfully")
+    })
+  }
 }
 
 export async function fetchData() {
-  const responses  =  await Promise.all([
-    fetch("/api/feeds"),
-    fetch("/api/entries")
-  ]);
-  for (const resp of responses) {
-    if (!resp.ok) {
-      const text = await resp.text();
-      notify("error", `${resp.statusText}: ${text}`)
-      return;
-    }
+  const data = await getData();
+  if (data) {
+    batch(() => {
+      state.data.value = data;
+      notify("success", "Loaded feeds successfully")
+    });
   }
-  const [feeds, entries] = await Promise.all(responses.map(r => r.json()));
-  batch(() => {
-    state.data.value = { feeds, entries };
-    notify("success", "Loaded feeds successfully")
-  })
 }
 
 // update query params

@@ -21,7 +21,7 @@ import Layout from './components/Layout';
 import { computedState, state } from "./store/state";
 import { toEntryId } from "./store/feed";
 import hljs from "highlight.js";
-import "highlight.js/styles/atom-one-dark.min.css";
+import "highlight.js/styles/base16/tomorrow-night.css";
 
 interface PageProps {
   // query paramters (from preact-router)
@@ -46,11 +46,12 @@ function Page(props: PageProps) {
   }, [props.matches]);
 
   // highligh code on update
+  // TODO: watch selectedEntry value
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((el: HTMLElement) => {
       hljs.highlightElement(el);
     });
-    document.querySelectorAll(".highlight pre").forEach((el: HTMLElement) => {
+    document.querySelectorAll(".highlight pre, code").forEach((el: HTMLElement) => {
       el.classList.add("hljs")
     });
   });

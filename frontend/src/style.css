@@ -18,3 +18,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 body {
   margin: 0;
 }
+
+code.hljs {
+  color: #dddddd;
+}
+
+:not(pre) > code.hljs {
+  color: #eeeeee;
+}
+

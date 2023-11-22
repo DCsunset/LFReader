@@ -23,10 +23,6 @@ class UpdateArgs(BaseModel):
   # specific feed URLs
   feed_urls: list[str] | None = None
 
-class AllData(BaseModel):
-  feeds: list[dict]
-  entries: list[dict]
-
 """
 Get feeds
 """
@@ -50,17 +46,17 @@ async def get_entries_api(
 Add (or update) new feeds (and their entries)
 """
 @app.post("/")
-async def update_api(args: UpdateArgs) -> AllData:
+async def update_api(args: UpdateArgs):
   await storage.update_feeds(args.feed_urls)
-  return storage.get_all()
+  return {}
 
 """
 Delete feeds
 """
 @app.delete("/")
-async def delete_api(feed_urls: Annotated[list[str], Query()]) -> AllData:
+async def delete_api(feed_urls: Annotated[list[str], Query()]):
   storage.delete_feeds(feed_urls)
-  return storage.get_all()
+  return {}
 
 
 ## Error handlers

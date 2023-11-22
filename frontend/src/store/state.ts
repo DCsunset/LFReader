@@ -18,6 +18,12 @@ import { AlertColor } from "@mui/material/Alert";
 import { Entry, Feed, fromEntryId, fromFeedId } from "./feed";
 import { fetchData } from "./actions";
 
+// prefix for storage to avoid conflicts with other apps at same url
+const APP_PREFIX = "lfreader";
+function appKey(key: string) {
+  return `${APP_PREFIX}.${key}`;
+}
+
 export type Notification = {
 	color: AlertColor,
 	text: string
@@ -49,7 +55,7 @@ function merge(value: any, init: any) {
 
 function loadState(key: string, init: any) {
   try {
-    const data = localStorage.getItem(key);
+    const data = localStorage.getItem(appKey(key));
     return merge(
       data && JSON.parse(data),
       init
@@ -157,13 +163,13 @@ export const computedState = {
 
 // Persist settings on change
 effect(() => {
-  localStorage.setItem("settings", JSON.stringify(state.settings.value));
+  localStorage.setItem(appKey("settings"), JSON.stringify(state.settings.value));
 });
 
 // Persist ui states on change
 for (const [key, item] of Object.entries(state.ui)) {
   effect(() => {
-    localStorage.setItem(`ui.${key}`, JSON.stringify(item.value));
+    localStorage.setItem(appKey(`ui.${key}`), JSON.stringify(item.value));
   });
 }
 
