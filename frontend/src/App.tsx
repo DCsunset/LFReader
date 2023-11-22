@@ -20,6 +20,10 @@ import { useEffect } from "preact/hooks";
 import Layout from './components/Layout';
 import { computedState, state } from "./store/state";
 import { toEntryId } from "./store/feed";
+import Icon from "@mdi/react";
+import { mdiCalendarMonth } from "@mdi/js";
+import { displayDate } from "./utils/date";
+import { grey } from "@mui/material/colors";
 import hljs from "highlight.js";
 import "highlight.js/styles/base16/tomorrow-night.css";
 
@@ -46,7 +50,6 @@ function Page(props: PageProps) {
   }, [props.matches]);
 
   // highligh code on update
-  // TODO: watch selectedEntry value
   useEffect(() => {
     document.querySelectorAll("pre code").forEach((el: HTMLElement) => {
       hljs.highlightElement(el);
@@ -74,6 +77,11 @@ function Page(props: PageProps) {
             {entry.title}
           </Typography>
           <Divider sx={{ mb: 1 }} />
+          <Typography variant="info" sx={{ display: "flex" }}>
+            <Icon path={mdiCalendarMonth} size={0.9} />
+            <Box sx={{ ml: 0.5 }}>{displayDate(entry.published_at)}</Box>
+          </Typography>
+
           {currentContents.value.map((v, i) => (
             // If it's text/plain, content is not sanitized
             v.type === "text/plain" ?
@@ -88,12 +96,37 @@ function Page(props: PageProps) {
   )
 }
 
+// Types for custom typography
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    info: React.CSSProperties;
+  }
+
+  // allow configuration using `createTheme`
+  interface TypographyVariantsOptions {
+    info?: React.CSSProperties;
+  }
+}
+
+// Update the Typography's variant prop options
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    info: true;
+  }
+}
+
 const theme = computed(() => {
   const dark = state.settings.value.dark;
   return createTheme({
     palette: {
       mode: dark ? "dark" : "light"
     },
+    typography: {
+      info: {
+        color: dark ? grey[400] : grey[600],
+        fontWeight: 500
+      }
+    }
   });
 });
 

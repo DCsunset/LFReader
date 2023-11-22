@@ -21,6 +21,7 @@ export type Feed = {
   icon?: string,
   title?: string,
   author?: string,
+  updated_at?: string,
   user_data?: any
 };
 
@@ -39,6 +40,8 @@ export type Entry = {
   title?: string,
   summary?: Content,
   contents?: Content[],
+  updated_at?: string,
+  published_at?: string,
   user_data?: any
 };
 
