@@ -51,11 +51,15 @@ function Page(props: PageProps) {
 
   // highligh code on update
   useEffect(() => {
-    document.querySelectorAll("pre code").forEach((el: HTMLElement) => {
+    document.querySelectorAll("#lfreader-entry pre code").forEach((el: HTMLElement) => {
       hljs.highlightElement(el);
     });
-    document.querySelectorAll(".highlight pre, code").forEach((el: HTMLElement) => {
+    document.querySelectorAll("#lfreader-entry .highlight pre, #lfreader-entry code").forEach((el: HTMLElement) => {
       el.classList.add("hljs")
+    });
+    // open link in external page
+    document.querySelectorAll("#lfreader-entry a").forEach((el: HTMLElement) => {
+      el.setAttribute("target", "_blank");
     });
   });
 
@@ -64,15 +68,18 @@ function Page(props: PageProps) {
   return (
     <Layout>
       {entry &&
-        <Box sx={{
-          // prevent images from overflowing
-          "& img": {
-            maxWidth: "85%",
-            // overwrite existing fixed width and height
-            width: "auto",
-            height: "auto"
-          }
-        }}>
+        <Box
+          id="lfreader-entry"
+          sx={{
+            // prevent images from overflowing
+            "& img": {
+              maxWidth: "85%",
+              // overwrite existing fixed width and height
+              width: "auto",
+              height: "auto"
+            }
+          }}
+        >
           <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
             {entry.title}
           </Typography>
