@@ -18,11 +18,10 @@ import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { Route, Router } from "preact-router";
 import { useEffect } from "preact/hooks";
 import Layout from './components/Layout';
-import { computedState, state } from "./store/state";
+import { state } from "./store/state";
 import { grey } from "@mui/material/colors";
 import hljs from "highlight.js";
 import "highlight.js/styles/base16/tomorrow-night.css";
-import Entry from "./components/Entry";
 
 interface PageProps {
   // query paramters (from preact-router)
@@ -53,10 +52,8 @@ function Page(props: PageProps) {
   });
 
   return (
-    <Layout>
-      <Entry />
-    </Layout>
-  )
+    <Layout />
+  );
 }
 
 // Types for custom typography

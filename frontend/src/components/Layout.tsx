@@ -13,22 +13,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import { createRef } from "preact";
 import { computedState, state } from "../store/state";
-import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide } from "@mui/material";
+import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, Zoom, Fab } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
-import { CSSProperties } from "react";
+import { CSSProperties, useEffect } from "react";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import { fetchData, updateData } from "../store/actions";
 import FeedList from "./FeedList";
 import EntryList from "./EntryList";
 import FeedsDialog from "./FeedsDialog";
-
-interface Props {
-  children?: any
-}
+import Entry from "./Entry";
 
 const feedListWidth = "220px";
 const entryListWidth = "340px";
@@ -43,7 +41,13 @@ const anchorNoStyle: CSSProperties = {
   color: "inherit"
 };
 
-export default function Layout(props: Props) {
+const entryRef = createRef<HTMLElement>();
+const scrollButton = signal(false);
+const scrollToTop = () => {
+  entryRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+};
+
+export default function Layout() {
   const theme = useTheme();
   const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
   const feedList = useSignal(!smallDevice);
@@ -102,6 +106,15 @@ export default function Layout(props: Props) {
       enqueueSnackbar(text, { variant: color });
     }
   });
+
+  useEffect(() => {
+    // Show scroll button when pageY is greater than a value
+    // Must use effect hook as entryRef is only available after mounting
+    const element = entryRef.current;
+    element?.addEventListener("scroll", () => {
+      scrollButton.value = element!.scrollTop > 200;
+    });
+  }, []);
 
   return (
     <>
@@ -281,14 +294,36 @@ export default function Layout(props: Props) {
           </Box>
         </Slide>
 
-        <Box sx={{
-          p: 4,
+        <Box ref={entryRef} sx={{
+          py: 4,
+          px: {
+            sm: 4,
+            md: 6,
+            lg: 8
+          },
           height: `calc(100vh - ${toolbarHeight})`,
           overflowY: "scroll",
           ...entryListStyle.value
         }}>
-          {props.children}
+          <Entry />
         </Box>
+
+        {/* Scroll-to-top button */}
+        <Zoom in={scrollButton.value}>
+          <Fab
+            size="small"
+            title="Scroll to top"
+            sx={{
+              // position: "absolute",
+              position: "fixed",
+              bottom: theme => theme.spacing(3),
+              right: theme => theme.spacing(3)
+            }}
+            onClick={scrollToTop}
+          >
+            <Icon path={mdiArrowCollapseUp} size={0.9} />
+          </Fab>
+        </Zoom>
       </Box>
     </>
   );
