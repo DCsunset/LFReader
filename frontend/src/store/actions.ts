@@ -85,3 +85,26 @@ export function updateQueryParams(params: QueryParams, reset: boolean = false) {
   route(`/?${new URLSearchParams(newParams)}`);
 }
 
+/// Delete feed
+export async function deleteFeed(url: string) {
+  const query = new URLSearchParams({
+    feed_urls: url
+  });
+  const resp = await fetch(`/api/?${query}`, { method: "DELETE" });
+  if (!resp.ok) {
+    const text = await resp.text();
+    notify("error", `${resp.statusText}: ${text}`);
+    return;
+  }
+
+  // Fast deletion in frontend
+  const data = state.data.value;
+  batch(() => {
+    state.data.value = {
+      feeds: data.feeds.filter(f => f.url === url),
+      entries: data.entries.filter(e => e.feed_url === url)
+    };
+    notify("success", "Feed deleted successfully");
+  });
+}
+

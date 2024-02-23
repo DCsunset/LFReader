@@ -17,6 +17,7 @@ import { computed, effect, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
 import { Entry, Feed, fromEntryId, fromFeedId } from "./feed";
 import { fetchData } from "./actions";
+import { FunctionComponent } from "preact";
 
 // prefix for storage to avoid conflicts with other apps at same url
 const APP_PREFIX = "lfreader";
@@ -74,7 +75,8 @@ export const state = {
 		dark: false
 	})),
   ui: {
-    excludedTags: signal([] as string[])
+    excludedTags: signal([] as string[]),
+    editingFeeds: signal(false)
   },
   data: signal({
     feeds: [] as Feed[],
@@ -85,7 +87,7 @@ export const state = {
   notification: signal<Notification | null>(null),
   confirmation: {
     open: signal(false),
-    text: signal(""),
+    content: signal<Element|string>(""),
     onConfirm: () => {}
   }
 };

@@ -13,20 +13,37 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, List, ListItemButton } from "@mui/material";
+import { Box, IconButton, List, ListItem, ListItemButton } from "@mui/material";
 import { computedState, state } from "../store/state";
-import { toFeedId } from "../store/feed";
-import { updateQueryParams } from "../store/actions";
+import { Feed, toFeedId } from "../store/feed";
+import { deleteFeed, updateQueryParams } from "../store/actions";
+import { batch, computed } from "@preact/signals";
+import { mdiClose, mdiLeadPencil } from "@mdi/js";
+import Icon from '@mdi/react';
+
+const editing = state.ui.editingFeeds;
+const FeedItemComponent = computed(() => editing.value ? ListItem : ListItemButton);
+
+function confirmDeletion(feed: Feed) {
+  batch(() => {
+    state.confirmation.open.value = true;
+    state.confirmation.content.value = <>Confirm deletion of feed <b>{feed.title}</b>?</>;
+    state.confirmation.onConfirm = () => {
+      deleteFeed(feed.url);
+    };
+  });
+}
 
 function FeedList() {
   const feeds = computedState.filteredFeeds.value;
   const entries = state.data.value.entries;
+  const FeedItem = FeedItemComponent.value;
 
 	return (
 		<List sx={{ width: "100%" }}>
-      <ListItemButton
+      <FeedItem
         sx={{ p: 0.5, pl: 4 }}
-        onClick={() => updateQueryParams({}, true)}
+        onClick={() => editing.value || updateQueryParams({}, true)}
       >
         <span>All</span>
         <Box sx={{
@@ -37,15 +54,35 @@ function FeedList() {
         }}>
           ({entries.length})
         </Box>
-      </ListItemButton>
+      </FeedItem>
       {feeds.map(feed => {
         const feedId = toFeedId(feed);
         return (
-          <ListItemButton
+          <FeedItem
             key={feedId}
-            sx={{ p: 0.5, pl: 4 }}
-            onClick={() => updateQueryParams({ feed: feedId }, true)}
+            sx={{ p: 1, pl: editing.value ? 1 : 4 }}
+            onClick={() => editing.value || updateQueryParams({ feed: feedId }, true)}
           >
+            {editing.value &&
+              <Box sx={{ mr: 1.5 }}>
+                <IconButton
+                  size="small"
+                  color="error"
+                  sx={{ p: 0.5 }}
+                  onClick={() => confirmDeletion(feed)}
+                >
+                  <Icon path={mdiClose} size={0.9} />
+                </IconButton>
+
+                <IconButton
+                  size="small"
+                  color="inherit"
+                  sx={{ p: 0.5 }}
+                >
+                  <Icon path={mdiLeadPencil} size={0.9} />
+                </IconButton>
+              </Box>
+            }
             {feed.icon &&
               <Box
                 component="img"
@@ -66,7 +103,7 @@ function FeedList() {
             }}>
               ({entries.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
             </Box>
-          </ListItemButton>
+          </FeedItem>
         );
       })}
 		</List>

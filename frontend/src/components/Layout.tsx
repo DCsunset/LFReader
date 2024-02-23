@@ -19,9 +19,10 @@ import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, St
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { CSSProperties, useEffect } from "react";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiPencil, mdiLeadPencil } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
+import ConfirmationDialog from "./ConfirmationDialog";
 import { fetchData, updateData } from "../store/actions";
 import FeedList from "./FeedList";
 import EntryList from "./EntryList";
@@ -35,6 +36,11 @@ const entryList = signal(true);
 const dark = computed(() => state.settings.value.dark);
 const settingsDialog = signal(false);
 const feedsDialog = signal(false);
+const editing = state.ui.editingFeeds;
+
+const selectedFeed = computedState.selectedFeed;
+const selectedEntry = computedState.selectedEntry;
+const selectedEntryFeed = computedState.selectedEntryFeed;
 
 const anchorNoStyle: CSSProperties = {
   textDecoration: "inherit",
@@ -51,9 +57,6 @@ export default function Layout() {
   const theme = useTheme();
   const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
   const feedList = useSignal(!smallDevice);
-  const selectedFeed = computedState.selectedFeed;
-  const selectedEntry = computedState.selectedEntry;
-  const selectedEntryFeed = computedState.selectedEntryFeed;
 
   // Responsive style for showing feedList
   const feedListStyle = useComputed<SxProps>(() => ({
@@ -240,6 +243,17 @@ export default function Layout() {
               size={1}
             />
           </IconButton>
+          <IconButton
+            size="small"
+            color={editing.value ? "primary" : "inherit"}
+            title="Edit feeds"
+            onClick={() => editing.value = !editing.value}
+          >
+            <Icon
+              path={mdiLeadPencil}
+              size={1}
+            />
+          </IconButton>
         </Stack>
 
         <Box sx={{
@@ -275,6 +289,7 @@ export default function Layout() {
       <SettingsDialog open={settingsDialog} />
       <FeedsDialog open={feedsDialog} />
 
+      <ConfirmationDialog />
       <SnackbarProvider anchorOrigin={{ horizontal: "center", vertical: "bottom" }} />
 
       <Box sx={feedListStyle.value}>
