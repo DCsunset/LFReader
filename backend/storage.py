@@ -8,6 +8,7 @@ import feedparser
 from datetime import datetime
 from time import mktime, struct_time
 from functools import partial
+import asyncio
 import aiohttp
 
 # local import
@@ -116,9 +117,13 @@ class Storage:
   async def archive_contents(self, session, feed_url: str, contents, base_url: str | None):
     if not contents:
       return None
-    # TODO: parallelize archiving
-    for content in contents:
-      await self.archive_content(session, feed_url, content, base_url)
+
+    await asyncio.gather(
+      *map(
+        lambda c: self.archive_content(session, feed_url, c, base_url),
+        contents
+      )
+    )
     return contents
 
   """
@@ -147,6 +152,7 @@ class Storage:
               {update_feed_field("updated_at")},
               -- extra metadata
               {update_feed_field("fetched_at")}
+              {update_feed_field("user_data")}
           ''',
           (
             url,
@@ -163,8 +169,17 @@ class Storage:
           )
         )
 
+        feed_user_data_text = self.db.execute(
+          "SELECT user_data FROM feeds WHERE url = ?",
+          (url,)
+        ).fetchone()
+        feed_user_data = json.loads(feed_user_data_text[0] or "{}")
+
         # TODO: parallelize fetching
         for e in f.entries:
+          # base url for feed resources
+          base_url = feed_user_data.get("base_url", e.get("link"))
+
           self.db.execute(
             f'''
             INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -186,8 +201,8 @@ class Storage:
               e.get("link"),
               e.get("author"),
               e.get("title"),
-              pack_data(await self.archive_content(session, url, e.get("summary_detail"), e.get("link"))),
-              pack_data(await self.archive_contents(session, url, e.get("content"), e.get("link"))),
+              pack_data(await self.archive_content(session, url, e.get("summary_detail"), base_url)),
+              pack_data(await self.archive_contents(session, url, e.get("content"), base_url)),
               pack_data(e.get("enclosures")),
               parsed_time_to_iso(e.get("published_parsed")),
               parsed_time_to_iso(e.get("updated_parsed")),
