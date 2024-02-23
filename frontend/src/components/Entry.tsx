@@ -8,7 +8,11 @@ import { displayDate } from "../utils/date";
 
 const currentContents = computed(() => {
   const entry = computedState.selectedEntry.value;
-  return entry?.contents || (entry?.summary ? [entry?.summary] : []);
+  let contents = entry?.contents || [];
+  if (contents.length === 0) {
+    contents = entry?.summary ? [entry?.summary] : [];
+  }
+  return contents;
 });
 const currentEntryId = computed(() => {
   return toEntryId(computedState.selectedEntry.value);
