@@ -26,9 +26,15 @@ def pack_data(value):
 
 # unpack JSON data in row
 def unpack_data(key, value):
-  json_fields = { "user_data", "enclosures", "contents", "summary" }
+  # json fields with default value
+  json_fields = {
+    "user_data": {},
+    "enclosures": [],
+    "contents": [],
+    "summary": {}
+  }
   if key in json_fields:
-    return value and json.loads(value)
+    return json.loads(value) if value else json_fields[key]
   else:
     return value
 
@@ -65,8 +71,8 @@ class Storage:
           updated_at TEXT,  -- ISO DateTime
 
           -- extra metadata
-          fetched_at TEXT,  -- when this feed is last fetched
-          added_at TEXT,  -- when this feed is first added to db
+          fetched_at TEXT,  -- when this feed was last fetched
+          added_at TEXT,  -- when this feed was first added to db
           user_data TEXT  -- custom user data in JSON format
         )
       ''')
@@ -85,8 +91,8 @@ class Storage:
           updated_at TEXT,  -- ISO DateTime
 
           -- extra metadata
-          fetched_at TEXT,  -- when this entry is last fetched
-          added_at TEXT,  -- when this entry is first added to db
+          fetched_at TEXT,  -- when this entry's resources were last fetched
+          added_at TEXT,  -- when this entry was first added to db
           user_data TEXT,  -- custom user data in JSON format
 
           PRIMARY KEY (feed_url, id),
@@ -127,10 +133,10 @@ class Storage:
     return contents
 
   """
-  Add or update feeds.
-  If no args, update all feeds
+  Fetch feeds.
+  If no args, fetch all feeds
   """
-  async def update_feeds(self, feed_urls: Iterable[str] | None):
+  async def fetch_feeds(self, feed_urls: Iterable[str] | None):
     async with aiohttp.ClientSession(headers={"User-Agent": self.user_agent}) as session:
       urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
       feeds = map(lambda url: (url, feedparser.parse(url, resolve_relative_uris=False)), urls)
@@ -152,7 +158,6 @@ class Storage:
               {update_feed_field("updated_at")},
               -- extra metadata
               {update_feed_field("fetched_at")}
-              {update_feed_field("user_data")}
           ''',
           (
             url,
@@ -169,11 +174,13 @@ class Storage:
           )
         )
 
-        feed_user_data_text = self.db.execute(
+        # unpacked already when converting to row dict
+        feed_user_data = self.db.execute(
           "SELECT user_data FROM feeds WHERE url = ?",
           (url,)
-        ).fetchone()
-        feed_user_data = json.loads(feed_user_data_text[0] or "{}")
+        ).fetchone().get("user_data")
+        # None should be substituted by {}
+        assert (feed_user_data != None)
 
         # TODO: parallelize fetching
         for e in f.entries:
@@ -241,6 +248,13 @@ class Storage:
     args.extend((limit, offset))
 
     return self.db.execute(query, args).fetchall()
+
+  def update_feed(self, feed_url: str, user_data: dict):
+    self.db.execute(
+      "UPDATE feeds SET user_data = ? WHERE url = ?",
+      (pack_data(user_data), feed_url)
+    )
+    self.db.commit()
 
   def delete_feeds(self, feed_urls: list[str]):
     placeholders = ", ".join(repeat("?", len(feed_urls)))

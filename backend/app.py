@@ -6,6 +6,7 @@ from storage import Storage
 from pydantic import BaseModel
 from sqlite3 import DatabaseError
 from typing import Annotated
+import traceback
 
 logging.basicConfig(level=logging.INFO)
 
@@ -19,16 +20,27 @@ user_agent = os.getenv("USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) 
 app = FastAPI(root_path="/api")
 storage = Storage(db_file, archive_dir, "/archives", user_agent)
 
-class UpdateArgs(BaseModel):
-  # specific feed URLs
-  feed_urls: list[str] | None = None
-
 """
 Get feeds
 """
 @app.get("/feeds")
 async def get_feeds_api() -> list[dict]:
   return storage.get_feeds()
+
+
+class UpdateFeedArgs(BaseModel):
+  # put it in body to prevent encoding
+  feed_url: str
+  user_data: dict
+
+"""
+Update feed user_data
+"""
+@app.put("/feeds")
+async def update_feed_api(args: UpdateFeedArgs):
+  storage.update_feed(args.feed_url, args.user_data)
+  return {}
+
 
 """
 Get entries
@@ -42,12 +54,17 @@ async def get_entries_api(
 ) -> list[dict]:
   return storage.get_entries(feed_urls, offset, limit)
 
+
+class FetchArgs(BaseModel):
+  # specific feed URLs
+  feed_urls: list[str] | None = None
+
 """
-Add (or update) new feeds (and their entries)
+Fetch feeds and their entries (can be new feeds)
 """
 @app.post("/")
-async def update_api(args: UpdateArgs):
-  await storage.update_feeds(args.feed_urls)
+async def fetch_api(args: FetchArgs):
+  await storage.fetch_feeds(args.feed_urls)
   return {}
 
 """
@@ -63,4 +80,5 @@ async def delete_api(feed_urls: Annotated[list[str], Query()]):
 
 @app.exception_handler(DatabaseError)
 async def db_exception(request, err: DatabaseError) -> PlainTextResponse:
+  traceback.print_exc()
   return PlainTextResponse(f"Database Error: {err}", status_code=409)
