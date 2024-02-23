@@ -243,16 +243,13 @@ class Storage:
     return self.db.execute(query, args).fetchall()
 
   def delete_feeds(self, feed_urls: list[str]):
-    qs = "WHERE url IN ({})".format(", ".join("?"))
-    self.db.execute(f"DELETE FROM feeds {qs}", feed_urls)
+    placeholders = ", ".join(repeat("?", len(feed_urls)))
+    self.db.execute(f"DELETE FROM feeds WHERE url IN ({placeholders})", feed_urls)
+    # delete associated entries
+    self.db.execute(f"DELETE FROM entries WHERE feed_url IN ({placeholders})", feed_urls)
     # delete will create a tx. Must commit to save data
     self.db.commit()
+
     # delete archived resources
     self.archiver.delete_archives(feed_urls)
-
-  def delete_entries(self, feed_urls: list[str]):
-    qs = "WHERE feed_url IN ({})".format(", ".join("?"))
-    self.db.execute(f"DELETE FROM entries {qs}", feed_urls)
-    # delete will create a tx. Must commit to save data
-    self.db.commit()
 
