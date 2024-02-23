@@ -46,7 +46,6 @@ const validNumber = (value: string, min: number, max: number) => {
 };
 
 function SettingsDialog(props: Props) {
-  const isSmallDevice = useMediaQuery((theme: Theme) => theme.breakpoints.down("xs"));
   const settings = useComputed(() => state.settings.value);
 
   // Local states
@@ -85,7 +84,7 @@ function SettingsDialog(props: Props) {
       fullWidth
     >
       <DialogTitle sx={{ pb: 0 }}>Settings</DialogTitle>
-      <DialogContent sx={{ px: isSmallDevice ? 1 : 0 }}>
+      <DialogContent sx={{ px: 1 }}>
         <List>
           <Box sx={{ mx: 2, mt: 2 }}>
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>

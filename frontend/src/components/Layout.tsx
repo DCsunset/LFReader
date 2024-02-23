@@ -28,8 +28,8 @@ import EntryList from "./EntryList";
 import FeedsDialog from "./FeedsDialog";
 import Entry from "./Entry";
 
-const feedListWidth = "220px";
-const entryListWidth = "340px";
+const feedListWidth = "250px";
+const entryListWidth = "350px";
 const toolbarHeight = "50px";
 const entryList = signal(true);
 const dark = computed(() => state.settings.value.dark);
@@ -206,7 +206,7 @@ export default function Layout() {
           </Typography>
         </Box>
 
-        <Stack direction="row-reverse" sx={{ mx: 1.5 }}>
+        <Stack direction="row-reverse" sx={{ mx: 1.5, mb: 1 }}>
           <IconButton
             size="small"
             color="inherit"
