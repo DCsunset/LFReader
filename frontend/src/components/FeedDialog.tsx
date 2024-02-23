@@ -26,61 +26,53 @@ import {
   ListItem,
   ListItemText,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
-import { state } from "../store/state";
-import { batch, Signal, signal } from "@preact/signals";
-
-const validNumber = (value: string, min: number, max: number) => {
-  if (value.length === 0) {
-    return false;
-  }
-  const num = parseInt(value);
-  return num >= min && num <= max;
-};
+import { batch, Signal, signal, useSignalEffect } from "@preact/signals";
+import { Feed } from "../store/feed";
+import { updateFeed } from "../store/actions";
 
 // local states
-const pageSize = signal(state.settings.value.pageSize.toString());
-const pageSizeError = signal(false);
-// reset local states
-const reset = () => {
-  batch(() => {
-    pageSize.value = state.settings.value.pageSize.toString();
-  });
-};
+const baseUrl = signal("");
 
-export default function SettingsDialog({ open }: {
-  open: Signal<boolean>
+export default function FeedDialog({ open, feed }: {
+  open: Signal<boolean>,
+  feed: Signal<Feed|null>
 }) {
+  // reset local states
+  const reset = () => {
+    batch(() => {
+      baseUrl.value = feed.value?.user_data.base_url ?? "";
+    });
+  };
   const close = () => {
     open.value = false;
     reset();
   };
-  const save = () => {
-    if (!pageSizeError.value) {
-      batch(() => {
-        state.settings.value = {
-          ...state.settings.value,
-          pageSize: parseInt(pageSize.value)
-        };
-        open.value = false;
-      });
+  const save = async () => {
+    // No need to update the feeds signal as no UI depends on user_data
+    feed.value.user_data.base_url = baseUrl.value || undefined;
+    if (await updateFeed(feed.value.url, feed.value.user_data)) {
+      close();
     }
   };
+
+  // Reset local states when feed changes
+  useSignalEffect(reset);
 
   return (
     <Dialog
       open={open.value}
-      onClose={() => open.value = false}
+      onClose={close}
       disableBackdropClick
       fullWidth
     >
-      <DialogTitle sx={{ pb: 0 }}>Settings</DialogTitle>
+      <DialogTitle sx={{ pb: 0 }}>Feed Settings</DialogTitle>
       <DialogContent sx={{ px: 1 }}>
         <List>
           <Box sx={{ mx: 2, mt: 2 }}>
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>
-              General
+              User Data
             </Typography>
             <Divider />
           </Box>
@@ -90,23 +82,19 @@ export default function SettingsDialog({ open }: {
               <Grid item>
                 <ListItemText secondary={
                   <span>
-                    positive integer
+                    used for archiving resources
                   </span>
                 }>
-                  Number of entries per page
+                  Resource Base URL
                 </ListItemText>
               </Grid>
               <Grid item>
                 <TextField
                   variant="standard"
-                  type="number"
-                  sx={{ maxWidth: "45px" }}
-                  error={pageSizeError.value}
-                  value={pageSize.value}
+                  value={baseUrl.value}
+                  placeholder="(auto)"
                   onChange={(event: any) => {
-                    const value = event.target.value;
-                    pageSizeError.value = !validNumber(value, 1, Number.MAX_SAFE_INTEGER);
-                    pageSize.value = value;
+                    baseUrl.value = event.target.value;
                   }}
                 />
               </Grid>

@@ -15,6 +15,11 @@
 
 import { Base64 } from "js-base64";
 
+export type FeedUserData = {
+  base_url?: string,
+  tags?: string[]
+};
+
 export type Feed = {
   url: string,
   link?: string,
@@ -22,8 +27,8 @@ export type Feed = {
   title?: string,
   author?: string,
   updated_at?: string,
-  user_data?: any
-};
+  user_data: FeedUserData;
+}
 
 export type Content = {
   value: string,

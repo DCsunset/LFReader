@@ -15,7 +15,7 @@
 
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material"
 import { Signal, signal, batch } from "@preact/signals";
-import { updateData } from "../store/actions";
+import { fetchData } from "../store/actions";
 
 interface Props {
   open: Signal<boolean>
@@ -33,7 +33,7 @@ function setFeedUrls(value: string) {
   });
 }
 
-export default function FeedsDialog(props: Props) {
+export default function NewFeedsDialog(props: Props) {
   // reset local states
   const close = () => {
     batch(() => {
@@ -49,7 +49,7 @@ export default function FeedsDialog(props: Props) {
       feedUrlsError.value = true;
       return;
     }
-    const success = await updateData(urls);
+    const success = await fetchData(urls);
     if (success) {
       close();
     }

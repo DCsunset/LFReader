@@ -17,12 +17,17 @@ import { Box, IconButton, List, ListItem, ListItemButton } from "@mui/material";
 import { computedState, state } from "../store/state";
 import { Feed, toFeedId } from "../store/feed";
 import { deleteFeed, updateQueryParams } from "../store/actions";
-import { batch, computed } from "@preact/signals";
+import { batch, computed, signal } from "@preact/signals";
 import { mdiClose, mdiLeadPencil } from "@mdi/js";
 import Icon from '@mdi/react';
+import FeedDialog from "./FeedDialog";
 
 const editing = state.ui.editingFeeds;
 const FeedItemComponent = computed(() => editing.value ? ListItem : ListItemButton);
+const feedDialog = {
+  open: signal(false),
+  feed: signal<Feed|null>(null)
+};
 
 function confirmDeletion(feed: Feed) {
   batch(() => {
@@ -40,73 +45,81 @@ function FeedList() {
   const FeedItem = FeedItemComponent.value;
 
 	return (
-		<List sx={{ width: "100%" }}>
-      <FeedItem
-        sx={{ p: 0.5, pl: 4 }}
-        onClick={() => editing.value || updateQueryParams({}, true)}
-      >
-        <span>All</span>
-        <Box sx={{
-          ml: 0.8,
-          mt: 0.1,
-          fontSize: "0.85rem",
-          display: "inline"
-        }}>
-          ({entries.length})
-        </Box>
-      </FeedItem>
-      {feeds.map(feed => {
-        const feedId = toFeedId(feed);
-        return (
-          <FeedItem
-            key={feedId}
-            sx={{ p: 1, pl: editing.value ? 1 : 4 }}
-            onClick={() => editing.value || updateQueryParams({ feed: feedId }, true)}
-          >
-            {editing.value &&
-              <Box sx={{ mr: 1.5 }}>
-                <IconButton
-                  size="small"
-                  color="error"
-                  sx={{ p: 0.5 }}
-                  onClick={() => confirmDeletion(feed)}
-                >
-                  <Icon path={mdiClose} size={0.9} />
-                </IconButton>
+    <>
+      <List sx={{ width: "100%" }}>
+        <FeedItem
+          sx={{ p: 0.5, pl: 4 }}
+          onClick={() => editing.value || updateQueryParams({}, true)}
+        >
+          <span>All</span>
+          <Box sx={{
+            ml: 0.8,
+            mt: 0.1,
+            fontSize: "0.85rem",
+            display: "inline"
+          }}>
+            ({entries.length})
+          </Box>
+        </FeedItem>
+        {feeds.map(feed => {
+          const feedId = toFeedId(feed);
+          return (
+            <FeedItem
+              key={feedId}
+              sx={{ p: 1, pl: editing.value ? 1 : 4 }}
+              onClick={() => editing.value || updateQueryParams({ feed: feedId }, true)}
+            >
+              {editing.value &&
+                <Box sx={{ mr: 1.5 }}>
+                  <IconButton
+                    size="small"
+                    color="error"
+                    sx={{ p: 0.5 }}
+                    onClick={() => confirmDeletion(feed)}
+                  >
+                    <Icon path={mdiClose} size={0.9} />
+                  </IconButton>
 
-                <IconButton
-                  size="small"
-                  color="inherit"
-                  sx={{ p: 0.5 }}
-                >
-                  <Icon path={mdiLeadPencil} size={0.9} />
-                </IconButton>
+                  <IconButton
+                    size="small"
+                    color="inherit"
+                    sx={{ p: 0.5 }}
+                    onClick={() => {
+                      feedDialog.feed.value = feed;
+                      feedDialog.open.value = true;
+                    }}
+                  >
+                    <Icon path={mdiLeadPencil} size={0.9} />
+                  </IconButton>
+                </Box>
+              }
+              {feed.icon &&
+                <Box
+                  component="img"
+                  src={feed.icon}
+                  sx={{
+                    width: 20,
+                    height: 20,
+                    mr: 1
+                  }}
+                />
+              }
+              <span style={{ overflowWrap: "anywhere" }}>{feed.title}</span>
+              <Box sx={{
+                mx: 0.8,
+                mt: 0.1,
+                fontSize: "0.85rem",
+                display: "inline"
+              }}>
+                ({entries.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
               </Box>
-            }
-            {feed.icon &&
-              <Box
-                component="img"
-                src={feed.icon}
-                sx={{
-                  width: 20,
-                  height: 20,
-                  mr: 1
-                }}
-              />
-            }
-            <span style={{ overflowWrap: "anywhere" }}>{feed.title}</span>
-            <Box sx={{
-              mx: 0.8,
-              mt: 0.1,
-              fontSize: "0.85rem",
-              display: "inline"
-            }}>
-              ({entries.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
-            </Box>
-          </FeedItem>
-        );
-      })}
-		</List>
+            </FeedItem>
+          );
+        })}
+      </List>
+
+      <FeedDialog {...feedDialog} />
+    </>
 	);
 }
 

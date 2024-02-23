@@ -17,6 +17,7 @@ import { route } from "preact-router";
 import { QueryParams, state } from "./state";
 import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
+import { FeedUserData } from "./feed";
 
 export function notify(color: AlertColor, text: string) {
   state.notification.value = { color, text };
@@ -38,7 +39,7 @@ async function getData() {
   return { feeds, entries };
 }
 
-export async function updateData(feedUrls?: string[]) {
+export async function fetchData(feedUrls?: string[]) {
   const resp =  await fetch("/api/", {
     method: "POST",
     headers: {
@@ -49,7 +50,7 @@ export async function updateData(feedUrls?: string[]) {
   if (!resp.ok) {
     const text = await resp.text();
     notify("error", `${resp.statusText}: ${text}`)
-    return;
+    return false;
   }
 
   const data = await getData();
@@ -58,10 +59,12 @@ export async function updateData(feedUrls?: string[]) {
       state.data.value = data;
       notify("success", "Updated feeds successfully")
     })
+    return true;
   }
+  return false;
 }
 
-export async function fetchData() {
+export async function loadData() {
   const data = await getData();
   if (data) {
     batch(() => {
@@ -69,6 +72,28 @@ export async function fetchData() {
       notify("success", "Loaded feeds successfully")
     });
   }
+}
+
+export async function updateFeed(url: string, userData: FeedUserData) {
+  // needs double encoding to include slash in url and decode it once at the server
+  const resp =  await fetch(`/api/feeds`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      feed_url: url,
+      user_data: userData
+    })
+  });
+  if (!resp.ok) {
+    const text = await resp.text();
+    notify("error", `${resp.statusText}: ${text}`)
+    return false;
+  }
+
+  notify("success", "Updated feed successfully")
+  return true;
 }
 
 // update query params

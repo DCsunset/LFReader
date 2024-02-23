@@ -23,10 +23,10 @@ import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherN
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
-import { fetchData, updateData } from "../store/actions";
+import { loadData, fetchData } from "../store/actions";
 import FeedList from "./FeedList";
 import EntryList from "./EntryList";
-import FeedsDialog from "./FeedsDialog";
+import NewFeedsDialog from "./NewFeedsDialog";
 import Entry from "./Entry";
 
 const feedListWidth = "250px";
@@ -214,7 +214,7 @@ export default function Layout() {
             size="small"
             color="inherit"
             title="Reload local feeds"
-            onClick={fetchData}
+            onClick={loadData}
           >
             <Icon
               path={mdiRefresh}
@@ -224,8 +224,8 @@ export default function Layout() {
           <IconButton
             size="small"
             color="inherit"
-            title="Update feeds"
-            onClick={() => updateData()}
+            title="Fetch feeds from origin"
+            onClick={() => fetchData()}
           >
             <Icon
               path={mdiDownload}
@@ -287,7 +287,7 @@ export default function Layout() {
       </Drawer>
 
       <SettingsDialog open={settingsDialog} />
-      <FeedsDialog open={feedsDialog} />
+      <NewFeedsDialog open={feedsDialog} />
 
       <ConfirmationDialog />
       <SnackbarProvider anchorOrigin={{ horizontal: "center", vertical: "bottom" }} />

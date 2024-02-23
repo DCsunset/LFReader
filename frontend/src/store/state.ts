@@ -16,7 +16,7 @@
 import { computed, effect, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
 import { Entry, Feed, fromEntryId, fromFeedId } from "./feed";
-import { fetchData } from "./actions";
+import { loadData } from "./actions";
 import { FunctionComponent } from "preact";
 
 // prefix for storage to avoid conflicts with other apps at same url
@@ -175,6 +175,6 @@ for (const [key, item] of Object.entries(state.ui)) {
   });
 }
 
-// fetch data on mount
-fetchData();
+// Load data on mount
+loadData();
 
