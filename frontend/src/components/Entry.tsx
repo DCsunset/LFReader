@@ -37,13 +37,13 @@ export default function Entry() {
         throwOnError: false
       });
       // highlight code on update
-      element.querySelectorAll("pre code").forEach((el: HTMLElement) => {
+      element.querySelectorAll("pre code:not(.hljs)").forEach((el: HTMLElement) => {
         hljs.highlightElement(el);
       });
-      element.querySelectorAll("pre code").forEach((el: HTMLElement) => {
+      element.querySelectorAll("pre code:not(.hljs)").forEach((el: HTMLElement) => {
         hljs.highlightElement(el);
       });
-      element.querySelectorAll(".highlight pre, code").forEach((el: HTMLElement) => {
+      element.querySelectorAll(".highlight pre, code:not(.hljs)").forEach((el: HTMLElement) => {
         el.classList.add("hljs")
       });
       // open link in external page

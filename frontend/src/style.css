@@ -23,11 +23,26 @@ code.hljs {
   color: #dddddd;
 }
 
-:is(.code, .gutter) pre.hljs {
+pre.hljs {
   padding: 1em;
+}
+
+/* prevent double padding */
+pre.hljs code.hljs {
+  padding: 0;
 }
 
 :not(pre) > code.hljs {
   color: #eeeeee;
+}
+
+figure {
+  margin: 0;
+}
+table {
+  border-collapse: collapse;
+}
+td {
+  padding: 0;
 }
 
