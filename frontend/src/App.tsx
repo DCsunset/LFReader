@@ -20,8 +20,6 @@ import { useEffect } from "preact/hooks";
 import Layout from './components/Layout';
 import { state } from "./store/state";
 import { grey } from "@mui/material/colors";
-import hljs from "highlight.js";
-import "highlight.js/styles/base16/tomorrow-night.css";
 
 interface PageProps {
   // query paramters (from preact-router)
@@ -36,20 +34,6 @@ function Page(props: PageProps) {
   useEffect(() => {
     state.queryParams.value = props.matches;
   }, [props.matches]);
-
-  // highligh code on update
-  useEffect(() => {
-    document.querySelectorAll("#lfreader-entry pre code").forEach((el: HTMLElement) => {
-      hljs.highlightElement(el);
-    });
-    document.querySelectorAll("#lfreader-entry .highlight pre, #lfreader-entry code").forEach((el: HTMLElement) => {
-      el.classList.add("hljs")
-    });
-    // open link in external page
-    document.querySelectorAll("#lfreader-entry a").forEach((el: HTMLElement) => {
-      el.setAttribute("target", "_blank");
-    });
-  });
 
   return (
     <Layout />
