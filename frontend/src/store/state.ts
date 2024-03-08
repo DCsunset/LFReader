@@ -32,6 +32,7 @@ export type Notification = {
 
 export type Settings = {
   pageSize: number,
+  archive: boolean,
 	dark: boolean
 };
 
@@ -72,6 +73,7 @@ function loadState(key: string, init: any) {
 export const state = {
 	settings: signal<Settings>(loadState("settings", {
     pageSize: 20,
+    archive: true,
 		dark: false
 	})),
   ui: {

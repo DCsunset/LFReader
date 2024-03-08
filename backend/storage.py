@@ -134,9 +134,9 @@ class Storage:
 
   """
   Fetch feeds.
-  If no args, fetch all feeds
+  If feed_urls is None, fetch all feeds
   """
-  async def fetch_feeds(self, feed_urls: Iterable[str] | None):
+  async def fetch_feeds(self, feed_urls: Iterable[str] | None, archive: bool):
     async with aiohttp.ClientSession(headers={"User-Agent": self.user_agent}) as session:
       urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
       feeds = map(lambda url: (url, feedparser.parse(url, resolve_relative_uris=False)), urls)
@@ -186,6 +186,11 @@ class Storage:
         for e in f.entries:
           # base url for feed resources
           base_url = feed_user_data.get("base_url", e.get("link"))
+          summary = e.get("summary_detail")
+          contents = e.get("content")
+          if archive:
+            summary = await self.archive_content(session, url, summary, base_url)
+            contents = await self.archive_contents(session, url, contents, base_url)
 
           self.db.execute(
             f'''
@@ -208,8 +213,8 @@ class Storage:
               e.get("link"),
               e.get("author"),
               e.get("title"),
-              pack_data(await self.archive_content(session, url, e.get("summary_detail"), base_url)),
-              pack_data(await self.archive_contents(session, url, e.get("content"), base_url)),
+              pack_data(summary),
+              pack_data(contents),
               pack_data(e.get("enclosures")),
               parsed_time_to_iso(e.get("published_parsed")),
               parsed_time_to_iso(e.get("updated_parsed")),

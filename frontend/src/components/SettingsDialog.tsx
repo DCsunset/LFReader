@@ -16,6 +16,7 @@
 import {
   Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
@@ -42,10 +43,13 @@ const validNumber = (value: string, min: number, max: number) => {
 // local states
 const pageSize = signal(state.settings.value.pageSize.toString());
 const pageSizeError = signal(false);
+const archive = signal(state.settings.value.archive);
+
 // reset local states
 const reset = () => {
   batch(() => {
     pageSize.value = state.settings.value.pageSize.toString();
+    archive.value = state.settings.value.archive;
   });
 };
 
@@ -61,7 +65,8 @@ export default function SettingsDialog({ open }: {
       batch(() => {
         state.settings.value = {
           ...state.settings.value,
-          pageSize: parseInt(pageSize.value)
+          pageSize: parseInt(pageSize.value),
+          archive: archive.value
         };
         open.value = false;
       });
@@ -108,6 +113,26 @@ export default function SettingsDialog({ open }: {
                     pageSizeError.value = !validNumber(value, 1, Number.MAX_SAFE_INTEGER);
                     pageSize.value = value;
                   }}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    download resources (e.g. images) and save them locally
+                  </span>
+                }>
+                  Archive Resources
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <Checkbox
+                  checked={archive.value}
+                  onChange={(e: any) => archive.value = e.target.checked}
                 />
               </Grid>
             </Grid>

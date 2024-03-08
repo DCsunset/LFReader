@@ -45,7 +45,10 @@ export async function fetchData(feedUrls?: string[]) {
     headers: {
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ feed_urls: feedUrls })
+    body: JSON.stringify({
+      feed_urls: feedUrls,
+      archive: state.settings.value.archive
+    })
   });
   if (!resp.ok) {
     const text = await resp.text();

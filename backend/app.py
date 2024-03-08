@@ -21,7 +21,7 @@ app = FastAPI(root_path="/api")
 storage = Storage(db_file, archive_dir, "/archives", user_agent)
 
 """
-Get feeds
+Get feeds from local database
 """
 @app.get("/feeds")
 async def get_feeds_api() -> list[dict]:
@@ -43,7 +43,7 @@ async def update_feed_api(args: UpdateFeedArgs):
 
 
 """
-Get entries
+Get entries from local database
 """
 @app.get("/entries")
 async def get_entries_api(
@@ -58,13 +58,15 @@ async def get_entries_api(
 class FetchArgs(BaseModel):
   # specific feed URLs
   feed_urls: list[str] | None = None
+  # whether to archive resources
+  archive: bool = True
 
 """
-Fetch feeds and their entries (can be new feeds)
+Fetch feeds and their entries from origin (can be new feeds)
 """
 @app.post("/")
 async def fetch_api(args: FetchArgs):
-  await storage.fetch_feeds(args.feed_urls)
+  await storage.fetch_feeds(args.feed_urls, args.archive)
   return {}
 
 """
