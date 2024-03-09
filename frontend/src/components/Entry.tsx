@@ -1,10 +1,10 @@
 import { createRef } from "preact";
 import { computed } from "@preact/signals";
-import { computedState  } from "../store/state";
-import { getEntryTitle, toEntryId } from "../store/feed";
+import { computedState, lookupFeed  } from "../store/state";
+import { getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
 import { Box, Divider, Typography } from "@mui/material";
 import Icon from "@mdi/react";
-import { mdiCalendarMonth } from "@mdi/js";
+import { mdiCalendarMonth, mdiRss } from "@mdi/js";
 import { displayDate } from "../utils/date";
 import { useEffect } from "preact/hooks";
 import renderMathInElement from "katex/contrib/auto-render";
@@ -32,6 +32,7 @@ const entryRef = createRef<HTMLElement>();
 
 export default function Entry() {
   const entry = computedState.selectedEntry.value;
+  const feedTitle = getFeedTitle(lookupFeed(entry.feed_url));
 
   // this hook runs every time it re-rerenders
   useEffect(() => {
@@ -86,7 +87,10 @@ export default function Entry() {
           <Divider sx={{ mb: 1 }} />
           <Typography variant="info" sx={{ display: "flex" }}>
             <Icon path={mdiCalendarMonth} size={0.9} />
-            <Box sx={{ ml: 0.5 }}>{displayDate(entry.published_at)}</Box>
+            <Box sx={{ ml: 0.5, mr: 1.5 }}>{displayDate(entry.published_at ?? entry.updated_at)}</Box>
+
+            <Icon path={mdiRss} size={0.9} />
+            <Box sx={{ ml: 0.5 }}>{feedTitle}</Box>
           </Typography>
 
           {currentContents.value.map((v, i) => (
