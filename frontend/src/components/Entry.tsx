@@ -12,6 +12,11 @@ import hljs from "highlight.js";
 import "katex/dist/katex.css";
 import "highlight.js/styles/base16/tomorrow-night.css";
 
+hljs.configure({
+  // prevent logging the errors in console
+  ignoreUnescapedHTML: true
+});
+
 const currentContents = computed(() => {
   const entry = computedState.selectedEntry.value;
   let contents = entry?.contents || [];
