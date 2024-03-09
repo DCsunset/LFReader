@@ -15,9 +15,10 @@
 
 import { computed, effect, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
-import { Entry, Feed, fromEntryId, fromFeedId } from "./feed";
+import { Entry, Feed } from "./feed";
 import { loadData } from "./actions";
-import { FunctionComponent } from "preact";
+import { Base64 } from "js-base64";
+
 
 // prefix for storage to avoid conflicts with other apps at same url
 const APP_PREFIX = "lfreader";
@@ -94,6 +95,29 @@ export const state = {
   }
 };
 
+// Feed map to quickly look up feed by feed_url
+const feedMap = computed(
+  () => state.data.value.feeds.reduce(
+    (acc, cur) => acc.set(cur.url, cur),
+    new Map<string, Feed>()
+  )
+);
+
+export function lookupFeed(url: string) {
+  return feedMap.value.get(url);
+}
+
+export function fromEntryId(entry_id: string) {
+  const [feed_url, id] = Base64.decode(entry_id).split(" ");
+  return state.data.value.entries.find(e => e.feed_url === feed_url && e.id === id);
+}
+
+export function fromFeedId(feed_id: string) {
+  const url = Base64.decode(feed_id);
+  return lookupFeed(url);
+}
+
+
 // Get tags from feeds or entries
 function getTags(items: any[]) {
   return items
@@ -120,7 +144,7 @@ const selectedFeed = computed(() => {
   if (!feed_id) {
     return undefined;
   }
-  return fromFeedId(state.data.value.feeds, feed_id);
+  return fromFeedId(feed_id);
 });
 
 // active entry
@@ -129,13 +153,13 @@ const selectedEntry = computed(() => {
   if (!entry_id) {
     return undefined;
   }
-  return fromEntryId(state.data.value.entries, entry_id);
+  return fromEntryId(entry_id);
 });
 
 // Feed of selected entry
 const selectedEntryFeed = computed(() => {
   const entry = selectedEntry.value;
-  return entry && state.data.value.feeds.find(f => f.url === entry.feed_url);
+  return entry && lookupFeed(entry.feed_url);
 });
 
 const filteredEntries = computed(() => {
