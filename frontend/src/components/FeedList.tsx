@@ -22,6 +22,7 @@ import { mdiClose, mdiLeadPencil } from "@mdi/js";
 import Icon from '@mdi/react';
 import FeedDialog from "./FeedDialog";
 
+const selectedFeed = computedState.selectedFeed;
 const editing = state.ui.editingFeeds;
 const FeedItemComponent = computed(() => editing.value ? ListItem : ListItemButton);
 const feedDialog = {
@@ -48,12 +49,13 @@ function FeedList() {
     <>
       <List sx={{ width: "100%" }}>
         <FeedItem
-          sx={{ p: 0.5, pl: 4 }}
+          sx={{ p: 1, pl: editing.value ? 1 : 4 }}
           onClick={() => editing.value || updateQueryParams({}, true)}
+          selected={!selectedFeed.value}
         >
-          <span>All</span>
+          <Box sx={{ flexGrow: 1 }}>All</Box>
           <Box sx={{
-            ml: 0.8,
+            mx: 0.8,
             mt: 0.1,
             fontSize: "0.85rem",
             display: "inline"
@@ -67,6 +69,7 @@ function FeedList() {
             <FeedItem
               key={feedId}
               sx={{ p: 1, pl: editing.value ? 1 : 4 }}
+              selected={selectedFeed.value === feed}
               onClick={() => editing.value || updateQueryParams({ feed: feedId }, true)}
             >
               {editing.value &&
@@ -104,7 +107,13 @@ function FeedList() {
                   }}
                 />
               }
-              <span style={{ overflowWrap: "anywhere" }}>{feed.title}</span>
+              <Box sx={{
+                overflowWrap: "anywhere",
+                mr: 0.8,
+                flexGrow: 1
+              }}>
+                {feed.title}
+              </Box>
               <Box sx={{
                 mx: 0.8,
                 mt: 0.1,

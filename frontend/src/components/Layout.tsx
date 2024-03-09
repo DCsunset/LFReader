@@ -159,7 +159,8 @@ export default function Layout() {
               <a
                 href={selectedFeed.value?.link}
                 target="_blank"
-                style={anchorNoStyle}>
+                style={anchorNoStyle}
+              >
                 {selectedFeed.value?.title || "All"}
               </a>
             }
