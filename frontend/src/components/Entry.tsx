@@ -69,8 +69,14 @@ export default function Entry() {
             }
           }}
         >
-          <Typography variant="h5" sx={{ mb: 1, fontWeight: 600 }}>
-            {entry.title}
+          <Typography
+            variant="h5"
+            sx={{
+              mb: 1,
+              fontWeight: 600
+            }}
+          >
+            {entry.title || "(No Title)"}
           </Typography>
           <Divider sx={{ mb: 1 }} />
           <Typography variant="info" sx={{ display: "flex" }}>

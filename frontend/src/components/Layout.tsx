@@ -153,7 +153,7 @@ export default function Layout() {
                   target="_blank"
                   style={anchorNoStyle}
                 >
-                  {selectedEntry.value?.title || ""}
+                  {selectedEntry.value?.title || "(No Title)"}
                 </a>
               </> :
               <a
@@ -266,6 +266,14 @@ export default function Layout() {
 
         <Stack direction="row-reverse" sx={{ m: 1.5 }}>
           <IconButton
+            color="inherit"
+            title="Settings"
+            onClick={() => settingsDialog.value = true}
+          >
+            <Icon path={mdiCog} size={1} />
+          </IconButton>
+
+          <IconButton
             size="small"
             color="inherit"
             title={`Switch to ${dark.value ? "light" : "dark"} mode`}
@@ -274,14 +282,6 @@ export default function Layout() {
             {dark.value ?
               <Icon path={mdiWeatherNight} size={1} /> :
               <Icon path={mdiWeatherSunny} size={1} />}
-          </IconButton>
-
-          <IconButton
-            color="inherit"
-            title="Settings"
-            onClick={() => settingsDialog.value = true}
-          >
-            <Icon path={mdiCog} size={1} />
           </IconButton>
         </Stack>
       </Drawer>

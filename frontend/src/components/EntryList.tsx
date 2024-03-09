@@ -13,11 +13,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, List, ListItemButton, Pagination, Stack } from "@mui/material";
-import { computedState, state } from "../store/state";
+import { Box, List, ListItemButton, Pagination, Stack, Typography } from "@mui/material";
+import { computedState, lookupFeed, state } from "../store/state";
 import { toEntryId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
 import { computed } from "@preact/signals";
+// import Icon from "@mdi/react";
+// import { mdiCircle } from "@mdi/js";
+import { displayDateDiff } from "../utils/date";
+
+const selectedEntry = computedState.selectedEntry;
 
 const numPages = computed(() => (
   Math.ceil(
@@ -40,17 +45,47 @@ function EntryList() {
       <List sx={{ overflow: "auto", flexGrow: 1 }}>
         {displayedEntries.value.map(e => {
           const entryId = toEntryId(e);
+          const feedTitle = lookupFeed(e.feed_url)?.title ?? "(No Title";
+
           return (
             <ListItemButton
               key={entryId}
               onClick={() => updateQueryParams({ entry: entryId })}
+              sx={{
+                flexDirection: "column",
+                justifyContent: "flex-start",
+                display: "block",
+                py: 1.5
+              }}
+              selected={selectedEntry.value === e}
             >
-              <Box sx={{
-                fontStyle: e.title ? undefined : "italic",
-                overflowWrap: "anywhere"
+              <Typography variant="body2" sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                mb: 0.5,
+                opacity: 0.8,
+                fontWeight: 500,
+                width: "100%"
               }}>
-                {e.title || "(No title)"}
-              </Box>
+                {/* TODO: Used for unread entries
+                <Box sx={{ mr: 1 }}>
+                  <Icon path={mdiCircle} size={0.4} />
+                </Box>
+                  */}
+                <Box sx={{
+                  flexGrow: 1,
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  mr: 1
+                }}>
+                  {feedTitle}
+                </Box>
+                <Box>
+                  {displayDateDiff(e.published_at ?? e.updated_at)}
+                </Box>
+              </Typography>
+              <Box>{e.title || "(No Title)"}</Box>
             </ListItemButton>
           )
         })}
