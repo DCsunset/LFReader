@@ -28,6 +28,7 @@ import FeedList from "./FeedList";
 import EntryList from "./EntryList";
 import NewFeedsDialog from "./NewFeedsDialog";
 import Entry from "./Entry";
+import { getEntryTitle, getFeedTitle } from "../store/feed";
 
 const feedListWidth = "250px";
 const entryListWidth = "350px";
@@ -142,18 +143,19 @@ export default function Layout() {
                 <a
                   href={selectedEntryFeed.value?.link}
                   target="_blank"
-                  style={anchorNoStyle}>
-                  {selectedEntryFeed.value?.title || ""}
+                  style={anchorNoStyle}
+                >
+                  {getFeedTitle(selectedEntryFeed.value)}
                 </a>
                 <Box sx={{display: "inline", mx: "0.75rem" }}>
                   |
                 </Box>
                 <a
-                  href={selectedEntry.value?.link}
+                  href={selectedEntry.value.link}
                   target="_blank"
                   style={anchorNoStyle}
                 >
-                  {selectedEntry.value?.title || "(No Title)"}
+                  {getEntryTitle(selectedEntry.value)}
                 </a>
               </> :
               <a
@@ -161,7 +163,7 @@ export default function Layout() {
                 target="_blank"
                 style={anchorNoStyle}
               >
-                {selectedFeed.value?.title || "All"}
+                {getFeedTitle(selectedFeed.value, "All")}
               </a>
             }
           </Typography>

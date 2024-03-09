@@ -15,7 +15,7 @@
 
 import { Box, IconButton, List, ListItem, ListItemButton } from "@mui/material";
 import { computedState, state } from "../store/state";
-import { Feed, toFeedId } from "../store/feed";
+import { Feed, getFeedTitle, toFeedId } from "../store/feed";
 import { deleteFeed, updateQueryParams } from "../store/actions";
 import { batch, computed, signal } from "@preact/signals";
 import { mdiClose, mdiLeadPencil } from "@mdi/js";
@@ -27,13 +27,13 @@ const editing = state.ui.editingFeeds;
 const FeedItemComponent = computed(() => editing.value ? ListItem : ListItemButton);
 const feedDialog = {
   open: signal(false),
-  feed: signal<Feed|null>(null)
+  feed: signal<Feed|undefined>(undefined)
 };
 
 function confirmDeletion(feed: Feed) {
   batch(() => {
     state.confirmation.open.value = true;
-    state.confirmation.content.value = <>Confirm deletion of feed <b>{feed.title}</b>?</>;
+    state.confirmation.content.value = <>Confirm deletion of feed <em>{getFeedTitle(feed)}</em>?</>;
     state.confirmation.onConfirm = () => {
       deleteFeed(feed.url);
     };
@@ -49,7 +49,7 @@ function FeedList() {
     <>
       <List sx={{ width: "100%" }}>
         <FeedItem
-          sx={{ p: 1, pl: editing.value ? 1 : 4 }}
+          sx={{ p: 1, pl: editing.value ? 10 : 4 }}
           onClick={() => editing.value || updateQueryParams({}, true)}
           selected={!selectedFeed.value}
         >
@@ -112,7 +112,7 @@ function FeedList() {
                 mr: 0.8,
                 flexGrow: 1
               }}>
-                {feed.title}
+                {getFeedTitle(feed)}
               </Box>
               <Box sx={{
                 mx: 0.8,

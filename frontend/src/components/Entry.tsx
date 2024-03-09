@@ -1,7 +1,7 @@
 import { createRef } from "preact";
 import { computed } from "@preact/signals";
 import { computedState  } from "../store/state";
-import { toEntryId } from "../store/feed";
+import { getEntryTitle, toEntryId } from "../store/feed";
 import { Box, Divider, Typography } from "@mui/material";
 import Icon from "@mdi/react";
 import { mdiCalendarMonth } from "@mdi/js";
@@ -81,7 +81,7 @@ export default function Entry() {
               fontWeight: 600
             }}
           >
-            {entry.title || "(No Title)"}
+            {getEntryTitle(entry)}
           </Typography>
           <Divider sx={{ mb: 1 }} />
           <Typography variant="info" sx={{ display: "flex" }}>

@@ -29,20 +29,22 @@ import {
   Typography
 } from "@mui/material";
 import { batch, Signal, signal, useSignalEffect } from "@preact/signals";
-import { Feed } from "../store/feed";
+import { Feed, getFeedTitle } from "../store/feed";
 import { updateFeed } from "../store/actions";
 
 // local states
 const baseUrl = signal("");
+const alias = signal("");
 
 export default function FeedDialog({ open, feed }: {
   open: Signal<boolean>,
-  feed: Signal<Feed|null>
+  feed: Signal<Feed|undefined>
 }) {
   // reset local states
   const reset = () => {
     batch(() => {
       baseUrl.value = feed.value?.user_data.base_url ?? "";
+      alias.value = feed.value?.user_data.alias ?? "";
     });
   };
   const close = () => {
@@ -50,9 +52,15 @@ export default function FeedDialog({ open, feed }: {
     reset();
   };
   const save = async () => {
-    // No need to update the feeds signal as no UI depends on user_data
-    feed.value.user_data.base_url = baseUrl.value || undefined;
-    if (await updateFeed(feed.value.url, feed.value.user_data)) {
+    // No need to update the feed signal as no UI depends on user_data
+    const f = feed.value;
+    const userData = {
+      ...f.user_data,
+      base_url: baseUrl.value || undefined,
+      alias: alias.value || undefined
+    };
+    // Feeds signal updated in the action
+    if (await updateFeed(f.url, userData)) {
       close();
     }
   };
@@ -67,7 +75,9 @@ export default function FeedDialog({ open, feed }: {
       disableBackdropClick
       fullWidth
     >
-      <DialogTitle sx={{ pb: 0 }}>Feed Settings</DialogTitle>
+      <DialogTitle sx={{ pb: 0 }}>
+        Feed Settings for <em>{getFeedTitle(feed.value)}</em>
+      </DialogTitle>
       <DialogContent sx={{ px: 1 }}>
         <List>
           <Box sx={{ mx: 2, mt: 2 }}>
@@ -95,6 +105,30 @@ export default function FeedDialog({ open, feed }: {
                   placeholder="(auto)"
                   onChange={(event: any) => {
                     baseUrl.value = event.target.value;
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    an alias to display as feed title
+                  </span>
+                }>
+                  Alias
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <TextField
+                  variant="standard"
+                  value={alias.value}
+                  placeholder={feed.value?.title ?? "(No Title)"}
+                  onChange={(event: any) => {
+                    alias.value = event.target.value;
                   }}
                 />
               </Grid>

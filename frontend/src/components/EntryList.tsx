@@ -15,7 +15,7 @@
 
 import { Box, List, ListItemButton, Pagination, Stack, Typography } from "@mui/material";
 import { computedState, lookupFeed, state } from "../store/state";
-import { toEntryId } from "../store/feed";
+import { getFeedTitle, toEntryId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
 import { computed } from "@preact/signals";
 // import Icon from "@mdi/react";
@@ -45,7 +45,7 @@ function EntryList() {
       <List sx={{ overflow: "auto", flexGrow: 1 }}>
         {displayedEntries.value.map(e => {
           const entryId = toEntryId(e);
-          const feedTitle = lookupFeed(e.feed_url)?.title ?? "(No Title";
+          const feedTitle = getFeedTitle(lookupFeed(e.feed_url));
 
           return (
             <ListItemButton

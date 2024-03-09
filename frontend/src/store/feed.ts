@@ -17,6 +17,7 @@ import { Base64 } from "js-base64";
 
 export type FeedUserData = {
   base_url?: string,
+  alias?: string,
   tags?: string[]
 };
 
@@ -56,5 +57,13 @@ export function toFeedId(feed: Feed) {
 
 export function toEntryId(entry: Entry) {
   return Base64.encode(`${entry.feed_url} ${entry.id}`, true);
+}
+
+export function getEntryTitle(entry?: Entry, fallback: string = "(No Title)") {
+  return entry?.title ?? fallback;
+}
+
+export function getFeedTitle(feed?: Feed, fallback: string = "(No Title)") {
+  return feed?.user_data.alias ?? feed?.title ?? fallback;
 }
 

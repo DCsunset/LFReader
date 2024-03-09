@@ -95,7 +95,17 @@ export async function updateFeed(url: string, userData: FeedUserData) {
     return false;
   }
 
-  notify("success", "Updated feed successfully")
+  // update feeds locally for performance
+  state.data.value = {
+    feeds: state.data.value.feeds.map(f => (
+      f.url === url ? {
+        ...f,
+        user_data: userData
+      } : f
+    )),
+    entries: state.data.value.entries
+  };
+  notify("success", "Updated feed successfully");
   return true;
 }
 
