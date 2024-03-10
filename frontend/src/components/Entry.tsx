@@ -67,9 +67,9 @@ export default function Entry() {
           id="lfreader-entry"
           ref={entryRef}
           sx={{
-            // prevent images from overflowing
-            "& img": {
-              maxWidth: "85%",
+            // prevent images and videos from overflowing
+            "& img, & video": {
+              maxWidth: "100%",
               // overwrite existing fixed width and height
               width: "auto",
               height: "auto"
