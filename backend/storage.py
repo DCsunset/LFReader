@@ -21,8 +21,8 @@ import json
 from typing import Iterable, Any
 from itertools import product, repeat
 import feedparser
-from datetime import datetime
-from time import mktime, struct_time
+from datetime import datetime, timezone
+from time import struct_time
 from functools import partial
 import asyncio
 import aiohttp
@@ -31,7 +31,8 @@ import aiohttp
 from archive import Archiver
 
 def parsed_time_to_iso(parsed_time: struct_time | None):
-  return parsed_time and datetime.utcfromtimestamp(mktime(parsed_time)).isoformat()
+  # the parsed time is guaranteed to be utc
+  return parsed_time and datetime(*parsed_time[:6], tzinfo=timezone.utc).isoformat()
 
 # pack data into JSON string
 def pack_data(value):
@@ -225,7 +226,7 @@ class Storage:
             ''',
             (
               url,
-              e.id,
+              e.get("id", e.link),
               e.get("link"),
               e.get("author"),
               e.get("title"),
