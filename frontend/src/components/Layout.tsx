@@ -17,7 +17,7 @@ import { createRef } from "preact";
 import { computedState, state } from "../store/state";
 import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, Zoom, Fab } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
-import { CSSProperties, useEffect } from "react";
+import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
 import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiPencil, mdiLeadPencil } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
@@ -29,6 +29,7 @@ import EntryList from "./EntryList";
 import NewFeedsDialog from "./NewFeedsDialog";
 import Entry from "./Entry";
 import { getEntryTitle, getFeedTitle } from "../store/feed";
+import { anchorNoStyle } from "../utils/styles";
 
 const feedListWidth = "250px";
 const entryListWidth = "350px";
@@ -42,11 +43,6 @@ const editing = state.ui.editingFeeds;
 const selectedFeed = computedState.selectedFeed;
 const selectedEntry = computedState.selectedEntry;
 const selectedEntryFeed = computedState.selectedEntryFeed;
-
-const anchorNoStyle: CSSProperties = {
-  textDecoration: "inherit",
-  color: "inherit"
-};
 
 const entryRef = createRef<HTMLElement>();
 const scrollButton = signal(false);

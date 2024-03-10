@@ -11,6 +11,7 @@ import renderMathInElement from "katex/contrib/auto-render";
 import hljs from "highlight.js";
 import "katex/dist/katex.css";
 import "highlight.js/styles/base16/tomorrow-night.css";
+import { anchorNoStyle } from "../utils/styles";
 
 hljs.configure({
   // prevent logging the errors in console
@@ -32,7 +33,7 @@ const entryRef = createRef<HTMLElement>();
 
 export default function Entry() {
   const entry = computedState.selectedEntry.value;
-  const feedTitle = getFeedTitle(lookupFeed(entry.feed_url));
+  const feed = lookupFeed(entry?.feed_url);
 
   // this hook runs every time it re-rerenders
   useEffect(() => {
@@ -90,7 +91,15 @@ export default function Entry() {
             <Box sx={{ ml: 0.5, mr: 1.5 }}>{displayDate(entry.published_at ?? entry.updated_at)}</Box>
 
             <Icon path={mdiRss} size={0.9} />
-            <Box sx={{ ml: 0.5 }}>{feedTitle}</Box>
+            <Box sx={{ ml: 0.5 }}>
+              <a
+                href={feed?.link}
+                target="_blank"
+                style={anchorNoStyle}
+              >
+                {getFeedTitle(feed)}
+              </a>
+            </Box>
           </Typography>
 
           {currentContents.value.map((v, i) => (

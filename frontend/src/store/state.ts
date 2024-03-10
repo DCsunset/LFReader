@@ -103,8 +103,8 @@ const feedMap = computed(
   )
 );
 
-export function lookupFeed(url: string) {
-  return feedMap.value.get(url);
+export function lookupFeed(url?: string) {
+  return url && feedMap.value.get(url);
 }
 
 export function fromEntryId(entry_id: string) {
