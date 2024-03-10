@@ -28,10 +28,9 @@ logging.basicConfig(level=logging.INFO)
 
 # the path of the database (default to ./db.sqlite)
 db_file = os.getenv("LFREADER_DB", "db.sqlite")
-archive_dir = os.getenv("LFREADER_ARCHIVE", "archives")
-# default to: Chrome 119.0.0, Windows
+archive_dir = os.getenv("LFREADER_ARCHIVE", "archive")
 # set user agent to prevent being blocked by source sites
-user_agent = os.getenv("USER_AGENT", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36")
+user_agent = os.getenv("USER_AGENT", None)
 
 app = FastAPI(root_path="/api")
 storage = Storage(db_file, archive_dir, "/archives", user_agent)

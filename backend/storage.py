@@ -64,7 +64,7 @@ def sql_update_field(table: str, field: str):
   return f"{field} = COALESCE(excluded.{field}, {table}.{field})"
 
 class Storage:
-  def __init__(self, db_file: str, archive_dir: str, archive_url: str, user_agent: str):
+  def __init__(self, db_file: str, archive_dir: str, archive_url: str, user_agent: str | None):
     self.db = sqlite3.connect(db_file)
     self.db.row_factory = dict_row_factory
     self.init_db()
