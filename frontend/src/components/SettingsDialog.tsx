@@ -126,7 +126,7 @@ export default function SettingsDialog({ open }: {
                     download resources (e.g. images) and save them locally
                   </span>
                 }>
-                  Archive Resources
+                  Archive resources
                 </ListItemText>
               </Grid>
               <Grid item>
