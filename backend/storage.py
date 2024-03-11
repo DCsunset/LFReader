@@ -70,7 +70,9 @@ class Storage:
     self.db.row_factory = dict_row_factory
     self.init_db()
     self.archiver = Archiver(archive_dir, archive_url)
-    self.user_agent = user_agent
+    self.headers = {}
+    if user_agent is not None:
+      self.headers["User-Agent"] = user_agent
     logging.info(f"Database path: {db_file}")
 
   def init_db(self):
@@ -154,7 +156,7 @@ class Storage:
   If feed_urls is None, fetch all feeds
   """
   async def fetch_feeds(self, feed_urls: Iterable[str] | None, archive: bool):
-    async with aiohttp.ClientSession(headers={"User-Agent": self.user_agent}) as session:
+    async with aiohttp.ClientSession(headers=self.headers) as session:
       urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
       feeds = map(lambda url: (url, feedparser.parse(url, resolve_relative_uris=False)), urls)
       now = datetime.now().astimezone().isoformat()

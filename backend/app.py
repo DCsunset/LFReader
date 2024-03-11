@@ -28,7 +28,7 @@ logging.basicConfig(level=logging.INFO)
 
 # the path of the database (default to ./db.sqlite)
 db_file = os.getenv("LFREADER_DB", "db.sqlite")
-archive_dir = os.getenv("LFREADER_ARCHIVE", "archive")
+archive_dir = os.getenv("LFREADER_ARCHIVE", "archives")
 # set user agent to prevent being blocked by source sites
 user_agent = os.getenv("USER_AGENT", None)
 
