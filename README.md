@@ -21,6 +21,9 @@ LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python 
 docker run -d -p 8080:80 --name lfreader -v $PWD/data:/app/data dcsunset/lfreader
 ```
 
+Then access `http://localhost:8080` in browser.
+
+
 ### From source code
 
 First, clone this repo.

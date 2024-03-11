@@ -1,19 +1,23 @@
 {
-	auto_https off
+  auto_https off
 }
 
 http://:80 {
-	@api {
-		path_regexp /api(/*)?
-	}
-	route @api {
-		uri strip_prefix /api
-		reverse_proxy localhost:3000
-	}
-	
-	route {
-		root * /app/frontend
-		try_files {path} /index.html
-		file_server
-	}
+  @api {
+    path_regexp /api(/*)?
+  }
+  route @api {
+    uri strip_prefix /api
+    reverse_proxy localhost:3000
+  }
+  route /archives/* {
+    file_server {
+      root /app/data/
+    }
+  }
+  route {
+    root * /app/frontend
+    try_files {path} /index.html
+    file_server
+  }
 }

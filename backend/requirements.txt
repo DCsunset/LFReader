@@ -1,4 +1,5 @@
 reader
 fastapi
 uvicorn[standard]
+aiohttp
 
