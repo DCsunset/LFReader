@@ -1,5 +1,9 @@
 # LFReader
 
+[![Docker Image Version](https://img.shields.io/docker/v/dcsunset/lfreader?label=docker)](https://hub.docker.com/r/dcsunset/lfreader)
+[![GitHub License](https://img.shields.io/github/license/DCsunset/LFReader)](https://github.com/DCsunset/LFReader)
+
+
 LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python and Preact/React.
 
 ## Features
