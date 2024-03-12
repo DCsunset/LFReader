@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.3](https://github.com/DCsunset/LFReader/compare/v1.0.2...v1.0.3) (2024-03-12)
+
+
+### Bug Fixes
+
+* **backend:** auto create parent dir for sqlite db ([48f0d86](https://github.com/DCsunset/LFReader/commit/48f0d86323f01b848ee397c43ce03186640b5748))
+
 ## [1.0.2](https://github.com/DCsunset/LFReader/compare/v1.0.1...v1.0.2) (2024-03-12)
 
 
