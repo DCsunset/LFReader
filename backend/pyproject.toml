@@ -1,0 +1,13 @@
+[project]
+name = "lfreader-server"
+version = "0.0.0"
+dependencies = [
+  "reader",
+  "fastapi",
+  "uvicorn[standard]",
+  "aiohttp",
+]
+
+[project.scripts]
+lfreader-server = "app:main"
+

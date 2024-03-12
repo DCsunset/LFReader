@@ -40,13 +40,13 @@
           # dev server
           backend-dev = createFlakeApp "backend-dev" ''
             cd backend
-            uvicorn app:app --reload --port 3000
+            python app.py --reload --port 3000
           '';
 
           # prod server
           backend-prod = createFlakeApp "backend-prod" ''
             cd backend
-            uvicorn app:app --host 0.0.0.0 --port 3000
+            python app.py --host 0.0.0.0 --port 3000
           '';
         };
       };

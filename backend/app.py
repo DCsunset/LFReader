@@ -18,11 +18,13 @@ from fastapi import FastAPI, Query
 from fastapi.responses import PlainTextResponse
 import logging
 import os
+import sys
 from storage import Storage
 from pydantic import BaseModel
 from sqlite3 import DatabaseError
 from typing import Annotated
 import traceback
+import uvicorn
 
 logging.basicConfig(level=logging.INFO)
 
@@ -99,3 +101,12 @@ async def delete_api(feed_urls: Annotated[list[str], Query()]):
 async def db_exception(request, err: DatabaseError) -> PlainTextResponse:
   traceback.print_exc()
   return PlainTextResponse(f"Database Error: {err}", status_code=409)
+
+
+def main():
+  # pass this app as first arg in uvicorn
+  sys.argv.insert(1, "app:app")
+  uvicorn.main()
+
+if __name__ == "__main__":
+  main()

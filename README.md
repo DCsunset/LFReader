@@ -49,7 +49,9 @@ nix run .#backend-prod
 
 # or manually
 cd backend
-pip install fastapi uvicorn
+pip install -r requirements.txt
+python3 app.py --host 0.0.0.0 --port 3000
+# or run uvicorn directly
 uvicorn app:app --host 0.0.0.0 --port 3000
 ```
 
