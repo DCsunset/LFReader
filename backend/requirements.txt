@@ -1,5 +1,6 @@
-reader
+aiohttp
+beautifulsoup4
+feedparser
 fastapi
 uvicorn[standard]
-aiohttp
 

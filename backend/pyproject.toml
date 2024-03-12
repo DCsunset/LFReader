@@ -2,10 +2,11 @@
 name = "lfreader-server"
 version = "0.0.0"
 dependencies = [
-  "reader",
+  "aiohttp",
+  "beautifulsoup4",
+  "feedparser",
   "fastapi",
   "uvicorn[standard]",
-  "aiohttp",
 ]
 
 [project.scripts]
