@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.0.2](https://github.com/DCsunset/LFReader/compare/v1.0.1...v1.0.2) (2024-03-12)
+
+
+### Misc
+
+* add badges in readme ([942736d](https://github.com/DCsunset/LFReader/commit/942736d48e9060e9a667674d14d7e79e1ba49624))
+* add more instructions for installation and development ([b28cc30](https://github.com/DCsunset/LFReader/commit/b28cc30da3e7f9c4191bfce88180ddcaf59d23d2))
+* add pyproject config and entry point ([0312872](https://github.com/DCsunset/LFReader/commit/03128721353c86f3a13b6b686ebfe7926cec36fc))
+* add step to update repo description ([61bb9c2](https://github.com/DCsunset/LFReader/commit/61bb9c2e0fcbf378218622e9d254f46bf663de62))
+* **backend:** move files to lfreader_server module ([3df0cbb](https://github.com/DCsunset/LFReader/commit/3df0cbb152b7922d73354bb19b6ba400a078612f))
+* update docker start script ([134887c](https://github.com/DCsunset/LFReader/commit/134887c67e163ee9ee078619f4c053548d00ac27))
+
 ## [1.0.1](https://github.com/DCsunset/LFReader/compare/v1.0.0...v1.0.1) (2024-03-11)
 
 
