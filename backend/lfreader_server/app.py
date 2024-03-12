@@ -33,7 +33,7 @@ logging.basicConfig(level=logging.INFO)
 db_file = os.getenv("LFREADER_DB", "db.sqlite")
 archive_dir = os.getenv("LFREADER_ARCHIVE", "archives")
 # set user agent to prevent being blocked by source sites
-user_agent = os.getenv("USER_AGENT", None)
+user_agent = os.getenv("USER_AGENT") or None
 
 app = FastAPI(root_path="/api")
 storage = Storage(db_file, archive_dir, "/archives", user_agent)

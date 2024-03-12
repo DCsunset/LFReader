@@ -18,6 +18,7 @@ import sqlite3
 import logging
 import sys
 import json
+from pathlib import Path
 from typing import Iterable, Any
 from itertools import product, repeat
 import feedparser
@@ -65,6 +66,8 @@ def sql_update_field(table: str, field: str):
 
 class Storage:
   def __init__(self, db_file: str, archive_dir: str, archive_url: str, user_agent: str | None):
+    # create parent directories to prevent error
+    Path(db_file).parent.mkdir(parents=True, exist_ok=True)
     self.db = sqlite3.connect(db_file)
     self.db.row_factory = dict_row_factory
     self.init_db()
