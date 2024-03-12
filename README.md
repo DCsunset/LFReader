@@ -50,9 +50,7 @@ nix run .#backend-prod
 # or manually
 cd backend
 pip install -r requirements.txt
-python3 app.py --host 0.0.0.0 --port 3000
-# or run uvicorn directly
-uvicorn app:app --host 0.0.0.0 --port 3000
+uvicorn lfreader_server.app:app --host 0.0.0.0 --port 3000
 ```
 
 Finally, use your favorite web server to serve the frontend files (`frontend/dist`)
@@ -96,7 +94,7 @@ Or install all the dependencies (you could also use `venv` here):
 
 ```sh
 pip install -r fastapi uvicorn
-uvicorn app:app --reload --port 3000
+uvicorn lfreader_server.app:app --reload --port 3000
 ```
 
 

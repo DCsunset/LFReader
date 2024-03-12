@@ -38,15 +38,16 @@
         };
         apps = {
           # dev server
+          # note: reload doesn't work for some reason
           backend-dev = createFlakeApp "backend-dev" ''
             cd backend
-            python app.py --reload --port 3000
+            uvicorn lfreader_server.app:app --reload --port 3000
           '';
 
           # prod server
           backend-prod = createFlakeApp "backend-prod" ''
             cd backend
-            python app.py --host 0.0.0.0 --port 3000
+            uvicorn lfreader_server.app:app --host 0.0.0.0 --port 3000
           '';
         };
       };

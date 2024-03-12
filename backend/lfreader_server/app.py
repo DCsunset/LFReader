@@ -19,12 +19,13 @@ from fastapi.responses import PlainTextResponse
 import logging
 import os
 import sys
-from storage import Storage
 from pydantic import BaseModel
 from sqlite3 import DatabaseError
 from typing import Annotated
 import traceback
 import uvicorn
+
+from .storage import Storage
 
 logging.basicConfig(level=logging.INFO)
 
@@ -105,8 +106,6 @@ async def db_exception(request, err: DatabaseError) -> PlainTextResponse:
 
 def main():
   # pass this app as first arg in uvicorn
-  sys.argv.insert(1, "app:app")
+  sys.argv.insert(1, "lfreader_server.app:app")
   uvicorn.main()
 
-if __name__ == "__main__":
-  main()

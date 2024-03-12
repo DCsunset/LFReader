@@ -9,5 +9,5 @@ dependencies = [
 ]
 
 [project.scripts]
-lfreader-server = "app:main"
+lfreader-server = "lfreader_server.app:main"
 

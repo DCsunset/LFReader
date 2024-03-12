@@ -27,8 +27,7 @@ from functools import partial
 import asyncio
 import aiohttp
 
-# local import
-from archive import Archiver
+from .archive import Archiver
 
 def parsed_time_to_iso(parsed_time: struct_time | None):
   # the parsed time is guaranteed to be utc
