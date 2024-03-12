@@ -27,6 +27,13 @@ docker run -d -p 8080:80 --name lfreader -v $PWD/data:/app/data dcsunset/lfreade
 
 Then access `http://localhost:8080` in browser.
 
+### Using pip
+
+To install backend server only, you can use pip to install the backend dir in this repo:
+
+```sh
+pip install -e "git+https://github.com/DCsunset/LFReader.git#egg=lfreader_server&subdirectory=backend"
+```
 
 ### From source code
 
@@ -95,6 +102,18 @@ Or install all the dependencies (you could also use `venv` here):
 ```sh
 pip install -r fastapi uvicorn
 uvicorn lfreader_server.app:app --reload --port 3000
+```
+
+To test if the backend pyproject can build successfully:
+
+```sh
+cd backend
+## optionally set up vevn
+# python -m venv venv
+# . ./venv/bin/activate
+
+## pip install
+pip install .
 ```
 
 
