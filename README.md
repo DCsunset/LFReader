@@ -78,11 +78,13 @@ You can disable archiving globally in such case.
 
 The following environment variables are supported when running the backend:
 
-| Variable         | Default     | Description                                  |
-|------------------|-------------|----------------------------------------------|
-| LFREADER_DB      | "db.sqlite" | File path to store the database              |
-| LFREADER_ARCHIVE | "archives"  | Directory path to store archived resources   |
-| USER_AGENT       | None        | User agent to use when sending HTTP requests |
+| Variable            | Default     | Description                                  |
+|---------------------|-------------|----------------------------------------------|
+| LFREADER_DB         | "db.sqlite" | File path to store the database              |
+| LFREADER_ARCHIVE    | "archives"  | Directory path to store archived resources   |
+| LFREADER_USER_AGENT | None        | User agent to use when sending HTTP requests |
+| LFREADER_TIMEOUT    | "15"        | Timeout of each HTTP request (in seconds)    |
+| LFREADER_LOG_LEVEL  | "info"      | Log level                                    |
 
 
 ## Development

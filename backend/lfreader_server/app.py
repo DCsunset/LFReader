@@ -27,16 +27,26 @@ import uvicorn
 
 from .storage import Storage
 
-logging.basicConfig(level=logging.INFO)
-
 # the path of the database (default to ./db.sqlite)
 db_file = os.getenv("LFREADER_DB", "db.sqlite")
 archive_dir = os.getenv("LFREADER_ARCHIVE", "archives")
 # set user agent to prevent being blocked by source sites
-user_agent = os.getenv("USER_AGENT") or None
+user_agent = os.getenv("LFREADER_USER_AGENT") or None
+log_level = os.getenv("LFREADER_LOG_LEVEL", "info") or None
+# timeout for http requests in seconds
+timeout = int(os.getenv("LFREADER_TIMEOUT") or "10")
+
+if log_level:
+  logging.basicConfig(level=log_level.upper())
 
 app = FastAPI(root_path="/api")
-storage = Storage(db_file, archive_dir, "/archives", user_agent)
+storage = Storage(
+  db_file,
+  archive_dir,
+  archive_url="/archives",
+  user_agent=user_agent,
+  timeout=timeout
+)
 
 """
 Get feeds from local database

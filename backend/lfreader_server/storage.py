@@ -65,7 +65,7 @@ def sql_update_field(table: str, field: str):
   return f"{field} = COALESCE(excluded.{field}, {table}.{field})"
 
 class Storage:
-  def __init__(self, db_file: str, archive_dir: str, archive_url: str, user_agent: str | None):
+  def __init__(self, db_file: str, archive_dir: str, archive_url: str, user_agent: str | None, timeout: int):
     # create parent directories to prevent error
     Path(db_file).parent.mkdir(parents=True, exist_ok=True)
     self.db = sqlite3.connect(db_file)
@@ -75,7 +75,11 @@ class Storage:
     self.headers = {}
     if user_agent is not None:
       self.headers["User-Agent"] = user_agent
+    self.timeout = aiohttp.ClientTimeout(total=timeout)
+
     logging.info(f"Database path: {db_file}")
+    logging.info(f"User Agent: {user_agent}")
+    logging.info(f"Timeout: {timeout}s")
 
   def init_db(self):
     try:
@@ -158,7 +162,7 @@ class Storage:
   If feed_urls is None, fetch all feeds
   """
   async def fetch_feeds(self, feed_urls: Iterable[str] | None, archive: bool):
-    async with aiohttp.ClientSession(headers=self.headers) as session:
+    async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
       urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
       feeds = map(lambda url: (url, feedparser.parse(url, resolve_relative_uris=False)), urls)
       now = datetime.now().astimezone().isoformat()
@@ -166,6 +170,8 @@ class Storage:
       update_entry_field = partial(sql_update_field, "entries")
 
       for url, f in feeds:
+        logging.info(f"Processing feed {url}...")
+
         self.db.execute(
           f'''
           INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -205,11 +211,13 @@ class Storage:
 
         # TODO: parallelize fetching
         for e in f.entries:
+          logging.info(f'Processing entry {e.get("title", e.link)}...')
           # base url for feed resources
           base_url = feed_user_data.get("base_url", e.get("link"))
           summary = e.get("summary_detail")
           contents = e.get("content")
           if archive:
+            logging.info(f'Archiving entry {e.get("title", e.link)}...')
             summary = await self.archive_content(session, url, summary, base_url)
             contents = await self.archive_contents(session, url, contents, base_url)
 

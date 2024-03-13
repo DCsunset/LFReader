@@ -70,6 +70,7 @@ class Archiver:
     if resource_path.exists():
       return resource_url
 
+    logging.debug(f'Archiving resources in html {url}...')
     try:
       async with session.get(url) as resp:
         if resp.status != 200:
