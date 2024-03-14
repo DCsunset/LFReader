@@ -35,6 +35,31 @@ To install backend server only, you can use pip to install the backend dir in th
 pip install -e "git+https://github.com/DCsunset/LFReader.git#egg=lfreader_server&subdirectory=backend"
 ```
 
+### Using Nix
+
+This package is available in [NUR](https://nur.nix-community.org/repos/dcsunset/).
+The output of the derivation includes both backend executable (`bin/lfreader-server`)
+and frontend static files (in `share/lfreader`).
+
+Besides, a NixOS module for backend server is provided in the [Nix flake](https://github.com/DCsunset/nur-packages) output.
+Simply import the flake and import the module `modules.lfreader` and add the following NixOS configuration:
+
+```nix
+{
+  imports = [ nur-dcsunset.modules.lfreader ];
+  services.lfreader = {
+    enable = true;
+    # or use nur.repos.dcsunset.lfreader with NUR namespace
+    package = nur-dcsunset.packages.lfreader;
+    host = "::";
+    port = 3000;
+    logLevel = "debug";
+  };
+}
+```
+
+
+
 ### From source code
 
 First, clone this repo.
