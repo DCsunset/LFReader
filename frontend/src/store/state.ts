@@ -33,9 +33,10 @@ export type Notification = {
 };
 
 export type Settings = {
+	dark: boolean,
   pageSize: number,
   archive: boolean,
-	dark: boolean
+  forceArchive: boolean,
 };
 
 export type QueryParams = {
@@ -74,9 +75,10 @@ function loadState(key: string, init: any) {
 // global app state
 export const state = {
 	settings: signal<Settings>(loadState("settings", {
+		dark: false,
     pageSize: 20,
     archive: true,
-		dark: false
+    forceArchive: false
 	})),
   ui: {
     excludedTags: signal([] as string[]),

@@ -45,6 +45,7 @@ const validNumber = (value: string, min: number, max: number) => {
 const pageSize = signal(state.settings.value.pageSize.toString());
 const pageSizeError = signal(false);
 const archive = signal(state.settings.value.archive);
+const forceArchive = signal(state.settings.value.forceArchive);
 
 // reset local states
 const reset = () => {
@@ -67,7 +68,8 @@ export default function SettingsDialog({ open }: {
         state.settings.value = {
           ...state.settings.value,
           pageSize: parseInt(pageSize.value),
-          archive: archive.value
+          archive: archive.value,
+          forceArchive: forceArchive.value
         };
         open.value = false;
       });
@@ -134,6 +136,26 @@ export default function SettingsDialog({ open }: {
                 <Checkbox
                   checked={archive.value}
                   onChange={(e: any) => archive.value = e.target.checked}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    force archiving entries even if content doesn't change
+                  </span>
+                }>
+                  Force Archiving
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <Checkbox
+                  checked={forceArchive.value}
+                  onChange={(e: any) => forceArchive.value = e.target.checked}
                 />
               </Grid>
             </Grid>

@@ -179,7 +179,7 @@ class Storage:
   Fetch feeds.
   If feed_urls is None, fetch all feeds
   """
-  async def fetch_feeds(self, feed_urls: Iterable[str] | None, archive: bool):
+  async def fetch_feeds(self, feed_urls: Iterable[str] | None, archive: bool, force_archive: bool):
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
       urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
       feeds = map(lambda url: (url, feedparser.parse(url, resolve_relative_uris=False)), urls)
@@ -256,11 +256,13 @@ class Storage:
           summary_hash = hash_dicts([summary]) if summary else None
           contents_hash = hash_dicts(contents) if contents else None
           if archive:
-            if summary and summary_hash != e_server_data.get("summary_hash"):
+            if summary and (summary_hash != e_server_data.get("summary_hash")
+                            or force_archive):
               logging.info(f'Archiving summary of entry {e_title}...')
               summary = await self.archive_content(session, url, summary, base_url)
               e_server_data["summary_hash"] = summary_hash
-            if contents and contents_hash != e_server_data.get("contents_hash"):
+            if contents and (contents_hash != e_server_data.get("contents_hash")
+                             or force_archive):
               logging.info(f'Archiving contents of entry {e_title}...')
               contents = await self.archive_contents(session, url, contents, base_url)
               e_server_data["contents_hash"] = contents_hash

@@ -48,7 +48,8 @@ export async function fetchData(feedUrls?: string[]) {
     },
     body: JSON.stringify({
       feed_urls: feedUrls,
-      archive: state.settings.value.archive
+      archive: state.settings.value.archive,
+      force_archive: state.settings.value.forceArchive
     })
   });
   if (!resp.ok) {
