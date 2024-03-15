@@ -23,6 +23,7 @@ import {
   DialogTitle,
   Divider,
   Grid,
+  IconButton,
   List,
   ListItem,
   ListItemText,
@@ -32,6 +33,8 @@ import {
 import { batch, Signal, signal, useSignalEffect } from "@preact/signals";
 import { Feed, getFeedTitle } from "../store/feed";
 import { updateFeed } from "../store/actions";
+import Icon from "@mdi/react";
+import { mdiOpenInNew } from "@mdi/js";
 
 // local states
 const baseUrl = signal("");
@@ -83,6 +86,46 @@ export default function FeedDialog({ open, feed }: {
         <List>
           <Box sx={{ mx: 2, mt: 2 }}>
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>
+              Info
+            </Typography>
+            <Divider />
+          </Box>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText>
+                  Feed Home Page
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <a
+                  href={feed.value?.link}
+                  target="_blank"
+                >
+                  {feed.value?.title || "(No Title)"}
+                </a>
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText>
+                  Feed URL
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <IconButton color="inherit" href={feed.value?.url}>
+                  <Icon path={mdiOpenInNew} size={1} />
+                </IconButton>
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <Box sx={{ mx: 2, mt: 2 }}>
+            <Typography color="textSecondary" sx={{ mb: 0.5 }}>
               User Data
             </Typography>
             <Divider />
@@ -127,7 +170,7 @@ export default function FeedDialog({ open, feed }: {
                 <TextField
                   variant="standard"
                   value={alias.value}
-                  placeholder={feed.value?.title ?? "(No Title)"}
+                  placeholder={feed.value?.title || "(No Title)"}
                   onChange={(event: any) => {
                     alias.value = event.target.value;
                   }}

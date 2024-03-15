@@ -19,7 +19,7 @@ import { computedState, state } from "../store/state";
 import { Feed, getFeedTitle, toFeedId } from "../store/feed";
 import { deleteFeed, updateQueryParams } from "../store/actions";
 import { batch, computed, signal } from "@preact/signals";
-import { mdiClose, mdiLeadPencil } from "@mdi/js";
+import { mdiDelete, mdiLeadPencil } from "@mdi/js";
 import Icon from '@mdi/react';
 import FeedDialog from "./FeedDialog";
 
@@ -81,7 +81,7 @@ function FeedList() {
                     sx={{ p: 0.5 }}
                     onClick={() => confirmDeletion(feed)}
                   >
-                    <Icon path={mdiClose} size={0.9} />
+                    <Icon path={mdiDelete} size={0.9} />
                   </IconButton>
 
                   <IconButton
