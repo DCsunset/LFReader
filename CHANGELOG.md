@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.0](https://github.com/DCsunset/LFReader/compare/v1.1.0...v1.2.0) (2024-03-15)
+
+
+### ⚠ BREAKING CHANGES
+
+* **backend:** add new data to db and use hash to skip processed content
+
+### Features
+
+* **backend:** add new data to db and use hash to skip processed content ([c3d4726](https://github.com/DCsunset/LFReader/commit/c3d472642291adc2ff99bba0d1b22d7d3fed448f))
+
+
+### Misc
+
+* add installation instruction for Nix ([e5afa63](https://github.com/DCsunset/LFReader/commit/e5afa63aff85ff2a351b9c2c13bb752514def58f))
+
 ## [1.1.0](https://github.com/DCsunset/LFReader/compare/v1.0.4...v1.1.0) (2024-03-14)
 
 
