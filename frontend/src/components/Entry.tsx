@@ -51,9 +51,11 @@ export default function Entry() {
   const entry = computedState.selectedEntry.value;
   const feed = lookupFeed(entry?.feed_url);
 
-  // this hook runs every time it re-rerenders
+  // this hook runs every time entry changes
+  // must use useEffect instead of signal effect because it needs the page to load first
   useEffect(() => {
     const element = entryRef.current;
+    // element will only be null if entry is not defined
     if (element) {
       // render math formula
       renderMathInElement(element, {
@@ -74,7 +76,7 @@ export default function Entry() {
         el.setAttribute("target", "_blank");
       });
     }
-  });
+  }, [entry]);
 
   return (
     <>
