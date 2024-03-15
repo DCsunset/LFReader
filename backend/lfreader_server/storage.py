@@ -27,12 +27,24 @@ from time import struct_time
 from functools import partial
 import asyncio
 import aiohttp
+from hashlib import blake2s
 
 from .archive import Archiver
 
 def parsed_time_to_iso(parsed_time: struct_time | None):
   # the parsed time is guaranteed to be utc
   return parsed_time and datetime(*parsed_time[:6], tzinfo=timezone.utc).isoformat()
+
+def hash_dicts(dicts: list[dict]):
+  """
+  compute hash value of a list of dict
+  """
+  h = blake2s()
+  for d in dicts:
+    s = json.dumps(d, sort_keys=True).encode()
+    h.update(s)
+  return h.hexdigest()
+
 
 # pack data into JSON string
 def pack_data(value):
@@ -45,6 +57,7 @@ def pack_data(value):
 def unpack_data(key, value):
   # json fields with default value
   json_fields = {
+    "server_data": {},
     "user_data": {},
     "enclosures": [],
     "contents": [],
@@ -85,7 +98,7 @@ class Storage:
     try:
       self.db.execute('''
         CREATE TABLE IF NOT EXISTS feeds (
-          -- feed data
+          --- feed data ---
           url TEXT PRIMARY KEY,
           link TEXT,
           author TEXT,
@@ -95,15 +108,19 @@ class Storage:
           published_at TEXT,  -- ISO DateTime
           updated_at TEXT,  -- ISO DateTime
 
-          -- extra metadata
-          fetched_at TEXT,  -- when this feed was last fetched
-          added_at TEXT,  -- when this feed was first added to db
-          user_data TEXT  -- custom user data in JSON format
+          --- extra metadata ---
+          -- server data in JSON format
+          -- - fetched_at: when this feed was last fetched
+          -- - added_at: when this feed was first added to db
+          server_data TEXT,
+
+          -- user data used by client in JSON format
+          user_data TEXT
         )
       ''')
       self.db.execute('''
         CREATE TABLE IF NOT EXISTS entries (
-          -- entry data
+          --- entry data
           feed_url TEXT NOT NULL,
           id TEXT NOT NULL,
           link TEXT,
@@ -115,10 +132,16 @@ class Storage:
           published_at TEXT,  -- ISO DateTime
           updated_at TEXT,  -- ISO DateTime
 
-          -- extra metadata
-          fetched_at TEXT,  -- when this entry's resources were last fetched
-          added_at TEXT,  -- when this entry was first added to db
-          user_data TEXT,  -- custom user data in JSON format
+          --- extra metadata
+          -- server data in JSON format
+          -- - fetched_at: when it was last fetched
+          -- - added_at: when it was first added to db
+          -- - summary_hash: hash value of the summary
+          -- - contents_hash: hash value of the summary
+          server_data TEXT,
+
+          -- user data used by client in JSON format
+          user_data TEXT,
 
           PRIMARY KEY (feed_url, id),
           FOREIGN KEY (feed_url) REFERENCES feeds(url)
@@ -139,16 +162,11 @@ class Storage:
       sys.exit(1)
 
   async def archive_content(self, session, feed_url: str, content, base_url: str | None):
-    if not content:
-      return None
     if content.get("type") != "text/plain":
       content["value"] = await self.archiver.archive_html(session, feed_url, content.get("value"), base_url)
     return content
 
   async def archive_contents(self, session, feed_url: str, contents, base_url: str | None):
-    if not contents:
-      return None
-
     await asyncio.gather(
       *map(
         lambda c: self.archive_content(session, feed_url, c, base_url),
@@ -172,9 +190,21 @@ class Storage:
       for url, f in feeds:
         logging.info(f"Processing feed {url}...")
 
+        # unpacked already when converting to row dict
+        f_data = self.db.execute(
+          "SELECT server_data, user_data FROM feeds WHERE url = ?",
+          (url,)
+        ).fetchone()
+        f_server_data = f_data["server_data"] if f_data else {}
+        f_user_data = f_data["user_data"] if f_data else {}
+
+        f_server_data["fetched_at"] = now
+        if "added_at" not in f_server_data:
+          f_server_data["added_at"] = now
+
         self.db.execute(
           f'''
-          INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(url) DO UPDATE SET
               {update_feed_field("link")},
               {update_feed_field("author")},
@@ -184,7 +214,7 @@ class Storage:
               {update_feed_field("published_at")},
               {update_feed_field("updated_at")},
               -- extra metadata
-              {update_feed_field("fetched_at")}
+              {update_feed_field("server_data")}
           ''',
           (
             url,
@@ -195,35 +225,49 @@ class Storage:
             f.feed.get("logo"),
             parsed_time_to_iso(f.feed.get("published_parsed")),
             parsed_time_to_iso(f.feed.get("updated_parsed")),
-            now,
-            now,
+            pack_data(f_server_data),
             None
           )
         )
 
-        # unpacked already when converting to row dict
-        feed_user_data = self.db.execute(
-          "SELECT user_data FROM feeds WHERE url = ?",
-          (url,)
-        ).fetchone().get("user_data")
-        # None should be substituted by {}
-        assert (feed_user_data != None)
-
         # TODO: parallelize fetching
         for e in f.entries:
-          logging.info(f'Processing entry {e.get("title", e.link)}...')
+          e_id = e.get("id", e.link)
+          e_title = e.get("title", e_id)
+          logging.debug(f'Processing entry {e_title}...')
+
+          # unpacked already when converting to row dict
+          e_data = self.db.execute(
+            "SELECT server_data, user_data FROM entries WHERE feed_url = ? and id = ?",
+            (url, e_id)
+          ).fetchone()
+          e_server_data = e_data["server_data"] if e_data else {}
+          e_user_data = e_data["user_data"] if e_data else {}
+
+          e_server_data["fetched_at"] = now
+          if "added_at" not in e_server_data:
+            e_server_data["added_at"] = now
+
+
           # base url for feed resources
-          base_url = feed_user_data.get("base_url", e.get("link"))
+          base_url = f_user_data.get("base_url", e.get("link"))
           summary = e.get("summary_detail")
           contents = e.get("content")
+          summary_hash = hash_dicts([summary]) if summary else None
+          contents_hash = hash_dicts(contents) if contents else None
           if archive:
-            logging.info(f'Archiving entry {e.get("title", e.link)}...')
-            summary = await self.archive_content(session, url, summary, base_url)
-            contents = await self.archive_contents(session, url, contents, base_url)
+            if summary and summary_hash != e_server_data.get("summary_hash"):
+              logging.info(f'Archiving summary of entry {e_title}...')
+              summary = await self.archive_content(session, url, summary, base_url)
+              e_server_data["summary_hash"] = summary_hash
+            if contents and contents_hash != e_server_data.get("contents_hash"):
+              logging.info(f'Archiving contents of entry {e_title}...')
+              contents = await self.archive_contents(session, url, contents, base_url)
+              e_server_data["contents_hash"] = contents_hash
 
           self.db.execute(
             f'''
-            INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
               ON CONFLICT(feed_url, id) DO UPDATE SET
                 {update_entry_field("link")},
                 {update_entry_field("author")},
@@ -234,11 +278,11 @@ class Storage:
                 {update_entry_field("published_at")},
                 {update_entry_field("updated_at")},
                 -- extra metadata
-                {update_entry_field("fetched_at")}
+                {update_entry_field("server_data")}
             ''',
             (
               url,
-              e.get("id", e.link),
+              e_id,
               e.get("link"),
               e.get("author"),
               e.get("title"),
@@ -247,8 +291,7 @@ class Storage:
               pack_data(e.get("enclosures")),
               parsed_time_to_iso(e.get("published_parsed")),
               parsed_time_to_iso(e.get("updated_parsed")),
-              now,
-              now,
+              pack_data(e_server_data),
               None
             )
           )

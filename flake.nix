@@ -41,7 +41,7 @@
           # note: reload doesn't work for some reason
           backend-dev = createFlakeApp "backend-dev" ''
             cd backend
-            LOG_LEVEL=debug uvicorn lfreader_server.app:app --reload --port 3000 --log-level debug
+            LOG_LEVEL=debug uvicorn lfreader_server.app:app --reload --port 3000 --log-level debug --timeout-graceful-shutdown 5
           '';
 
           # prod server
