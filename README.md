@@ -143,6 +143,15 @@ cd backend
 pip install .
 ```
 
+## Migrate
+
+### v1.2.0
+
+Steps to migrate database from below v1.2.0 to v1.2.0:
+1. Make a backup of the old db first.
+2. Create a new database by running LFReader server v1.2.0.
+3. Add all previous feeds through API or Web UI
+4. Run `python scripts/migrate_v1.2.0.py <old_db> <new_db>` to migrate all previous entries
 
 ## License
 
