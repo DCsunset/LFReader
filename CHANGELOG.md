@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.0](https://github.com/DCsunset/LFReader/compare/v1.2.0...v1.3.0) (2024-03-15)
+
+
+### Features
+
+* **frontend:** add more info in feed dialog and fix some icons ([5675553](https://github.com/DCsunset/LFReader/commit/56755533985be70f35bdf853ac177889e672e712))
+* support forceArchive option to skip hash check ([6183fe8](https://github.com/DCsunset/LFReader/commit/6183fe828f16e09bb281b21bf37c2b82688591fd))
+
+
+### Misc
+
+* add migration script and instructions ([548a3c2](https://github.com/DCsunset/LFReader/commit/548a3c26f251d2e2277ef6bbbc8bd5f2d929261c))
+* **frontend:** processing entry content only on change ([73adc79](https://github.com/DCsunset/LFReader/commit/73adc793c69d0a81aad80edaae4838bdcca1878e))
+
 ## [1.2.0](https://github.com/DCsunset/LFReader/compare/v1.1.0...v1.2.0) (2024-03-15)
 
 
