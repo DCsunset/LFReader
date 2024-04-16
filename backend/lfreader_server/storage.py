@@ -188,6 +188,10 @@ class Storage:
       update_entry_field = partial(sql_update_field, "entries")
 
       for url, f in feeds:
+        if f.bozo:
+          logging.error(f"Error parsing feed {url}: {str(f.bozo_exception)}")
+          continue
+
         logging.info(f"Processing feed {url}...")
 
         # unpacked already when converting to row dict
