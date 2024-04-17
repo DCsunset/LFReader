@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from bs4 import BeautifulSoup
+import random
 import logging
 from urllib.request import urlopen, urljoin, Request
 from hashlib import blake2s
@@ -35,9 +36,11 @@ def decode_feed_url(encoded: str) -> str:
   return urlsafe_b64decode(encoded + padding).decode()
 
 class Archiver:
-  def __init__(self, archive_dir: str, archive_url: str):
+  def __init__(self, archive_dir: str, archive_url: str, retry_attempts: int = 5, retry_delay: int = 5):
     self.archive_dir = archive_dir
     self.archive_url = archive_url
+    self.retry_attempts = retry_attempts
+    self.retry_delay = retry_delay
 
   """
   Archive all resources in the html content
@@ -71,17 +74,27 @@ class Archiver:
       return resource_url
 
     logging.debug(f'Archiving resources in html {url}...')
-    try:
-      async with session.get(url) as resp:
-        if resp.status != 200:
-          raise Exception(f"http error {resp.status}")
-        with open(resource_path, "wb") as f:
-          async for chunk in resp.content.iter_chunked(10240):
-            f.write(chunk)
-      return resource_url
-    except Exception as e:
-      logging.warn(f"Fail to fetch resource from {url} ({base_url}, {src}): {str(e)}")
-      return None
+    for i in range(self.retry_attempts):
+      try:
+        async with session.get(url) as resp:
+          if resp.status != 200:
+            raise Exception(f"http error {resp.status}")
+          with open(resource_path, "wb") as f:
+            async for chunk in resp.content.iter_chunked(10240):
+              f.write(chunk)
+        return resource_url
+      except Exception as e:
+        retry_status = "Retrying..." if i != self.retry_attempts - 1 else "All retries failed."
+        logging.warn(f"Failed to fetch resource from {url} ({base_url}, {src}): {str(e)}")
+        if i != self.retry_attempts - 1:
+          logging.info(f"Retrying to fetch resource from {url} ({base_url}, {src})...")
+          await asyncio.sleep(
+            self.retry_delay + random.randrange(self.retry_delay)
+          )
+        else:
+          logging.warn(f"Failed to fetch resource from {url} ({base_url}, {src}): All retries failed.")
+
+    return None
 
   # archive logo from website
   async def archive_logo(self, session, feed_url: str, url: str):
