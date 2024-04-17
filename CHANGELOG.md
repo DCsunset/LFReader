@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.3.1](https://github.com/DCsunset/LFReader/compare/v1.3.0...v1.3.1) (2024-04-17)
+
+
+### Bug Fixes
+
+* **backend:** log error message when failing to parse feed ([34e6665](https://github.com/DCsunset/LFReader/commit/34e6665e1db9c485379d47abdfd2b3fb4476990a))
+* **backend:** support retrying when failed to fetch resource ([b2c2dee](https://github.com/DCsunset/LFReader/commit/b2c2dee0cd0453402c3fa63fa92fad63041e0491))
+* raise feed parsing error and fix error format ([e4095a9](https://github.com/DCsunset/LFReader/commit/e4095a9de7e854f427fd26a3ea7100f204b57cf9))
+
 ## [1.3.0](https://github.com/DCsunset/LFReader/compare/v1.2.0...v1.3.0) (2024-03-15)
 
 
