@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastapi import FastAPI, Query
-from fastapi.responses import PlainTextResponse
 import logging
 import os
 import sys
@@ -111,9 +110,9 @@ async def delete_api(feed_urls: Annotated[list[str], Query()]):
 ## Error handlers
 
 @app.exception_handler(DatabaseError)
-async def db_exception(request, err: DatabaseError) -> PlainTextResponse:
+async def db_exception(request, err: DatabaseError):
   traceback.print_exc()
-  return PlainTextResponse(f"Database Error: {err}", status_code=409)
+  raise HTTPException(status_code=409, detail=f"Database Error: {err}")
 
 
 def main():

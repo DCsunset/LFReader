@@ -24,6 +24,12 @@ export function notify(color: AlertColor, text: string) {
   state.notification.value = { color, text };
 }
 
+async function notifyRespError(resp: Response) {
+  const err = await resp.json();
+  notify("error", `${resp.statusText}: ${err.detail}`)
+
+}
+
 async function getData() {
   const responses  =  await Promise.all([
     fetch("/api/feeds"),
@@ -31,8 +37,7 @@ async function getData() {
   ]);
   for (const resp of responses) {
     if (!resp.ok) {
-      const text = await resp.text();
-      notify("error", `${resp.statusText}: ${text}`)
+      notifyRespError(resp);
       return undefined;
     }
   }
@@ -53,8 +58,7 @@ export async function fetchData(feedUrls?: string[]) {
     })
   });
   if (!resp.ok) {
-    const text = await resp.text();
-    notify("error", `${resp.statusText}: ${text}`)
+    notifyRespError(resp);
     return false;
   }
 
@@ -92,8 +96,7 @@ export async function updateFeed(url: string, userData: FeedUserData) {
     })
   });
   if (!resp.ok) {
-    const text = await resp.text();
-    notify("error", `${resp.statusText}: ${text}`)
+    notifyRespError(resp);
     return false;
   }
 
@@ -132,8 +135,7 @@ export async function deleteFeed(url: string) {
   });
   const resp = await fetch(`/api/?${query}`, { method: "DELETE" });
   if (!resp.ok) {
-    const text = await resp.text();
-    notify("error", `${resp.statusText}: ${text}`);
+    notifyRespError(resp);
     return;
   }
 

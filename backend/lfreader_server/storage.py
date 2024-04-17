@@ -28,6 +28,7 @@ from functools import partial
 import asyncio
 import aiohttp
 from hashlib import blake2s
+from fastapi import HTTPException
 
 from .archive import Archiver
 
@@ -189,8 +190,8 @@ class Storage:
 
       for url, f in feeds:
         if f.bozo:
-          logging.error(f"Error parsing feed {url}: {str(f.bozo_exception)}")
-          continue
+          msg = getattr(f.bozo_exception, 'message', str(f.bozo_exception))
+          raise HTTPException(status_code=503, detail=f"Error parsing feed {url}: {msg}")
 
         logging.info(f"Processing feed {url}...")
 
