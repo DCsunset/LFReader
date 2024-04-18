@@ -191,9 +191,9 @@ class Storage:
       for url, f in feeds:
         if f.bozo:
           err_msg = getattr(f.bozo_exception, 'message', str(f.bozo_exception))
+          # don't raise exception as the feed may still be readable
           msg = f"Error parsing feed {url}: {err_msg}"
-          logging.error(msg)
-          raise HTTPException(status_code=503, detail=msg)
+          logging.warning(msg)
 
         logging.info(f"Processing feed {url}...")
 
