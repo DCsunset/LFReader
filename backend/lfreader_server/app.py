@@ -15,6 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastapi import FastAPI, Query
+from fastapi.openapi.docs import (
+  get_swagger_ui_html,
+  get_swagger_ui_oauth2_redirect_html
+)
 import logging
 import os
 import sys
@@ -34,11 +38,31 @@ user_agent = os.getenv("LFREADER_USER_AGENT") or None
 log_level = os.getenv("LFREADER_LOG_LEVEL", "info") or None
 # timeout for http requests in seconds
 timeout = int(os.getenv("LFREADER_TIMEOUT") or "10")
+swagger_js_url = os.getenv("LFREADER_SWAGGER_JS_URL", "https://unpkg.com/swagger-ui-dist@5.16.0/swagger-ui-bundle.js")
+swagger_css_url = os.getenv("LFREADER_SWAGGER_CSS_URL", "https://unpkg.com/swagger-ui-dist@5.16.0/swagger-ui.css")
 
 if log_level:
   logging.basicConfig(level=log_level.upper())
 
-app = FastAPI(root_path="/api")
+app = FastAPI(root_path="/api", docs_url=None, redoc_url=None)
+
+# self-host js and css assets for Swagger UI
+@app.get("/docs", include_in_schema=False)
+async def custom_swagger_ui_html():
+  return get_swagger_ui_html(
+    openapi_url=app.root_path + app.openapi_url,
+    title=app.title + " - Swagger UI",
+    oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
+    swagger_js_url=swagger_js_url,
+    swagger_css_url=swagger_css_url,
+    swagger_favicon_url="/logo.svg"
+  )
+
+@app.get(app.swagger_ui_oauth2_redirect_url, include_in_schema=False)
+async def swagger_ui_redirect():
+    return get_swagger_ui_oauth2_redirect_html()
+
+
 storage = Storage(
   db_file,
   archive_dir,
