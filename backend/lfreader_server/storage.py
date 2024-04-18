@@ -190,8 +190,10 @@ class Storage:
 
       for url, f in feeds:
         if f.bozo:
-          msg = getattr(f.bozo_exception, 'message', str(f.bozo_exception))
-          raise HTTPException(status_code=503, detail=f"Error parsing feed {url}: {msg}")
+          err_msg = getattr(f.bozo_exception, 'message', str(f.bozo_exception))
+          msg = f"Error parsing feed {url}: {err_msg}"
+          logging.error(msg)
+          raise HTTPException(status_code=503, detail=msg)
 
         logging.info(f"Processing feed {url}...")
 
