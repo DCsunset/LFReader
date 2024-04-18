@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.0](https://github.com/DCsunset/LFReader/compare/v1.3.2...v1.4.0) (2024-04-18)
+
+
+### Features
+
+* **backend:** support self-hosting swagger ui ([20ba2be](https://github.com/DCsunset/LFReader/commit/20ba2be31425ce795e29c639b75dcc4b8f5622ad))
+
 ## [1.3.1](https://github.com/DCsunset/LFReader/compare/v1.3.0...v1.3.1) (2024-04-17)
 
 
