@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.4.1](https://github.com/DCsunset/LFReader/compare/v1.4.0...v1.4.1) (2024-04-20)
+
+
+### Bug Fixes
+
+* **backend:** fix annotated type for openapi ([6e2d887](https://github.com/DCsunset/LFReader/commit/6e2d8875136820d4ad21558b3ee15005fe542ddd))
+
+
+### Misc
+
+* ignore swagger ui assets ([0fd74e2](https://github.com/DCsunset/LFReader/commit/0fd74e28d5763212b78842785d63be84a1cda0dd))
+* update dependency version ([b72d6f7](https://github.com/DCsunset/LFReader/commit/b72d6f7a9d94ac8f79f2e4916192abe262bde1cb))
+
 ## [1.4.0](https://github.com/DCsunset/LFReader/compare/v1.3.2...v1.4.0) (2024-04-18)
 
 
