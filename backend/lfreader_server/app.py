@@ -99,7 +99,7 @@ Get entries from local database
 @app.get("/entries")
 async def get_entries_api(
     # for list type, must annotate with Query explicitly
-    feed_urls: Annotated[list[str], Query()] | None = None,
+    feed_urls: Annotated[list[str], Query()] = None,
     offset: int = -1,
     limit: int = -1
 ) -> list[dict]:
