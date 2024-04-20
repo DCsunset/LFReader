@@ -111,7 +111,7 @@ export function lookupFeed(url?: string) {
 }
 
 export function fromEntryId(entry_id: string) {
-  const [feed_url, id] = Base64.decode(entry_id).split(" ");
+  const [feed_url, id] = JSON.parse(Base64.decode(entry_id));
   return state.data.value.entries.find(e => e.feed_url === feed_url && e.id === id);
 }
 

@@ -57,7 +57,7 @@ export function toFeedId(feed: Feed) {
 }
 
 export function toEntryId(entry: Entry) {
-  return Base64.encode(`${entry.feed_url} ${entry.id}`, true);
+  return Base64.encode(JSON.stringify([entry.feed_url, entry.id]), true);
 }
 
 export function getEntryTitle(entry?: Entry, fallback: string = "(No Title)") {
