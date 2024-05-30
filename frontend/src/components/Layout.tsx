@@ -20,7 +20,7 @@ import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, St
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiPencil, mdiLeadPencil } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -282,6 +282,15 @@ export default function Layout() {
             {dark.value ?
               <Icon path={mdiWeatherNight} size={1} /> :
               <Icon path={mdiWeatherSunny} size={1} />}
+          </IconButton>
+
+          <IconButton
+            color="inherit"
+            title="API Docs"
+            href="/api/docs"
+            target="_blank"
+          >
+            <Icon path={mdiCodeTags} size={1} />
           </IconButton>
         </Stack>
       </Drawer>
