@@ -158,6 +158,10 @@ class Storage:
         -- Indexes for accessing entries by published_at efficiently
         CREATE INDEX IF NOT EXISTS entries_by_published_at on entries(published_at)
       ''')
+      self.db.execute('''
+        -- Indexes for accessing entries by updated_at efficiently
+        CREATE INDEX IF NOT EXISTS entries_by_updated_at on entries(updated_at)
+      ''')
     except Exception as e:
       logging.critical(f"Error init db: {e}")
       sys.exit(1)
@@ -330,7 +334,7 @@ class Storage:
       args.extend(feed_urls)
 
     # -1 means no limit or offset
-    query += " ORDER BY published_at DESC LIMIT ? OFFSET ?"
+    query += " ORDER BY COALESCE(published_at, updated_at) DESC LIMIT ? OFFSET ?"
     args.extend((limit, offset))
 
     return self.db.execute(query, args).fetchall()
