@@ -4,7 +4,8 @@ import re
 class ArchiveOption(BaseModel):
   # attr to arhive the url and rewrite
   attr: str
-  # str: regex
+  # str is treated as regex
+  # list[str] is treated as plain strings
   tag_filter: re.Pattern|list[str]|bool = True
   attr_filters: dict[str, re.Pattern|list[str]|bool] = {}
 

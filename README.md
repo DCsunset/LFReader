@@ -10,6 +10,7 @@ LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python 
 
 - Local-first: Feeds and entries are stored in a sqlite3 database so that you can read local feeds even without Internet access. Futhermore, it supports archiving resources like images in the entries.
 - Dark mode support: Users can choose between light and dark modes
+- Flexible archiving options: User can use regex to filter the html tags and values when archiving
 
 ## Screenshots
 
@@ -103,13 +104,13 @@ You can disable archiving globally in such case.
 
 The following environment variables are supported when running the backend:
 
-| Variable            | Default     | Description                                  |
-|---------------------|-------------|----------------------------------------------|
-| LFREADER_DB         | "db.sqlite" | File path to store the database              |
-| LFREADER_ARCHIVE    | "archives"  | Directory path to store archived resources   |
-| LFREADER_USER_AGENT | None        | User agent to use when sending HTTP requests |
-| LFREADER_TIMEOUT    | "15"        | Timeout of each HTTP request (in seconds)    |
-| LFREADER_LOG_LEVEL  | "info"      | Log level                                    |
+| Variable        | Description      |
+|-----------------|------------------|
+| LFREADER_CONFIG | Config file path |
+
+
+The config file is in JSON format.
+Please see refer to `Config` class in file `backend/config.py` for available options and default values.
 
 
 ## Development
@@ -143,7 +144,11 @@ cd backend
 pip install .
 ```
 
-## Migrate
+## Migration
+
+### v2.0.0
+
+Move original environment variables to config file.
 
 ### v1.2.0
 
