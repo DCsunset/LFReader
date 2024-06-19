@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.0.0](https://github.com/DCsunset/LFReader/compare/v1.4.3...v2.0.0) (2024-06-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* **backend:** read config from file and support archiving other tags
+
+### Features
+
+* **backend:** append filename to resource hash ([a615745](https://github.com/DCsunset/LFReader/commit/a615745f6b7693b636cc1cb8e888f130a5e07746))
+* **backend:** read config from file and support archiving other tags ([8b7380d](https://github.com/DCsunset/LFReader/commit/8b7380d30e3d592c890cdbcb66fcfc866b745bbe))
+
+
+### Misc
+
+* update gitignore ([0c6f297](https://github.com/DCsunset/LFReader/commit/0c6f297e97157434bc4995a335970756ee54b821))
+* update readme and comments ([fd9428f](https://github.com/DCsunset/LFReader/commit/fd9428f8418a6e99ca52cd7ef3e4d279b569ad91))
+
 ## [1.4.3](https://github.com/DCsunset/LFReader/compare/v1.4.2...v1.4.3) (2024-05-30)
 
 ## [1.4.1](https://github.com/DCsunset/LFReader/compare/v1.4.0...v1.4.1) (2024-04-20)
