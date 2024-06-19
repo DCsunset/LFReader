@@ -31,6 +31,7 @@ from hashlib import blake2s
 from fastapi import HTTPException
 
 from .archive import Archiver
+from .config import Config
 
 def parsed_time_to_iso(parsed_time: struct_time | None):
   # the parsed time is guaranteed to be utc
@@ -79,21 +80,18 @@ def sql_update_field(table: str, field: str):
   return f"{field} = COALESCE(excluded.{field}, {table}.{field})"
 
 class Storage:
-  def __init__(self, db_file: str, archive_dir: str, archive_url: str, user_agent: str | None, timeout: int):
+  def __init__(self, config: Config):
+    self.cfg = config
     # create parent directories to prevent error
-    Path(db_file).parent.mkdir(parents=True, exist_ok=True)
-    self.db = sqlite3.connect(db_file)
+    Path(config.db_file).parent.mkdir(parents=True, exist_ok=True)
+    self.db = sqlite3.connect(config.db_file)
     self.db.row_factory = dict_row_factory
     self.init_db()
-    self.archiver = Archiver(archive_dir, archive_url)
+    self.archiver = Archiver(config.archiver)
     self.headers = {}
-    if user_agent is not None:
-      self.headers["User-Agent"] = user_agent
-    self.timeout = aiohttp.ClientTimeout(total=timeout)
-
-    logging.info(f"Database path: {db_file}")
-    logging.info(f"User Agent: {user_agent}")
-    logging.info(f"Timeout: {timeout}s")
+    if config.user_agent is not None:
+      self.headers["User-Agent"] = config.user_agent
+    self.timeout = aiohttp.ClientTimeout(total=config.timeout)
 
   def init_db(self):
     try:

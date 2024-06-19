@@ -22,27 +22,30 @@ from fastapi.openapi.docs import (
 import logging
 import os
 import sys
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 from sqlite3 import DatabaseError
 from typing import Annotated
 import traceback
 import uvicorn
+import json
 
 from .storage import Storage
+from .config import Config
 
-# the path of the database (default to ./db.sqlite)
-db_file = os.getenv("LFREADER_DB", "db.sqlite")
-archive_dir = os.getenv("LFREADER_ARCHIVE", "archives")
-# set user agent to prevent being blocked by source sites
-user_agent = os.getenv("LFREADER_USER_AGENT") or None
-log_level = os.getenv("LFREADER_LOG_LEVEL", "info") or None
-# timeout for http requests in seconds
-timeout = int(os.getenv("LFREADER_TIMEOUT") or "10")
-swagger_js_url = os.getenv("LFREADER_SWAGGER_JS_URL", "https://unpkg.com/swagger-ui-dist@5.16.0/swagger-ui-bundle.js")
-swagger_css_url = os.getenv("LFREADER_SWAGGER_CSS_URL", "https://unpkg.com/swagger-ui-dist@5.16.0/swagger-ui.css")
+try:
+  config_file = os.getenv("LFREADER_CONFIG", "")
+  if config_file:
+    with open(config_file) as f:
+      config = Config(**json.load(f))
+  else:
+    config = Config()
+except ValidationError as e:
+  print(e.errors())
+  sys.exit(1)
 
-if log_level:
-  logging.basicConfig(level=log_level.upper())
+logging.basicConfig(level=config.log_level.upper())
+if config_file:
+  logging.info(f"Config file loaded: {config_file}")
 
 app = FastAPI(root_path="/api", docs_url=None, redoc_url=None)
 
@@ -53,8 +56,8 @@ async def custom_swagger_ui_html():
     openapi_url=app.root_path + app.openapi_url,
     title=app.title + " - Swagger UI",
     oauth2_redirect_url=app.swagger_ui_oauth2_redirect_url,
-    swagger_js_url=swagger_js_url,
-    swagger_css_url=swagger_css_url,
+    swagger_js_url=config.swagger.js_url,
+    swagger_css_url=config.swagger.css_url,
     swagger_favicon_url="/logo.svg"
   )
 
@@ -63,13 +66,7 @@ async def swagger_ui_redirect():
     return get_swagger_ui_oauth2_redirect_html()
 
 
-storage = Storage(
-  db_file,
-  archive_dir,
-  archive_url="/archives",
-  user_agent=user_agent,
-  timeout=timeout
-)
+storage = Storage(config)
 
 """
 Get feeds from local database
@@ -98,10 +95,10 @@ Get entries from local database
 """
 @app.get("/entries")
 async def get_entries_api(
-    # for list type, must annotate with Query explicitly
-    feed_urls: Annotated[list[str], Query()] = None,
-    offset: int = -1,
-    limit: int = -1
+  # for list type, must annotate with Query explicitly
+  feed_urls: Annotated[list[str], Query()] = None,
+  offset: int = -1,
+  limit: int = -1
 ) -> list[dict]:
   return storage.get_entries(feed_urls, offset, limit)
 
