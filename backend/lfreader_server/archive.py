@@ -18,11 +18,13 @@ from bs4 import BeautifulSoup
 import random
 import logging
 from urllib.request import urlopen, urljoin, Request
+from urllib.urlparse import urlparse
 from hashlib import blake2s
 from pathlib import Path
 import shutil
 import asyncio
 from base64 import urlsafe_b64encode, urlsafe_b64decode
+import os
 
 """
 Use Base64 (url safe) to encode feed url
@@ -67,8 +69,16 @@ class Archiver:
 
     url = urljoin(base_url, src)
     digest = blake2s(url.encode()).hexdigest()
-    resource_path = feed_path.joinpath(digest)
-    resource_url = f"{self.archive_url}/{encoded_feed_url}/{digest}"
+    filename = f"{digest}_{Path(urlparse(url).path).name}"
+
+    resource_path = feed_path.joinpath(filename)
+    resource_url = f"{self.archive_url}/{encoded_feed_url}/{filename}"
+
+    # Check digest first for backward compatibility
+    old_resource_path = feed_path.joinpath(digest)
+    if old_resource_path.exists():
+      os.rename(old_resource_path, resource_path)
+
     # already cached
     if resource_path.exists():
       return resource_url
