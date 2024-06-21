@@ -143,8 +143,8 @@ export async function deleteFeed(url: string) {
   const data = state.data.value;
   batch(() => {
     state.data.value = {
-      feeds: data.feeds.filter(f => f.url === url),
-      entries: data.entries.filter(e => e.feed_url === url)
+      feeds: data.feeds.filter(f => f.url !== url),
+      entries: data.entries.filter(e => e.feed_url !== url)
     };
     notify("success", "Feed deleted successfully");
   });
