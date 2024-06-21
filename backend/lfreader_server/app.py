@@ -28,6 +28,7 @@ from typing import Annotated
 import traceback
 import uvicorn
 import json
+from enum import Enum
 
 from .storage import Storage
 from .config import Config
@@ -120,13 +121,31 @@ async def fetch_api(args: FetchArgs):
   return {}
 
 """
-Delete feeds
+Delete feeds and their entries
 """
 @app.delete("/")
 async def delete_api(feed_urls: Annotated[list[str], Query()]):
   storage.delete_feeds(feed_urls)
   return {}
 
+
+class UpdateOperation(str, Enum):
+  archive = "archive"
+
+class UpdateArgs(BaseModel):
+  operation: UpdateOperation
+
+"""
+Update (re-archive) feeds and entries in db
+"""
+@app.patch("/")
+async def patch_api(args: UpdateArgs):
+  match args.operation:
+    case UpdateOperation.archive:
+      await storage.archive_db()
+    case _:
+      raise HTTPException(status_code=400, detail=f"Invalid operation: {args.operation}")
+  return {}
 
 ## Error handlers
 

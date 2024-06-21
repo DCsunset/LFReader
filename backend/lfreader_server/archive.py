@@ -52,7 +52,10 @@ class Archiver:
   async def archive_html(self, session, feed_url: str, content: str, base_url: str | None):
     soup = BeautifulSoup(content, "html.parser")
     async def update_tag(attr, tag):
-      tag[attr] = await self.archive_resource(session, feed_url, tag.get(attr), base_url)
+      resource_url = await self.archive_resource(session, feed_url, tag.get(attr), base_url)
+      # only update url when archiving succeeds
+      if resource_url:
+        tag[attr] = resource_url
 
     for opt in self.cfg.archive_options:
       attrs = opt.attr_filters
@@ -72,12 +75,17 @@ class Archiver:
     feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
     feed_path.mkdir(parents=True, exist_ok=True)
 
+    base_url = f"{self.cfg.base_url}/{encoded_feed_url}/"
+    # check if url is already archived
+    if src.startswith(base_url):
+      return None
+
     url = urljoin(base_url, src)
     digest = blake2s(url.encode()).hexdigest()
     filename = f"{digest}_{Path(urlparse(url).path).name}"
 
     resource_path = feed_path.joinpath(filename)
-    resource_url = f"{self.cfg.base_url}/{encoded_feed_url}/{filename}"
+    resource_url = f"{base_url}/{filename}"
 
     # Check digest first for backward compatibility
     old_resource_path = feed_path.joinpath(digest)

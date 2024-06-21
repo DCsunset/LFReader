@@ -318,10 +318,10 @@ class Storage:
     return self.db.execute("SELECT * FROM feeds").fetchall()
 
   def get_entries(
-      self,
-      feed_urls: list[str] | None = None,
-      offset: int = -1,
-      limit: int = -1
+    self,
+    feed_urls: list[str] | None = None,
+    offset: int = -1,
+    limit: int = -1
   ) -> list[dict]:
     query = "SELECT * FROM entries"
     args = []
@@ -355,3 +355,40 @@ class Storage:
     # delete archived resources
     self.archiver.delete_archives(feed_urls)
 
+  # archive all feeds in database
+  async def archive_db(self):
+    async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
+      for f in self.db.execute(
+        "SELECT url, user_data FROM feeds",
+      ):
+        url = f["url"]
+        f_user_data = f["user_data"] or {}
+        for e in self.db.execute(
+          "SELECT id, summary, contents FROM entries WHERE feed_url = ?",
+          (url,)
+        ):
+          base_url = f_user_data.get("base_url", e.get("link"))
+          e_id = e["id"]
+          summary = e["summary"]
+          contents = e["contents"]
+          if summary:
+            logging.info(f'Archiving summary of entry {e_id}...')
+            summary = await self.archive_content(session, url, summary, base_url)
+          if contents:
+            logging.info(f'Archiving contents of entry {e_id}...')
+            contents = await self.archive_contents(session, url, contents, base_url)
+
+          self.db.execute(
+            f'''
+            UPDATE entries
+            SET summary = ?, contents = ?
+            WHERE feed_url = ? AND id = ?
+            ''',
+            (
+              pack_data(summary),
+              pack_data(contents),
+              url,
+              e_id
+            )
+          )
+      self.db.commit()
