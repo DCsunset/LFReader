@@ -31,7 +31,11 @@ import {
   Typography,
 } from "@mui/material";
 import { state } from "../store/state";
+import { archiveDb } from "../store/actions";
 import { batch, Signal, signal } from "@preact/signals";
+import { LoadingButton } from "@mui/lab";
+import Icon from "@mdi/react";
+import { mdiBookshelf, mdiDownload } from "@mdi/js";
 
 const validNumber = (value: string, min: number, max: number) => {
   if (value.length === 0) {
@@ -46,6 +50,7 @@ const pageSize = signal(state.settings.value.pageSize.toString());
 const pageSizeError = signal(false);
 const archive = signal(state.settings.value.archive);
 const forceArchive = signal(state.settings.value.forceArchive);
+const archiveDbInProgress = signal(false);
 
 // reset local states
 const reset = () => {
@@ -75,6 +80,12 @@ export default function SettingsDialog({ open }: {
       });
     }
   };
+
+  async function handleArchiveDb() {
+    archiveDbInProgress.value = true;
+    await archiveDb();
+    archiveDbInProgress.value = false;
+  }
 
   return (
     <Dialog
@@ -157,6 +168,26 @@ export default function SettingsDialog({ open }: {
                   checked={forceArchive.value}
                   onChange={(e: any) => forceArchive.value = e.target.checked}
                 />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText>
+                  Database Operations
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <LoadingButton
+                  loading={archiveDbInProgress.value}
+                  loadingPosition="start"
+                  color="primary" onClick={handleArchiveDb}
+                  startIcon={<Icon path={mdiDownload} size={1} />}
+                >
+                  <Box sx={{ mt: 0.2 }}>Archive</Box>
+                </LoadingButton>
               </Grid>
             </Grid>
           </ListItem>

@@ -11,7 +11,10 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: path => path.replace(/^\/api/, '')
       }
-    }
+    },
+    // headers: {
+    //   "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:"
+    // }
   },
 	plugins: [preact()],
 });

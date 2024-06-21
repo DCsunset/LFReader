@@ -12,6 +12,7 @@
 		"@fontsource/roboto": "^5.0.12",
 		"@mdi/js": "^7.4.47",
 		"@mdi/react": "^1.6.1",
+		"@mui/lab": "^5.0.0-alpha.170",
 		"@mui/material": "^5.15.12",
 		"@preact/signals": "^1.2.2",
 		"@types/katex": "^0.16.7",

@@ -150,3 +150,30 @@ export async function deleteFeed(url: string) {
   });
 }
 
+/// Archive entries in database
+export async function archiveDb() {
+  const resp =  await fetch(`/api/`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      operation: "archive"
+    })
+  });
+  if (!resp.ok) {
+    notifyRespError(resp);
+    return false;
+  }
+
+  const data = await getData();
+  if (data) {
+    batch(() => {
+      state.data.value = data;
+      notify("success", "Database archived successfully");
+    })
+    return true;
+  }
+  return false;
+}
+
