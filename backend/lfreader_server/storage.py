@@ -364,10 +364,10 @@ class Storage:
         url = f["url"]
         f_user_data = f["user_data"] or {}
         for e in self.db.execute(
-          "SELECT id, summary, contents FROM entries WHERE feed_url = ?",
+          "SELECT id, link, summary, contents FROM entries WHERE feed_url = ?",
           (url,)
         ):
-          base_url = f_user_data.get("base_url", e.get("link"))
+          base_url = f_user_data.get("base_url", e["link"])
           e_id = e["id"]
           summary = e["summary"]
           contents = e["contents"]
