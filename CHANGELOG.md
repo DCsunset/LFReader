@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.1.0](https://github.com/DCsunset/LFReader/compare/v2.0.0...v2.1.0) (2024-06-22)
+
+
+### Features
+
+* **backend:** support archiving feeds in db ([e5a8cb8](https://github.com/DCsunset/LFReader/commit/e5a8cb8cd781548368ee5aba226a24e0d434db97))
+* **frontend:** add button to archive db ([a42ca45](https://github.com/DCsunset/LFReader/commit/a42ca4590294ed750222fcbe0b70052fb2cf37c3))
+* **frontend:** add loading state in ui ([580430a](https://github.com/DCsunset/LFReader/commit/580430a70c792191c3ad858ba54f0f6a8143b177))
+* **frontend:** display author if it exists ([3af1b60](https://github.com/DCsunset/LFReader/commit/3af1b60d297f19b1c527105abc1c5bc4bec71759))
+
+
+### Bug Fixes
+
+* **frontend:** fix local state when deleting feed ([4770961](https://github.com/DCsunset/LFReader/commit/4770961fcc3b47e573600676f2842521abd85b00))
+
 ## [2.0.0](https://github.com/DCsunset/LFReader/compare/v1.4.3...v2.0.0) (2024-06-19)
 
 
