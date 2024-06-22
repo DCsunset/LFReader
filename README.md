@@ -44,17 +44,21 @@ and frontend static files (in `share/lfreader`).
 
 Besides, a NixOS module for backend server is provided in the [Nix flake](https://github.com/DCsunset/nur-packages) output.
 Simply import the flake and import the module `modules.lfreader` and add the following NixOS configuration:
-
 ```nix
 {
   imports = [ nur-dcsunset.modules.lfreader ];
   services.lfreader = {
     enable = true;
-    # or use nur.repos.dcsunset.lfreader with NUR namespace
-    package = nur-dcsunset.packages.lfreader;
     host = "::";
     port = 3000;
-    logLevel = "debug";
+    openFirewall = true;
+    settings = {
+      db_file = "/data/db.sqlite";
+      archiver = {
+        base_dir = "/data/archives";
+      };
+      log_level = "info";
+    };
   };
 }
 ```
