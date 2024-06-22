@@ -12,9 +12,9 @@ export default defineConfig({
         rewrite: path => path.replace(/^\/api/, '')
       }
     },
-    // headers: {
-    //   "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:"
-    // }
+    headers: {
+      "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:"
+    }
   },
 	plugins: [preact()],
 });
