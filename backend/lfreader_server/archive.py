@@ -77,7 +77,7 @@ class Archiver:
 
     resource_base_url = f"{self.cfg.base_url}/{encoded_feed_url}/"
     # check if url is already archived
-    if src.startswith(base_url):
+    if src.startswith(resource_base_url):
       return None
 
     url = urljoin(base_url, src)
