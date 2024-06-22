@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.1.2](https://github.com/DCsunset/LFReader/compare/v2.1.1...v2.1.2) (2024-06-22)
+
+
+### Bug Fixes
+
+* **backend:** fix resource base url ([31a51e8](https://github.com/DCsunset/LFReader/commit/31a51e8194298981610315dcce6f0e053c50b2cb))
+
 ## [2.1.1](https://github.com/DCsunset/LFReader/compare/v2.1.0...v2.1.1) (2024-06-22)
 
 
