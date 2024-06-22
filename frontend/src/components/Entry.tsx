@@ -20,7 +20,7 @@ import { computedState, lookupFeed  } from "../store/state";
 import { getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
 import { Box, Divider, Typography } from "@mui/material";
 import Icon from "@mdi/react";
-import { mdiCalendarMonth, mdiRss } from "@mdi/js";
+import { mdiAccount, mdiCalendarMonth, mdiRss } from "@mdi/js";
 import { displayDate } from "../utils/date";
 import { useEffect } from "preact/hooks";
 import renderMathInElement from "katex/contrib/auto-render";
@@ -50,6 +50,7 @@ const entryRef = createRef<HTMLElement>();
 export default function Entry() {
   const entry = computedState.selectedEntry.value;
   const feed = lookupFeed(entry?.feed_url);
+  const author = entry?.author || feed?.author;
 
   // this hook runs every time entry changes
   // must use useEffect instead of signal effect because it needs the page to load first
@@ -106,10 +107,12 @@ export default function Entry() {
           <Divider sx={{ mb: 1 }} />
           <Typography variant="info" sx={{ display: "flex" }}>
             <Icon path={mdiCalendarMonth} size={0.9} />
-            <Box sx={{ ml: 0.5, mr: 1.5 }}>{displayDate(entry.published_at ?? entry.updated_at)}</Box>
+            <Box sx={{ ml: 0.5, mr: 1.5 }}>
+              {displayDate(entry.published_at ?? entry.updated_at)}
+            </Box>
 
             <Icon path={mdiRss} size={0.9} />
-            <Box sx={{ ml: 0.5 }}>
+            <Box sx={{ ml: 0.5, mr: 1.5 }}>
               <a
                 href={feed?.link}
                 target="_blank"
@@ -118,6 +121,15 @@ export default function Entry() {
                 {getFeedTitle(feed)}
               </a>
             </Box>
+
+            {author &&
+              <>
+                <Icon path={mdiAccount} size={0.9} />
+                <Box sx={{ ml: 0.5, mr: 1.5 }}>
+                  {author}
+                </Box>
+              </>
+            }
           </Typography>
 
           {currentContents.value.map((v, i) => (

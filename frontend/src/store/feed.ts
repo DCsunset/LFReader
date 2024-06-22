@@ -43,6 +43,7 @@ export type Content = {
 export type Entry = {
   feed_url: string,
   id: string,
+  author?: string,
   link?: string,
   title?: string,
   summary?: Content,
