@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.1.3](https://github.com/DCsunset/LFReader/compare/v2.1.2...v2.1.3) (2024-06-22)
+
+
+### Bug Fixes
+
+* **backend:** fix entry link when archiving db ([536c42e](https://github.com/DCsunset/LFReader/commit/536c42eb8fbaad766beb9dd8bf3aacc5cabe7f90))
+
 ## [2.1.2](https://github.com/DCsunset/LFReader/compare/v2.1.1...v2.1.2) (2024-06-22)
 
 
