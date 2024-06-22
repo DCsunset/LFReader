@@ -75,10 +75,21 @@ class Archiver:
     feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
     feed_path.mkdir(parents=True, exist_ok=True)
 
-    resource_base_url = f"{self.cfg.base_url}/{encoded_feed_url}/"
+    resource_base_url = f"{self.cfg.base_url}/{encoded_feed_url}"
     # check if url is already archived
     if src.startswith(resource_base_url):
-      return None
+      filename = Path(src).name
+      # start with 64 hex digit
+      if re.match("[0-9a-f]{64}", filename):
+        if feed_path.joinpath(filename).exists():
+          # already archived
+          return None
+        # search for file started with it for backward compatibility
+        for f in feed_path.iterdir():
+          if f.name.startswith(filename):
+            return f"{resource_base_url}/{f.name}"
+        logging.warn(f"URL archived but resource not found: {src}")
+        return None
 
     url = urljoin(base_url, src)
     digest = blake2s(url.encode()).hexdigest()
