@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material"
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material"
 import { Signal, signal, batch } from "@preact/signals";
 import { fetchData } from "../store/actions";
 
@@ -24,6 +24,7 @@ interface Props {
 
 const feedUrls = signal("")
 const feedUrlsError = signal(false);
+const fetchDataInProgress = signal(false);
 
 function setFeedUrls(value: string) {
   batch(() => {
@@ -45,6 +46,7 @@ export default function NewFeedsDialog(props: Props) {
   };
 
   async function submit() {
+    fetchDataInProgress.value = true;
     const urls = feedUrls.peek().split("\n").filter(v => v.length > 0);
     if (urls.length === 0) {
       feedUrlsError.value = true;
@@ -54,6 +56,7 @@ export default function NewFeedsDialog(props: Props) {
     if (success) {
       close();
     }
+    fetchDataInProgress.value = false;
   }
 
   return (
@@ -76,7 +79,11 @@ export default function NewFeedsDialog(props: Props) {
       <DialogActions>
         <Button color="inherit" onClick={close}>Cancel</Button>
         <Button color="error" onClick={() => feedUrls.value = ""}>Reset</Button>
-        <Button color="primary" onClick={submit}>Submit</Button>
+        <Button color="primary" onClick={submit} disabled={fetchDataInProgress.value}>
+          {fetchDataInProgress.value
+            ? <CircularProgress color="inherit" size={20} />
+            : <span>Submit</span>}
+        </Button>
       </DialogActions>
     </Dialog>
   );

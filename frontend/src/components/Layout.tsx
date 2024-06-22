@@ -16,7 +16,7 @@
 
 import { createRef } from "preact";
 import { computedState, state } from "../store/state";
-import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, Zoom, Fab } from "@mui/material";
+import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, Zoom, Fab, CircularProgress } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
@@ -40,6 +40,8 @@ const dark = computed(() => state.settings.value.dark);
 const settingsDialog = signal(false);
 const feedsDialog = signal(false);
 const editing = state.ui.editingFeeds;
+const fetchDataInProgress = signal(false);
+const loadDataInProgress = signal(false);
 
 const selectedFeed = computedState.selectedFeed;
 const selectedEntry = computedState.selectedEntry;
@@ -99,6 +101,18 @@ export default function Layout() {
       dark: !dark.value
     };
   };
+
+  async function handleFetchData() {
+    fetchDataInProgress.value = true;
+    await fetchData();
+    fetchDataInProgress.value = false;
+  }
+
+  async function handleLoadData() {
+    loadDataInProgress.value = true;
+    await loadData();
+    loadDataInProgress.value = false;
+  }
 
   useSignalEffect(() => {
     const notification = state.notification.value;
@@ -214,23 +228,25 @@ export default function Layout() {
             size="small"
             color="inherit"
             title="Reload local feeds"
-            onClick={loadData}
+            onClick={handleLoadData}
+            disabled={loadDataInProgress.value}
           >
-            <Icon
-              path={mdiRefresh}
-              size={1}
-            />
+            {loadDataInProgress.value
+              ? <CircularProgress color="inherit" size={24} />
+              : <Icon path={mdiRefresh} size={1} />
+            }
           </IconButton>
           <IconButton
             size="small"
             color="inherit"
             title="Fetch feeds from origin"
-            onClick={() => fetchData()}
+            onClick={handleFetchData}
+            disabled={fetchDataInProgress.value}
           >
-            <Icon
-              path={mdiDownload}
-              size={1}
-            />
+            {fetchDataInProgress.value
+              ? <CircularProgress color="inherit" size={24} />
+              : <Icon path={mdiDownload} size={1} />
+            }
           </IconButton>
           <IconButton
             size="small"
