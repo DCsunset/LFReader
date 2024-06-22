@@ -75,7 +75,7 @@ class Archiver:
     feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
     feed_path.mkdir(parents=True, exist_ok=True)
 
-    base_url = f"{self.cfg.base_url}/{encoded_feed_url}/"
+    resource_base_url = f"{self.cfg.base_url}/{encoded_feed_url}/"
     # check if url is already archived
     if src.startswith(base_url):
       return None
@@ -85,7 +85,7 @@ class Archiver:
     filename = f"{digest}_{Path(urlparse(url).path).name}"
 
     resource_path = feed_path.joinpath(filename)
-    resource_url = f"{base_url}/{filename}"
+    resource_url = f"{resource_base_url}/{filename}"
 
     # Check digest first for backward compatibility
     old_resource_path = feed_path.joinpath(digest)
