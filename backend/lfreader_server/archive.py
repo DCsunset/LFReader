@@ -123,14 +123,14 @@ class Archiver:
         return resource_url
       except Exception as e:
         retry_status = "Retrying..." if i != self.cfg.retry_attempts - 1 else "All retries failed."
-        logging.warn(f"Failed to fetch resource from {url} ({base_url}, {src}): {str(e)}")
+        logging.warn(f"Failed to fetch resource from {url} ({user_base_url}, {base_url}, {src}): {str(e)}")
         if i != self.cfg.retry_attempts - 1:
-          logging.info(f"Retrying to fetch resource from {url} ({base_url}, {src})...")
+          logging.info(f"Retrying to fetch resource from {url} ({user_base_url}, {base_url}, {src})...")
           await asyncio.sleep(
             self.cfg.retry_delay + random.randrange(self.cfg.retry_delay)
           )
         else:
-          logging.warn(f"Failed to fetch resource from {url} ({base_url}, {src}): All retries failed.")
+          logging.warn(f"Failed to fetch resource from {url} ({user_base_url}, {base_url}, {src}): All retries failed.")
 
     return None
 
