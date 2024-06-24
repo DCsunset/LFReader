@@ -164,15 +164,15 @@ class Storage:
       logging.critical(f"Error init db: {e}")
       sys.exit(1)
 
-  async def archive_content(self, session, feed_url: str, content, base_url: str | None):
+  async def archive_content(self, session, feed_url: str, content, base_url: str | None, user_base_url: str | None):
     if content.get("type") != "text/plain":
-      content["value"] = await self.archiver.archive_html(session, feed_url, content.get("value"), base_url)
+      content["value"] = await self.archiver.archive_html(session, feed_url, content.get("value"), base_url, user_base_url)
     return content
 
-  async def archive_contents(self, session, feed_url: str, contents, base_url: str | None):
+  async def archive_contents(self, session, feed_url: str, contents, base_url: str | None, user_base_url: str | None):
     await asyncio.gather(
       *map(
-        lambda c: self.archive_content(session, feed_url, c, base_url),
+        lambda c: self.archive_content(session, feed_url, c, base_url, user_base_url),
         contents
       )
     )
@@ -259,7 +259,8 @@ class Storage:
 
 
           # base url for feed resources
-          base_url = f_user_data.get("base_url", e.get("link"))
+          base_url = e.get("link")
+          user_base_url = f_user_data.get("base_url")
           summary = e.get("summary_detail")
           contents = e.get("content")
           summary_hash = hash_dicts([summary]) if summary else None
@@ -268,12 +269,12 @@ class Storage:
             if summary and (summary_hash != e_server_data.get("summary_hash")
                             or force_archive):
               logging.info(f'Archiving summary of entry {e_title}...')
-              summary = await self.archive_content(session, url, summary, base_url)
+              summary = await self.archive_content(session, url, summary, base_url, user_base_url)
               e_server_data["summary_hash"] = summary_hash
             if contents and (contents_hash != e_server_data.get("contents_hash")
                              or force_archive):
               logging.info(f'Archiving contents of entry {e_title}...')
-              contents = await self.archive_contents(session, url, contents, base_url)
+              contents = await self.archive_contents(session, url, contents, base_url, user_base_url)
               e_server_data["contents_hash"] = contents_hash
 
           self.db.execute(
@@ -367,16 +368,17 @@ class Storage:
           "SELECT id, link, summary, contents FROM entries WHERE feed_url = ?",
           (url,)
         ):
-          base_url = f_user_data.get("base_url", e["link"])
+          base_url = e["link"]
+          user_base_url = f_user_data.get("base_url")
           e_id = e["id"]
           summary = e["summary"]
           contents = e["contents"]
           if summary:
             logging.info(f'Archiving summary of entry {e_id}...')
-            summary = await self.archive_content(session, url, summary, base_url)
+            summary = await self.archive_content(session, url, summary, base_url, user_base_url)
           if contents:
             logging.info(f'Archiving contents of entry {e_id}...')
-            contents = await self.archive_contents(session, url, contents, base_url)
+            contents = await self.archive_contents(session, url, contents, base_url, user_base_url)
 
           self.db.execute(
             f'''
