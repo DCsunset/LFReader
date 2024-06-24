@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.1.5](https://github.com/DCsunset/LFReader/compare/v2.1.4...v2.1.5) (2024-06-24)
+
+
+### Bug Fixes
+
+* **backend:** fix url resolution ([14e69d5](https://github.com/DCsunset/LFReader/commit/14e69d5bd4f3ed55d619295c5f418e66755db356))
+
+
+### Misc
+
+* update nixos config example ([b587df7](https://github.com/DCsunset/LFReader/commit/b587df76e32242435a005ef146ddd290ec7d6d5d))
+
 ## [2.1.4](https://github.com/DCsunset/LFReader/compare/v2.1.3...v2.1.4) (2024-06-22)
 
 
