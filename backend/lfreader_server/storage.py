@@ -271,11 +271,17 @@ class Storage:
               logging.info(f'Archiving summary of entry {e_title}...')
               summary = await self.archive_content(session, url, summary, base_url, user_base_url)
               e_server_data["summary_hash"] = summary_hash
+            else:
+              # don't update summary
+              summary = None
             if contents and (contents_hash != e_server_data.get("contents_hash")
                              or force_archive):
               logging.info(f'Archiving contents of entry {e_title}...')
               contents = await self.archive_contents(session, url, contents, base_url, user_base_url)
               e_server_data["contents_hash"] = contents_hash
+            else:
+              # don't update contents
+              contents = None
 
           self.db.execute(
             f'''
