@@ -62,10 +62,10 @@ export function toEntryId(entry: Entry) {
 }
 
 export function getEntryTitle(entry?: Entry, fallback: string = "(No Title)") {
-  return entry?.title ?? fallback;
+  return entry?.title || fallback;
 }
 
 export function getFeedTitle(feed?: Feed, fallback: string = "(No Title)") {
-  return feed?.user_data.alias ?? feed?.title ?? fallback;
+  return feed?.user_data.alias || feed?.title || fallback;
 }
 
