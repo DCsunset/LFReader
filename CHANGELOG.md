@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.1.6](https://github.com/DCsunset/LFReader/compare/v2.1.5...v2.1.6) (2024-06-28)
+
+
+### Bug Fixes
+
+* **backend:** avoid overwriting content when skipping archiving ([b986a3e](https://github.com/DCsunset/LFReader/commit/b986a3ebf0d9b1d507ebfa698a37eb67ad686e48))
+* **frontend:** fix title display ([bc16552](https://github.com/DCsunset/LFReader/commit/bc16552052b52b0fc6593e21f0d132e5465904d7))
+
+
+### Misc
+
+* **backend:** improve logging message ([beef691](https://github.com/DCsunset/LFReader/commit/beef691486239ead2862b92810d0ea8b7ee6c811))
+
 ## [2.1.5](https://github.com/DCsunset/LFReader/compare/v2.1.4...v2.1.5) (2024-06-24)
 
 
