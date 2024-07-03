@@ -151,14 +151,15 @@ export async function deleteFeed(url: string) {
 }
 
 /// Archive entries in database
-export async function archiveDb() {
+export async function archiveFeeds(urls?: string[]) {
   const resp =  await fetch(`/api/`, {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      operation: "archive"
+      operation: "archive",
+      feed_urls: urls
     })
   });
   if (!resp.ok) {

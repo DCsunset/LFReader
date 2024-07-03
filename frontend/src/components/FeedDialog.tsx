@@ -32,13 +32,15 @@ import {
 } from "@mui/material";
 import { batch, Signal, signal, useSignalEffect } from "@preact/signals";
 import { Feed, getFeedTitle } from "../store/feed";
-import { updateFeed } from "../store/actions";
+import { archiveFeeds, updateFeed } from "../store/actions";
 import Icon from "@mdi/react";
-import { mdiOpenInNew } from "@mdi/js";
+import { mdiContentSave, mdiOpenInNew } from "@mdi/js";
+import { LoadingButton } from "@mui/lab";
 
 // local states
 const baseUrl = signal("");
 const alias = signal("");
+const archiveInProgress = signal(false);
 
 export default function FeedDialog({ open, feed }: {
   open: Signal<boolean>,
@@ -68,6 +70,11 @@ export default function FeedDialog({ open, feed }: {
       close();
     }
   };
+  async function handleArchive() {
+    archiveInProgress.value = true;
+    await archiveFeeds([feed.value.url]);
+    archiveInProgress.value = false;
+  }
 
   // Reset local states when feed changes
   useSignalEffect(reset);
@@ -175,6 +182,26 @@ export default function FeedDialog({ open, feed }: {
                     alias.value = event.target.value;
                   }}
                 />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText>
+                  Feed Operations
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <LoadingButton
+                  loading={archiveInProgress.value}
+                  loadingPosition="start"
+                  color="primary" onClick={handleArchive}
+                  startIcon={<Icon path={mdiContentSave} size={1} />}
+                >
+                  <Box sx={{ mt: 0.2 }}>Archive</Box>
+                </LoadingButton>
               </Grid>
             </Grid>
           </ListItem>

@@ -31,11 +31,11 @@ import {
   Typography,
 } from "@mui/material";
 import { state } from "../store/state";
-import { archiveDb } from "../store/actions";
+import { archiveFeeds } from "../store/actions";
 import { batch, Signal, signal } from "@preact/signals";
 import { LoadingButton } from "@mui/lab";
 import Icon from "@mdi/react";
-import { mdiBookshelf, mdiDownload } from "@mdi/js";
+import { mdiContentSave } from "@mdi/js";
 
 const validNumber = (value: string, min: number, max: number) => {
   if (value.length === 0) {
@@ -50,7 +50,7 @@ const pageSize = signal(state.settings.value.pageSize.toString());
 const pageSizeError = signal(false);
 const archive = signal(state.settings.value.archive);
 const forceArchive = signal(state.settings.value.forceArchive);
-const archiveDbInProgress = signal(false);
+const archiveInProgress = signal(false);
 
 // reset local states
 const reset = () => {
@@ -81,10 +81,10 @@ export default function SettingsDialog({ open }: {
     }
   };
 
-  async function handleArchiveDb() {
-    archiveDbInProgress.value = true;
-    await archiveDb();
-    archiveDbInProgress.value = false;
+  async function handleArchive() {
+    archiveInProgress.value = true;
+    await archiveFeeds();
+    archiveInProgress.value = false;
   }
 
   return (
@@ -181,10 +181,10 @@ export default function SettingsDialog({ open }: {
               </Grid>
               <Grid item>
                 <LoadingButton
-                  loading={archiveDbInProgress.value}
+                  loading={archiveInProgress.value}
                   loadingPosition="start"
-                  color="primary" onClick={handleArchiveDb}
-                  startIcon={<Icon path={mdiDownload} size={1} />}
+                  color="primary" onClick={handleArchive}
+                  startIcon={<Icon path={mdiContentSave} size={1} />}
                 >
                   <Box sx={{ mt: 0.2 }}>Archive</Box>
                 </LoadingButton>

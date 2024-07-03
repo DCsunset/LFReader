@@ -362,41 +362,44 @@ class Storage:
     # delete archived resources
     self.archiver.delete_archives(feed_urls)
 
-  # archive all feeds in database
-  async def archive_db(self):
+  # archive feeds in database
+  async def archive_feeds(self, feed_urls: Iterable[str] | None = None):
+    urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
+
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
-      for f in self.db.execute(
-        "SELECT url, user_data FROM feeds",
-      ):
-        url = f["url"]
-        f_user_data = f["user_data"] or {}
-        for e in self.db.execute(
-          "SELECT id, link, summary, contents FROM entries WHERE feed_url = ?",
+      for url in urls:
+        for f in self.db.execute(
+          "SELECT user_data FROM feeds WHERE url = ?",
           (url,)
         ):
-          base_url = e["link"]
-          user_base_url = f_user_data.get("base_url")
-          e_id = e["id"]
-          summary = e["summary"]
-          contents = e["contents"]
-          if summary:
-            logging.info(f'Archiving summary of entry {e_id}...')
-            summary = await self.archive_content(session, url, summary, base_url, user_base_url)
-          if contents:
-            logging.info(f'Archiving contents of entry {e_id}...')
-            contents = await self.archive_contents(session, url, contents, base_url, user_base_url)
+          f_user_data = f["user_data"] or {}
+          for e in self.db.execute(
+            "SELECT id, link, summary, contents FROM entries WHERE feed_url = ?",
+            (url,)
+          ):
+            base_url = e["link"]
+            user_base_url = f_user_data.get("base_url")
+            e_id = e["id"]
+            summary = e["summary"]
+            contents = e["contents"]
+            if summary:
+              logging.info(f'Archiving summary of entry {e_id}...')
+              summary = await self.archive_content(session, url, summary, base_url, user_base_url)
+            if contents:
+              logging.info(f'Archiving contents of entry {e_id}...')
+              contents = await self.archive_contents(session, url, contents, base_url, user_base_url)
 
-          self.db.execute(
-            f'''
-            UPDATE entries
-            SET summary = ?, contents = ?
-            WHERE feed_url = ? AND id = ?
-            ''',
-            (
-              pack_data(summary),
-              pack_data(contents),
-              url,
-              e_id
+            self.db.execute(
+              f'''
+              UPDATE entries
+              SET summary = ?, contents = ?
+              WHERE feed_url = ? AND id = ?
+              ''',
+              (
+                pack_data(summary),
+                pack_data(contents),
+                url,
+                e_id
+              )
             )
-          )
       self.db.commit()

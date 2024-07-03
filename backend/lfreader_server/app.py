@@ -24,7 +24,7 @@ import os
 import sys
 from pydantic import BaseModel, ValidationError
 from sqlite3 import DatabaseError
-from typing import Annotated
+from typing import Annotated, Literal
 import traceback
 import uvicorn
 import json
@@ -129,20 +129,19 @@ async def delete_api(feed_urls: Annotated[list[str], Query()]):
   return {}
 
 
-class UpdateOperation(str, Enum):
-  archive = "archive"
+class ArchiveArgs(BaseModel):
+  operation: Literal["archive"]
+  feed_urls: list[str] | None = None
 
-class UpdateArgs(BaseModel):
-  operation: UpdateOperation
 
 """
 Update (re-archive) feeds and entries in db
 """
 @app.patch("/")
-async def patch_api(args: UpdateArgs):
+async def patch_api(args: ArchiveArgs):
   match args.operation:
-    case UpdateOperation.archive:
-      await storage.archive_db()
+    case "archive":
+      await storage.archive_feeds(args.feed_urls)
     case _:
       raise HTTPException(status_code=400, detail=f"Invalid operation: {args.operation}")
   return {}
