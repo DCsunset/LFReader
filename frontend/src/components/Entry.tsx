@@ -28,6 +28,7 @@ import hljs from "highlight.js";
 import "katex/dist/katex.css";
 import "highlight.js/styles/base16/tomorrow-night.css";
 import { anchorNoStyle } from "../utils/styles";
+import { handleExternalLink } from "../store/actions";
 
 hljs.configure({
   // prevent logging the errors in console
@@ -75,6 +76,7 @@ export default function Entry() {
       // open link in external page
       element.querySelectorAll("a").forEach((el: HTMLElement) => {
         el.setAttribute("target", "_blank");
+        el.addEventListener("click", handleExternalLink);
       });
     }
   }, [entry]);
@@ -113,6 +115,7 @@ export default function Entry() {
 
             <Icon path={mdiRss} size={0.9} />
             <Box sx={{ ml: 0.5, mr: 1.5 }}>
+              {/* Don't add onClick here as it's added in the hook already */}
               <a
                 href={feed?.link}
                 target="_blank"

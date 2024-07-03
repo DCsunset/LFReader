@@ -24,7 +24,7 @@ import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherN
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
-import { loadData, fetchData } from "../store/actions";
+import { loadData, fetchData, handleExternalLink } from "../store/actions";
 import FeedList from "./FeedList";
 import EntryList from "./EntryList";
 import NewFeedsDialog from "./NewFeedsDialog";
@@ -155,6 +155,7 @@ export default function Layout() {
                   href={selectedEntryFeed.value?.link}
                   target="_blank"
                   style={anchorNoStyle}
+                  onClick={handleExternalLink}
                 >
                   {getFeedTitle(selectedEntryFeed.value)}
                 </a>
@@ -165,6 +166,7 @@ export default function Layout() {
                   href={selectedEntry.value.link}
                   target="_blank"
                   style={anchorNoStyle}
+                  onClick={handleExternalLink}
                 >
                   {getEntryTitle(selectedEntry.value)}
                 </a>
@@ -173,6 +175,7 @@ export default function Layout() {
                 href={selectedFeed.value?.link}
                 target="_blank"
                 style={anchorNoStyle}
+                onClick={handleExternalLink}
               >
                 {getFeedTitle(selectedFeed.value, "All")}
               </a>

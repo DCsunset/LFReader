@@ -32,7 +32,7 @@ import {
 } from "@mui/material";
 import { batch, Signal, signal, useSignalEffect } from "@preact/signals";
 import { Feed, getFeedTitle } from "../store/feed";
-import { archiveFeeds, updateFeed } from "../store/actions";
+import { archiveFeeds, handleExternalLink, updateFeed } from "../store/actions";
 import Icon from "@mdi/react";
 import { mdiContentSave, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
@@ -109,6 +109,7 @@ export default function FeedDialog({ open, feed }: {
                 <a
                   href={feed.value?.link}
                   target="_blank"
+                  onClick={handleExternalLink}
                 >
                   {feed.value?.title || "(No Title)"}
                 </a>
@@ -124,7 +125,11 @@ export default function FeedDialog({ open, feed }: {
                 </ListItemText>
               </Grid>
               <Grid item>
-                <IconButton color="inherit" href={feed.value?.url}>
+                <IconButton
+                  color="inherit"
+                  href={feed.value?.url}
+                  onClick={handleExternalLink}
+                >
                   <Icon path={mdiOpenInNew} size={1} />
                 </IconButton>
               </Grid>

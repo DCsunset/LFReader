@@ -37,6 +37,7 @@ export type Settings = {
   pageSize: number,
   archive: boolean,
   forceArchive: boolean,
+  confirmOnExternalLink: boolean
 };
 
 export type QueryParams = {
@@ -78,7 +79,8 @@ export const state = {
 		dark: false,
     pageSize: 20,
     archive: true,
-    forceArchive: false
+    forceArchive: false,
+    confirmOnExternalLink: false
 	})),
   ui: {
     excludedTags: signal([] as string[]),

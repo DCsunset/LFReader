@@ -50,6 +50,7 @@ const pageSize = signal(state.settings.value.pageSize.toString());
 const pageSizeError = signal(false);
 const archive = signal(state.settings.value.archive);
 const forceArchive = signal(state.settings.value.forceArchive);
+const confirmOnExternalLink = signal(state.settings.value.confirmOnExternalLink);
 const archiveInProgress = signal(false);
 
 // reset local states
@@ -74,7 +75,8 @@ export default function SettingsDialog({ open }: {
           ...state.settings.value,
           pageSize: parseInt(pageSize.value),
           archive: archive.value,
-          forceArchive: forceArchive.value
+          forceArchive: forceArchive.value,
+          confirmOnExternalLink: confirmOnExternalLink.value
         };
         open.value = false;
       });
@@ -167,6 +169,26 @@ export default function SettingsDialog({ open }: {
                 <Checkbox
                   checked={forceArchive.value}
                   onChange={(e: any) => forceArchive.value = e.target.checked}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    confirm before opening external link
+                  </span>
+                }>
+                  Confirm on External Link
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <Checkbox
+                  checked={confirmOnExternalLink.value}
+                  onChange={(e: any) => confirmOnExternalLink.value = e.target.checked}
                 />
               </Grid>
             </Grid>

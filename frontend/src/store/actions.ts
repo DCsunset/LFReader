@@ -20,6 +20,17 @@ import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
 import { FeedUserData } from "./feed";
 
+export function handleExternalLink(e: MouseEvent) {
+  if (state.settings.value.confirmOnExternalLink) {
+    // use getAttrbiutes to get the raw href value
+    const link = (e.currentTarget as HTMLAnchorElement | null)?.getAttribute("href") || "";
+    if (/^\w+:/.test(link) && !confirm(`Confirm to open external link ${link}`)) {
+      // Must to preventDefault as return value doesn't work for target=_blank
+      e.preventDefault();
+    }
+  }
+}
+
 export function notify(color: AlertColor, text: string) {
   state.notification.value = { color, text };
 }
