@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.2.0](https://github.com/DCsunset/LFReader/compare/v2.1.6...v2.2.0) (2024-07-10)
+
+
+### Features
+
+* allow blacklisting url when archiving ([d74d977](https://github.com/DCsunset/LFReader/commit/d74d97768c4ffdf27c59e2eafa7754011a988ae6))
+* **frontend:** support confirmation on external link ([ba02032](https://github.com/DCsunset/LFReader/commit/ba02032af0c0dfb52645913fabb78adb65434355))
+* **frontend:** support searching entries by title ([8cafa3a](https://github.com/DCsunset/LFReader/commit/8cafa3a1381bf52c86063cd64d82bbebafe9994f))
+* support archiving specified feeds ([8e3c9ab](https://github.com/DCsunset/LFReader/commit/8e3c9abfbd26dd47615cd6e4ece245b06afd27f3))
+* support setting user_data when adding new feeds ([da9cbeb](https://github.com/DCsunset/LFReader/commit/da9cbebe5f2f91246a57c1a433593fed25baf2e6))
+
+
+### Misc
+
+* **frontend:** remove unused field in package.json ([ada315d](https://github.com/DCsunset/LFReader/commit/ada315ddebb10ea0d6009a35aa1f2a2e2fef5fd1))
+* **frontend:** update dependencies ([3948a81](https://github.com/DCsunset/LFReader/commit/3948a81da2127991fb54635b4745442a327ca34f))
+
 ## [2.1.6](https://github.com/DCsunset/LFReader/compare/v2.1.5...v2.1.6) (2024-06-28)
 
 
