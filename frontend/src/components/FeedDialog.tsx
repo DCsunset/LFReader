@@ -31,15 +31,16 @@ import {
   Typography
 } from "@mui/material";
 import { batch, Signal, signal, useSignalEffect } from "@preact/signals";
-import { Feed, getFeedTitle } from "../store/feed";
+import { Feed, FeedUserData, getFeedTitle } from "../store/feed";
 import { archiveFeeds, handleExternalLink, updateFeed } from "../store/actions";
 import Icon from "@mdi/react";
 import { mdiContentSave, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
 
 // local states
-const baseUrl = signal("");
 const alias = signal("");
+const baseUrl = signal("");
+const archiveBlacklist = signal("");
 const archiveInProgress = signal(false);
 
 export default function FeedDialog({ open, feed }: {
@@ -60,10 +61,11 @@ export default function FeedDialog({ open, feed }: {
   const save = async () => {
     // No need to update the feed signal as no UI depends on user_data
     const f = feed.value;
-    const userData = {
+    const userData: FeedUserData = {
       ...f.user_data,
+      alias: alias.value || undefined,
       base_url: baseUrl.value || undefined,
-      alias: alias.value || undefined
+      archive_blacklist: archiveBlacklist.value || undefined
     };
     // Feeds signal updated in the action
     if (await updateFeed(f.url, userData)) {
@@ -93,7 +95,7 @@ export default function FeedDialog({ open, feed }: {
         <List>
           <Box sx={{ mx: 2, mt: 2 }}>
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>
-              Info
+              General
             </Typography>
             <Divider />
           </Box>
@@ -136,12 +138,56 @@ export default function FeedDialog({ open, feed }: {
             </Grid>
           </ListItem>
 
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText>
+                  Feed Operations
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <LoadingButton
+                  loading={archiveInProgress.value}
+                  loadingPosition="start"
+                  color="primary" onClick={handleArchive}
+                  startIcon={<Icon path={mdiContentSave} size={1} />}
+                >
+                  <Box sx={{ mt: 0.2 }}>Archive</Box>
+                </LoadingButton>
+              </Grid>
+            </Grid>
+          </ListItem>
+
           <Box sx={{ mx: 2, mt: 2 }}>
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>
               User Data
             </Typography>
             <Divider />
           </Box>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    an alias to display as feed title
+                  </span>
+                }>
+                  Alias
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <TextField
+                  variant="standard"
+                  value={alias.value}
+                  placeholder={feed.value?.title || "(No Title)"}
+                  onChange={(event: any) => {
+                    alias.value = event.target.value;
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
 
           <ListItem>
             <Grid container justifyContent="space-between" alignItems="center">
@@ -172,41 +218,21 @@ export default function FeedDialog({ open, feed }: {
               <Grid item>
                 <ListItemText secondary={
                   <span>
-                    an alias to display as feed title
+                    url regex to blacklist when archiving
                   </span>
                 }>
-                  Alias
+                  Archive Blacklist
                 </ListItemText>
               </Grid>
               <Grid item>
                 <TextField
                   variant="standard"
-                  value={alias.value}
-                  placeholder={feed.value?.title || "(No Title)"}
+                  value={archiveBlacklist.value}
+                  placeholder="(none)"
                   onChange={(event: any) => {
-                    alias.value = event.target.value;
+                    archiveBlacklist.value = event.target.value;
                   }}
                 />
-              </Grid>
-            </Grid>
-          </ListItem>
-
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText>
-                  Feed Operations
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <LoadingButton
-                  loading={archiveInProgress.value}
-                  loadingPosition="start"
-                  color="primary" onClick={handleArchive}
-                  startIcon={<Icon path={mdiContentSave} size={1} />}
-                >
-                  <Box sx={{ mt: 0.2 }}>Archive</Box>
-                </LoadingButton>
               </Grid>
             </Grid>
           </ListItem>

@@ -49,10 +49,10 @@ class Archiver:
   Archive all resources in the html content
   and replace the URLs
   """
-  async def archive_html(self, session, feed_url: str, content: str, base_url: str | None, user_base_url: str | None):
+  async def archive_html(self, session, feed_url: str, content: str, base_url: str | None, user_data: dict):
     soup = BeautifulSoup(content, "html.parser")
     async def update_tag(attr, tag):
-      resource_url = await self.archive_resource(session, feed_url, tag.get(attr), base_url, user_base_url)
+      resource_url = await self.archive_resource(session, feed_url, tag.get(attr), base_url, user_data)
       # only update url when archiving succeeds
       if resource_url:
         tag[attr] = resource_url
@@ -69,7 +69,7 @@ class Archiver:
       )
     return str(soup)
 
-  async def archive_resource(self, session, feed_url: str, src: str, base_url: str | None, user_base_url: str | None):
+  async def archive_resource(self, session, feed_url: str, src: str, base_url: str | None, user_data: dict):
     # store in feed-specific dir
     encoded_feed_url = encode_feed_url(feed_url)
     feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
@@ -93,6 +93,7 @@ class Archiver:
 
     url = urljoin(base_url, src)
     base_path = urlparse(url).path
+    user_base_url = user_data.get("base_url")
     if user_base_url:
       # remove prefix to always prepend the full user base url
       url = urljoin(user_base_url, base_path.removeprefix("/"))
@@ -110,6 +111,11 @@ class Archiver:
     # already cached
     if resource_path.exists():
       return resource_url
+
+    # skip blacklisted url (regex)
+    archive_blacklist = user_data.get("archive_blacklist")
+    if archive_blacklist and re.match(archive_blacklist, url):
+      return None
 
     logging.debug(f'Archiving resources in html {url}...')
     for i in range(self.cfg.retry_attempts):
