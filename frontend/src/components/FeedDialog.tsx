@@ -30,12 +30,13 @@ import {
   TextField,
   Typography
 } from "@mui/material";
-import { batch, Signal, signal, useSignalEffect } from "@preact/signals";
-import { Feed, FeedUserData, getFeedTitle } from "../store/feed";
-import { archiveFeeds, handleExternalLink, updateFeed } from "../store/actions";
+import { batch, signal, useComputed, useSignalEffect } from "@preact/signals";
+import { FeedUserData, getFeedTitle } from "../store/feed";
+import { archiveFeeds, handleExternalLink } from "../store/actions";
 import Icon from "@mdi/react";
 import { mdiContentSave, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
+import { appState, lookupFeed } from "../store/state";
 
 // local states
 const alias = signal("");
@@ -43,35 +44,38 @@ const baseUrl = signal("");
 const archiveBlacklist = signal("");
 const archiveInProgress = signal(false);
 
-export default function FeedDialog({ open, feed }: {
-  open: Signal<boolean>,
-  feed: Signal<Feed|undefined>
-}) {
+export default function FeedDialog() {
+  const { open, feed, onSave } = appState.ui.feedDialog;
+  const existing = useComputed(() => Boolean(lookupFeed(feed.value?.url)));
+
   // reset local states
   const reset = () => {
+    // subscribe to feed
+    const f = feed.value;
     batch(() => {
-      baseUrl.value = feed.value?.user_data.base_url ?? "";
-      alias.value = feed.value?.user_data.alias ?? "";
+      baseUrl.value = f?.user_data.base_url ?? "";
+      alias.value = f?.user_data.alias ?? "";
+      archiveBlacklist.value = f?.user_data.archive_blacklist ?? "";
     });
   };
   const close = () => {
     open.value = false;
-    reset();
   };
+
   const save = async () => {
     // No need to update the feed signal as no UI depends on user_data
-    const f = feed.value;
     const userData: FeedUserData = {
-      ...f.user_data,
+      ...(feed.value?.user_data || {}),
       alias: alias.value || undefined,
       base_url: baseUrl.value || undefined,
       archive_blacklist: archiveBlacklist.value || undefined
     };
-    // Feeds signal updated in the action
-    if (await updateFeed(f.url, userData)) {
+    const ok = await onSave(feed.value, userData);
+    if (ok) {
       close();
     }
   };
+
   async function handleArchive() {
     archiveInProgress.value = true;
     await archiveFeeds([feed.value.url]);
@@ -100,24 +104,26 @@ export default function FeedDialog({ open, feed }: {
             <Divider />
           </Box>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText>
-                  Feed Home Page
-                </ListItemText>
+          {feed.value?.link &&
+            <ListItem>
+              <Grid container justifyContent="space-between" alignItems="center">
+                <Grid item>
+                  <ListItemText>
+                    Feed Home Page
+                  </ListItemText>
+                </Grid>
+                <Grid item>
+                  <a
+                    href={feed.value?.link}
+                    target="_blank"
+                    onClick={handleExternalLink}
+                  >
+                    {feed.value?.title || "(No Title)"}
+                  </a>
+                </Grid>
               </Grid>
-              <Grid item>
-                <a
-                  href={feed.value?.link}
-                  target="_blank"
-                  onClick={handleExternalLink}
-                >
-                  {feed.value?.title || "(No Title)"}
-                </a>
-              </Grid>
-            </Grid>
-          </ListItem>
+            </ListItem>
+          }
 
           <ListItem>
             <Grid container justifyContent="space-between" alignItems="center">
@@ -138,25 +144,27 @@ export default function FeedDialog({ open, feed }: {
             </Grid>
           </ListItem>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText>
-                  Feed Operations
-                </ListItemText>
+          {existing.value &&
+            <ListItem>
+              <Grid container justifyContent="space-between" alignItems="center">
+                <Grid item>
+                  <ListItemText>
+                    Feed Operations
+                  </ListItemText>
+                </Grid>
+                <Grid item>
+                  <LoadingButton
+                    loading={archiveInProgress.value}
+                    loadingPosition="start"
+                    color="primary" onClick={handleArchive}
+                    startIcon={<Icon path={mdiContentSave} size={1} />}
+                  >
+                    <Box sx={{ mt: 0.2 }}>Archive</Box>
+                  </LoadingButton>
+                </Grid>
               </Grid>
-              <Grid item>
-                <LoadingButton
-                  loading={archiveInProgress.value}
-                  loadingPosition="start"
-                  color="primary" onClick={handleArchive}
-                  startIcon={<Icon path={mdiContentSave} size={1} />}
-                >
-                  <Box sx={{ mt: 0.2 }}>Archive</Box>
-                </LoadingButton>
-              </Grid>
-            </Grid>
-          </ListItem>
+            </ListItem>
+          }
 
           <Box sx={{ mx: 2, mt: 2 }}>
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>
@@ -170,7 +178,7 @@ export default function FeedDialog({ open, feed }: {
               <Grid item>
                 <ListItemText secondary={
                   <span>
-                    an alias to display as feed title
+                    an alias for feed title
                   </span>
                 }>
                   Alias

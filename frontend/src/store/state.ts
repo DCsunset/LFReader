@@ -14,9 +14,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { computed, effect, signal } from "@preact/signals";
+import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
-import { Entry, Feed } from "./feed";
+import { Entry, Feed, FeedUserData } from "./feed";
 import { loadData } from "./actions";
 import { Base64 } from "js-base64";
 
@@ -73,8 +73,17 @@ function loadState(key: string, init: any) {
   }
 }
 
+// Use multiple signals to separate change update
+// (e.g. Don't clear text immeidately when closing it)
+export type FeedDialogState = {
+  open: Signal<boolean>,
+  feed: Signal<Feed|undefined>,
+  // It always changes with feed, so no need to use signal
+  onSave?: (feed: Feed, data: FeedUserData) => Promise<boolean>
+};
+
 // global app state
-export const state = {
+export const appState = {
 	settings: signal<Settings>(loadState("settings", {
 		dark: false,
     pageSize: 20,
@@ -84,7 +93,11 @@ export const state = {
 	})),
   ui: {
     excludedTags: signal([] as string[]),
-    editingFeeds: signal(false)
+    editingFeeds: signal(false),
+    feedDialog: {
+      open: signal(false),
+      feed: signal(undefined),
+    } as FeedDialogState
   },
   data: signal({
     feeds: [] as Feed[],
@@ -102,7 +115,7 @@ export const state = {
 
 // Feed map to quickly look up feed by feed_url
 const feedMap = computed(
-  () => state.data.value.feeds.reduce(
+  () => appState.data.value.feeds.reduce(
     (acc, cur) => acc.set(cur.url, cur),
     new Map<string, Feed>()
   )
@@ -114,7 +127,7 @@ export function lookupFeed(url?: string) {
 
 export function fromEntryId(entry_id: string) {
   const [feed_url, id] = JSON.parse(Base64.decode(entry_id));
-  return state.data.value.entries.find(e => e.feed_url === feed_url && e.id === id);
+  return appState.data.value.entries.find(e => e.feed_url === feed_url && e.id === id);
 }
 
 export function fromFeedId(feed_id: string) {
@@ -132,8 +145,8 @@ function getTags(items: any[]) {
 
 // Feeds to show in FeedList
 const filteredFeeds = computed(() => {
-  const excludedTags = state.ui.excludedTags.value;
-  return state.data.value.feeds.filter(feed => {
+  const excludedTags = appState.ui.excludedTags.value;
+  return appState.data.value.feeds.filter(feed => {
     for (const t of feed.user_data?.tags ?? []) {
       if (excludedTags.includes(t)) {
         return false;
@@ -145,7 +158,7 @@ const filteredFeeds = computed(() => {
 
 // active feed
 const selectedFeed = computed(() => {
-  const feed_id  = state.queryParams.value.feed;
+  const feed_id  = appState.queryParams.value.feed;
   if (!feed_id) {
     return undefined;
   }
@@ -154,7 +167,7 @@ const selectedFeed = computed(() => {
 
 // active entry
 const selectedEntry = computed(() => {
-  const entry_id = state.queryParams.value.entry;
+  const entry_id = appState.queryParams.value.entry;
   if (!entry_id) {
     return undefined;
   }
@@ -168,7 +181,7 @@ const selectedEntryFeed = computed(() => {
 });
 
 const filteredEntries = computed(() => {
-  const entries = state.data.value.entries;
+  const entries = appState.data.value.entries;
   const selectedUrl = selectedFeed.value?.url;
   if (selectedUrl) {
     return entries.filter(v => v.feed_url === selectedUrl);
@@ -182,11 +195,11 @@ const filteredEntries = computed(() => {
 
 export const computedState = {
   page: computed(() => {
-    const pageInt = parseInt(state.queryParams.value.page);
+    const pageInt = parseInt(appState.queryParams.value.page);
     return pageInt > 0 ? pageInt : 1;
   }),
-  feedTags: computed(() => getTags(state.data.value.feeds)),
-  entryTags: computed(() => getTags(state.data.value.entries)),
+  feedTags: computed(() => getTags(appState.data.value.feeds)),
+  entryTags: computed(() => getTags(appState.data.value.entries)),
   selectedFeed,
   selectedEntry,
   selectedEntryFeed,
@@ -196,11 +209,11 @@ export const computedState = {
 
 // Persist settings on change
 effect(() => {
-  localStorage.setItem(appKey("settings"), JSON.stringify(state.settings.value));
+  localStorage.setItem(appKey("settings"), JSON.stringify(appState.settings.value));
 });
 
 // Persist ui states on change
-for (const [key, item] of Object.entries(state.ui)) {
+for (const [key, item] of Object.entries(appState.ui)) {
   effect(() => {
     localStorage.setItem(appKey(`ui.${key}`), JSON.stringify(item.value));
   });

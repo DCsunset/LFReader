@@ -14,72 +14,191 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material"
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemText, TextField } from "@mui/material"
 import { Signal, signal, batch } from "@preact/signals";
 import { fetchData } from "../store/actions";
+import Icon from "@mdi/react";
+import { mdiClose, mdiLeadPencil } from "@mdi/js";
+import { Feed, FeedUserData } from "../store/feed";
+import { appState } from "../store/state";
+import { useCallback } from "preact/hooks";
 
-interface Props {
-  open: Signal<boolean>
-}
+// added feeds
+const feeds = signal<Feed[]>([]);
 
-const feedUrls = signal("")
-const feedUrlsError = signal(false);
+// current unadded feed url
+const feedUrl = signal("");
+const feedUrlError = signal("");
 const fetchDataInProgress = signal(false);
 
-function setFeedUrls(value: string) {
+// used on buttons to prevent switching focus
+function preventDefault(event: Event) {
+  event.preventDefault();
+}
+
+function setFeedUrl(value: string) {
   batch(() => {
-    feedUrls.value = value;
-    if (feedUrlsError.peek() && value.length > 0) {
-      feedUrlsError.value = false;
+    feedUrl.value = value;
+    if (feedUrlError.value.length > 0 && value.length > 0) {
+      feedUrlError.value = "";
     }
   });
 }
 
-export default function NewFeedsDialog(props: Props) {
+function resetFeedUrl() {
+  batch(() => {
+    feedUrl.value = "";
+    feedUrlError.value = "";
+  });
+}
+
+function reset() {
+  batch(() => {
+    feedUrl.value = "";
+    feedUrlError.value = "";
+    feeds.value = [];
+  });
+}
+
+function remove(feed: Feed) {
+  feeds.value = feeds.value.filter(f => f.url !== feed.url);
+}
+
+async function update(feed: Feed, data: FeedUserData) {
+  feeds.value = feeds.value.map(f => {
+    if (f.url === feed.url) {
+      f.user_data = data;
+    }
+    return f;
+  })
+  return true;
+}
+
+export default function NewFeedsDialog({ open }: {
+  open: Signal<boolean>
+}) {
   // reset local states
   const close = () => {
     batch(() => {
-      props.open.value = false;
-      feedUrls.value = "";
-      feedUrlsError.value = false;
+      open.value = false;
+      feedUrl.value = "";
+      feedUrlError.value = "";
+      feeds.value = [];
     });
   };
 
   async function submit() {
     fetchDataInProgress.value = true;
-    const urls = feedUrls.peek().split("\n").filter(v => v.length > 0);
-    if (urls.length === 0) {
-      feedUrlsError.value = true;
-      return;
-    }
-    const success = await fetchData(urls);
+    const success = await fetchData(feeds.value);
     if (success) {
       close();
     }
     fetchDataInProgress.value = false;
   }
 
+  function handleKeyDown(event: KeyboardEvent) {
+    if (event.key !== "Enter") {
+      return;
+    }
+    if (event.ctrlKey) {
+      submit();
+      return;
+    }
+
+    const url = feedUrl.value;
+    if (feeds.value.findIndex(f => f.url === url) !== -1) {
+      feedUrlError.value = "Feed url already added";
+      return;
+    }
+    if (feedUrl.value.length === 0) {
+      feedUrlError.value = "Empty feed url";
+      return;
+    }
+    batch(() => {
+      feeds.value = feeds.value.concat({
+        url,
+        user_data: {}
+      });
+      feedUrl.value = "";
+    })
+    event.preventDefault();
+  }
+
+  const handleClose = (_: Event, reason: string) => {
+    if (reason === "backdropClick") {
+      return;
+    }
+    close();
+  };
+
   return (
     <Dialog
-      open={props.open.value}
-      onClose={() => props.open.value = false}
+      open={open.value}
+      onClose={handleClose}
       disableBackdropClick
     >
       <DialogTitle sx={{ pb: 0 }}>Add feeds</DialogTitle>
       <DialogContent>
+        <List>
+          {feeds.value.map(f => (
+            <ListItem disablePadding sx={{ m: 1 }}>
+              <ListItemText sx={{ overflow: "scroll" }}>
+                {f.url}
+              </ListItemText>
+              <IconButton
+                sx={{  }}
+                onClick={() => {
+                  batch(() => {
+                    const { feedDialog } = appState.ui;
+                    feedDialog.open.value = true;
+                    feedDialog.feed.value = f;
+                    feedDialog.onSave = update;
+                  });
+                }}
+              >
+                <Icon path={mdiLeadPencil} size={0.9} />
+              </IconButton>
+              <IconButton
+                onClick={() => remove(f)}
+                onMouseDown={preventDefault}
+              >
+                <Icon path={mdiClose} size={0.9} />
+              </IconButton>
+            </ListItem>
+          ))}
+        </List>
         <TextField
-          multiline
-          sx={{ mt: 2, width: "400px" }}
-          label="Feed URLs (each line is a feed url)"
-          error={feedUrlsError.value}
-          value={feedUrls.value}
-          onChange={(event: any) => setFeedUrls(event.target.value)}
+          inputRef={input => input && input.focus()}
+          sx={{ mt: 2, width: "100%", minWidth: "400px" }}
+          label="Feed URL"
+          error={feedUrlError.value.length > 0}
+          helperText={feedUrlError.value || "Press Enter to add feed (C-Enter to submit)"}
+          value={feedUrl.value}
+          onChange={(event: any) => setFeedUrl(event.target.value)}
+          onKeyDown={handleKeyDown}
+          InputProps={{
+            endAdornment: (
+              feedUrl.value.length > 0 &&
+                <IconButton
+                  size="small"
+                  onClick={resetFeedUrl}
+                  onMouseDown={preventDefault}
+                  edge="end"
+                >
+                  <Icon path={mdiClose} size={0.9} />
+                </IconButton>
+            )
+          }}
         />
       </DialogContent>
       <DialogActions>
         <Button color="inherit" onClick={close}>Cancel</Button>
-        <Button color="error" onClick={() => feedUrls.value = ""}>Reset</Button>
-        <Button color="primary" onClick={submit} disabled={fetchDataInProgress.value}>
+        <Button color="error" onClick={reset} onMouseDown={preventDefault}>Reset</Button>
+        <Button
+          color="primary"
+          onClick={submit}
+          disabled={feeds.value.length === 0 || fetchDataInProgress.value}
+        >
           {fetchDataInProgress.value
             ? <CircularProgress color="inherit" size={20} />
             : <span>Submit</span>}

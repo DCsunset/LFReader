@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Box, List, ListItemButton, Pagination, Stack, Typography } from "@mui/material";
-import { computedState, lookupFeed, state } from "../store/state";
+import { computedState, lookupFeed, appState } from "../store/state";
 import { getFeedTitle, toEntryId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
 import { computed } from "@preact/signals";
@@ -27,13 +27,13 @@ const selectedEntry = computedState.selectedEntry;
 
 const numPages = computed(() => (
   Math.ceil(
-    computedState.filteredEntries.value.length / state.settings.value.pageSize
+    computedState.filteredEntries.value.length / appState.settings.value.pageSize
   )
 ))
 
 const displayedEntries = computed(() => {
   const page = computedState.page.value;
-  const pageSize = state.settings.value.pageSize;
+  const pageSize = appState.settings.value.pageSize;
   return computedState.filteredEntries.value.slice(
     (page - 1) * pageSize,
     page * pageSize

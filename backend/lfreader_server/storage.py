@@ -50,7 +50,7 @@ def hash_dicts(dicts: list[dict]):
 
 # pack data into JSON string
 def pack_data(value):
-  # use None for empty value (e.g. [], "", None)
+  # use None for empty value (e.g. {}, [], "", None)
   if not value:
     return None
   return json.dumps(value)
@@ -180,17 +180,17 @@ class Storage:
 
   """
   Fetch feeds.
-  If feed_urls is None, fetch all feeds
+  If feeds is None, fetch all feeds
   """
-  async def fetch_feeds(self, feed_urls: Iterable[str] | None, archive: bool, force_archive: bool):
+  async def fetch_feeds(self, feeds: list, archive: bool, force_archive: bool):
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
-      urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
-      feeds = map(lambda url: (url, feedparser.parse(url, resolve_relative_uris=False)), urls)
+      feeds = feeds or self.get_feeds_metadata()
+      feeds = map(lambda f: (f.url, f["user_data"], feedparser.parse(f.url, resolve_relative_uris=False)), feeds)
       now = datetime.now().astimezone().isoformat()
       update_feed_field = partial(sql_update_field, "feeds")
       update_entry_field = partial(sql_update_field, "entries")
 
-      for url, f in feeds:
+      for url, f_user_data, f in feeds:
         if f.bozo:
           err_msg = getattr(f.bozo_exception, 'message', str(f.bozo_exception))
           # don't raise exception as the feed may still be readable
@@ -205,7 +205,7 @@ class Storage:
           (url,)
         ).fetchone()
         f_server_data = f_data["server_data"] if f_data else {}
-        f_user_data = f_data["user_data"] if f_data else {}
+        f_user_data = f_user_data or (f_data["user_data"] if f_data else {})
 
         f_server_data["fetched_at"] = now
         if "added_at" not in f_server_data:
@@ -223,7 +223,8 @@ class Storage:
               {update_feed_field("published_at")},
               {update_feed_field("updated_at")},
               -- extra metadata
-              {update_feed_field("server_data")}
+              {update_feed_field("server_data")},
+              {update_feed_field("user_data")}
           ''',
           (
             url,
@@ -235,7 +236,7 @@ class Storage:
             parsed_time_to_iso(f.feed.get("published_parsed")),
             parsed_time_to_iso(f.feed.get("updated_parsed")),
             pack_data(f_server_data),
-            None
+            pack_data(f_user_data)
           )
         )
 
@@ -315,9 +316,9 @@ class Storage:
       # insert will create a tx. Must commit to save data
       self.db.commit()
 
-  def get_feed_urls(self) -> list[str]:
+  def get_feeds_metadata(self) -> list[str]:
     # result is a dict after dict_row_factory
-    return self.db.execute("SELECT url FROM feeds").fetchall()
+    return self.db.execute("SELECT url, user_data FROM feeds").fetchall()
 
   def get_feeds(self) -> list[dict[str, Any]]:
     # result is a dict after dict_row_factory
@@ -363,7 +364,7 @@ class Storage:
 
   # archive feeds in database
   async def archive_feeds(self, feed_urls: Iterable[str] | None = None):
-    urls = feed_urls or map(lambda v: v["url"], self.get_feed_urls())
+    urls = feed_urls or map(lambda v: v["url"], self.get_feeds_metadata())
 
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
       for url in urls:

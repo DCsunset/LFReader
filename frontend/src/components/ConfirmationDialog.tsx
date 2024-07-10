@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { state } from "../store/state";
+import { appState } from "../store/state";
 import {
 	Button,
 	Dialog,
@@ -26,22 +26,22 @@ import {
 
 function ConfirmationDialog() {
   const close = () => {
-    state.confirmation.open.value = false;
+    appState.confirmation.open.value = false;
   };
 
   const confirm = () => {
     close();
-    state.confirmation.onConfirm();
+    appState.confirmation.onConfirm();
   };
 
 	return (
 		<Dialog
-			open={state.confirmation.open.value}
+			open={appState.confirmation.open.value}
 			onClose={close}
 		>
 			<DialogTitle>Confirm</DialogTitle>
 			<DialogContent>
-				<DialogContentText>{state.confirmation.content.value}</DialogContentText>
+				<DialogContentText>{appState.confirmation.content.value}</DialogContentText>
 			</DialogContent>
 			<DialogActions>
 				<Button onClick={close}>

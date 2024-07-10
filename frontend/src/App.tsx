@@ -19,7 +19,7 @@ import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { Route, Router } from "preact-router";
 import { useEffect } from "preact/hooks";
 import Layout from './components/Layout';
-import { state } from "./store/state";
+import { appState } from "./store/state";
 import { grey } from "@mui/material/colors";
 
 interface PageProps {
@@ -33,7 +33,7 @@ interface PageProps {
 
 function Page(props: PageProps) {
   useEffect(() => {
-    state.queryParams.value = props.matches;
+    appState.queryParams.value = props.matches;
   }, [props.matches]);
 
   return (
@@ -61,7 +61,7 @@ declare module '@mui/material/Typography' {
 }
 
 const theme = computed(() => {
-  const dark = state.settings.value.dark;
+  const dark = appState.settings.value.dark;
   return createTheme({
     palette: {
       mode: dark ? "dark" : "light"

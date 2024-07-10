@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, Query, HTTPException
 from fastapi.openapi.docs import (
   get_swagger_ui_html,
   get_swagger_ui_oauth2_redirect_html
@@ -79,15 +79,19 @@ async def get_feeds_api() -> list[dict]:
 
 class UpdateFeedArgs(BaseModel):
   # put it in body to prevent encoding
-  feed_url: str
+  url: str
   user_data: dict
+
+  # allow using subscript to access
+  def __getitem__(self, item):
+    return getattr(self, item)
 
 """
 Update feed user_data
 """
 @app.put("/feeds")
 async def update_feed_api(args: UpdateFeedArgs):
-  storage.update_feed(args.feed_url, args.user_data)
+  storage.update_feed(args.url, args.user_data)
   return {}
 
 
@@ -106,7 +110,7 @@ async def get_entries_api(
 
 class FetchArgs(BaseModel):
   # specific feed URLs
-  feed_urls: list[str] | None = None
+  feeds: list[UpdateFeedArgs] | None = None
   # whether to archive resources
   archive: bool = True
   # whether to force archiving even if content doesn't change
@@ -117,7 +121,7 @@ Fetch feeds and their entries from origin (can be new feeds)
 """
 @app.post("/")
 async def fetch_api(args: FetchArgs):
-  await storage.fetch_feeds(args.feed_urls, args.archive, args.force_archive)
+  await storage.fetch_feeds(args.feeds, args.archive, args.force_archive)
   return {}
 
 """

@@ -15,13 +15,13 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { route } from "preact-router";
-import { QueryParams, state } from "./state";
+import { QueryParams, appState } from "./state";
 import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
-import { FeedUserData } from "./feed";
+import { Feed, FeedUserData } from "./feed";
 
 export function handleExternalLink(e: MouseEvent) {
-  if (state.settings.value.confirmOnExternalLink) {
+  if (appState.settings.value.confirmOnExternalLink) {
     // use getAttrbiutes to get the raw href value
     const link = (e.currentTarget as HTMLAnchorElement | null)?.getAttribute("href") || "";
     if (/^\w+:/.test(link) && !confirm(`Confirm to open external link ${link}`)) {
@@ -32,7 +32,7 @@ export function handleExternalLink(e: MouseEvent) {
 }
 
 export function notify(color: AlertColor, text: string) {
-  state.notification.value = { color, text };
+  appState.notification.value = { color, text };
 }
 
 async function notifyRespError(resp: Response) {
@@ -56,16 +56,16 @@ async function getData() {
   return { feeds, entries };
 }
 
-export async function fetchData(feedUrls?: string[]) {
+export async function fetchData(feeds?: Feed[]) {
   const resp =  await fetch("/api/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      feed_urls: feedUrls,
-      archive: state.settings.value.archive,
-      force_archive: state.settings.value.forceArchive
+      feeds,
+      archive: appState.settings.value.archive,
+      force_archive: appState.settings.value.forceArchive
     })
   });
   if (!resp.ok) {
@@ -76,7 +76,7 @@ export async function fetchData(feedUrls?: string[]) {
   const data = await getData();
   if (data) {
     batch(() => {
-      state.data.value = data;
+      appState.data.value = data;
       notify("success", "Updated feeds successfully")
     })
     return true;
@@ -88,13 +88,13 @@ export async function loadData() {
   const data = await getData();
   if (data) {
     batch(() => {
-      state.data.value = data;
+      appState.data.value = data;
       notify("success", "Loaded feeds successfully")
     });
   }
 }
 
-export async function updateFeed(url: string, userData: FeedUserData) {
+export async function updateFeed(feed: Feed, userData: FeedUserData) {
   // needs double encoding to include slash in url and decode it once at the server
   const resp =  await fetch(`/api/feeds`, {
     method: "PUT",
@@ -102,7 +102,7 @@ export async function updateFeed(url: string, userData: FeedUserData) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      feed_url: url,
+      url: feed.url,
       user_data: userData
     })
   });
@@ -112,14 +112,14 @@ export async function updateFeed(url: string, userData: FeedUserData) {
   }
 
   // update feeds locally for performance
-  state.data.value = {
-    feeds: state.data.value.feeds.map(f => (
-      f.url === url ? {
+  appState.data.value = {
+    feeds: appState.data.value.feeds.map(f => (
+      f.url === feed.url ? {
         ...f,
         user_data: userData
       } : f
     )),
-    entries: state.data.value.entries
+    entries: appState.data.value.entries
   };
   notify("success", "Updated feed successfully");
   return true;
@@ -129,7 +129,7 @@ export async function updateFeed(url: string, userData: FeedUserData) {
 export function updateQueryParams(params: QueryParams, reset: boolean = false) {
   // merge with original params if not resetting
   const newParams = reset ? params : {
-    ...state.queryParams.value,
+    ...appState.queryParams.value,
     ...params,
   };
   // remove undefined fields
@@ -151,9 +151,9 @@ export async function deleteFeed(url: string) {
   }
 
   // Fast deletion in frontend
-  const data = state.data.value;
+  const data = appState.data.value;
   batch(() => {
-    state.data.value = {
+    appState.data.value = {
       feeds: data.feeds.filter(f => f.url !== url),
       entries: data.entries.filter(e => e.feed_url !== url)
     };
@@ -181,7 +181,7 @@ export async function archiveFeeds(urls?: string[]) {
   const data = await getData();
   if (data) {
     batch(() => {
-      state.data.value = data;
+      appState.data.value = data;
       notify("success", "Database archived successfully");
     })
     return true;

@@ -15,27 +15,22 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Box, IconButton, List, ListItem, ListItemButton } from "@mui/material";
-import { computedState, state } from "../store/state";
+import { computedState, appState } from "../store/state";
 import { Feed, getFeedTitle, toFeedId } from "../store/feed";
-import { deleteFeed, updateQueryParams } from "../store/actions";
-import { batch, computed, signal } from "@preact/signals";
+import { deleteFeed, updateFeed, updateQueryParams } from "../store/actions";
+import { batch, computed } from "@preact/signals";
 import { mdiDelete, mdiLeadPencil } from "@mdi/js";
 import Icon from '@mdi/react';
-import FeedDialog from "./FeedDialog";
 
 const selectedFeed = computedState.selectedFeed;
-const editing = state.ui.editingFeeds;
+const editing = appState.ui.editingFeeds;
 const FeedItemComponent = computed(() => editing.value ? ListItem : ListItemButton);
-const feedDialog = {
-  open: signal(false),
-  feed: signal<Feed|undefined>(undefined)
-};
 
 function confirmDeletion(feed: Feed) {
   batch(() => {
-    state.confirmation.open.value = true;
-    state.confirmation.content.value = <>Confirm deletion of feed <em>{getFeedTitle(feed)}</em>?</>;
-    state.confirmation.onConfirm = () => {
+    appState.confirmation.open.value = true;
+    appState.confirmation.content.value = <>Confirm deletion of feed <em>{getFeedTitle(feed)}</em>?</>;
+    appState.confirmation.onConfirm = () => {
       deleteFeed(feed.url);
     };
   });
@@ -43,7 +38,7 @@ function confirmDeletion(feed: Feed) {
 
 function FeedList() {
   const feeds = computedState.filteredFeeds.value;
-  const entries = state.data.value.entries;
+  const entries = appState.data.value.entries;
   const FeedItem = FeedItemComponent.value;
 
 	return (
@@ -89,8 +84,12 @@ function FeedList() {
                     color="inherit"
                     sx={{ p: 0.5 }}
                     onClick={() => {
-                      feedDialog.feed.value = feed;
-                      feedDialog.open.value = true;
+                      batch(() => {
+                        const { feedDialog } = appState.ui;
+                        feedDialog.open.value = true;
+                        feedDialog.feed.value = feed;
+                        feedDialog.onSave = updateFeed;
+                      });
                     }}
                   >
                     <Icon path={mdiLeadPencil} size={0.9} />
@@ -127,8 +126,6 @@ function FeedList() {
           );
         })}
       </List>
-
-      <FeedDialog {...feedDialog} />
     </>
 	);
 }

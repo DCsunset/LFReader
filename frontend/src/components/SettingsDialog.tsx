@@ -30,7 +30,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { state } from "../store/state";
+import { appState } from "../store/state";
 import { archiveFeeds } from "../store/actions";
 import { batch, Signal, signal } from "@preact/signals";
 import { LoadingButton } from "@mui/lab";
@@ -46,18 +46,18 @@ const validNumber = (value: string, min: number, max: number) => {
 };
 
 // local states
-const pageSize = signal(state.settings.value.pageSize.toString());
+const pageSize = signal(appState.settings.value.pageSize.toString());
 const pageSizeError = signal(false);
-const archive = signal(state.settings.value.archive);
-const forceArchive = signal(state.settings.value.forceArchive);
-const confirmOnExternalLink = signal(state.settings.value.confirmOnExternalLink);
+const archive = signal(appState.settings.value.archive);
+const forceArchive = signal(appState.settings.value.forceArchive);
+const confirmOnExternalLink = signal(appState.settings.value.confirmOnExternalLink);
 const archiveInProgress = signal(false);
 
 // reset local states
 const reset = () => {
   batch(() => {
-    pageSize.value = state.settings.value.pageSize.toString();
-    archive.value = state.settings.value.archive;
+    pageSize.value = appState.settings.value.pageSize.toString();
+    archive.value = appState.settings.value.archive;
   });
 };
 
@@ -71,8 +71,8 @@ export default function SettingsDialog({ open }: {
   const save = () => {
     if (!pageSizeError.value) {
       batch(() => {
-        state.settings.value = {
-          ...state.settings.value,
+        appState.settings.value = {
+          ...appState.settings.value,
           pageSize: parseInt(pageSize.value),
           archive: archive.value,
           forceArchive: forceArchive.value,

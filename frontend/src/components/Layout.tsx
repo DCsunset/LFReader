@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { createRef } from "preact";
-import { computedState, state } from "../store/state";
+import { computedState, appState } from "../store/state";
 import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, Zoom, Fab, CircularProgress } from "@mui/material";
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
@@ -31,15 +31,16 @@ import NewFeedsDialog from "./NewFeedsDialog";
 import Entry from "./Entry";
 import { getEntryTitle, getFeedTitle } from "../store/feed";
 import { anchorNoStyle } from "../utils/styles";
+import FeedDialog from "./FeedDialog";
 
 const feedListWidth = "250px";
 const entryListWidth = "350px";
 const toolbarHeight = "50px";
 const entryList = signal(true);
-const dark = computed(() => state.settings.value.dark);
+const dark = computed(() => appState.settings.value.dark);
 const settingsDialog = signal(false);
 const feedsDialog = signal(false);
-const editing = state.ui.editingFeeds;
+const editing = appState.ui.editingFeeds;
 const fetchDataInProgress = signal(false);
 const loadDataInProgress = signal(false);
 
@@ -96,8 +97,8 @@ export default function Layout() {
   }));
 
   const toggleTheme = () => {
-    state.settings.value = {
-      ...state.settings.value,
+    appState.settings.value = {
+      ...appState.settings.value,
       dark: !dark.value
     };
   };
@@ -115,7 +116,7 @@ export default function Layout() {
   }
 
   useSignalEffect(() => {
-    const notification = state.notification.value;
+    const notification = appState.notification.value;
     if (notification) {
       const { text, color } = notification;
       enqueueSnackbar(text, { variant: color });
@@ -316,6 +317,7 @@ export default function Layout() {
 
       <SettingsDialog open={settingsDialog} />
       <NewFeedsDialog open={feedsDialog} />
+      <FeedDialog />
 
       <ConfirmationDialog />
       <SnackbarProvider anchorOrigin={{ horizontal: "center", vertical: "bottom" }} />
