@@ -45,7 +45,7 @@ const archiveBlacklist = signal("");
 const archiveInProgress = signal(false);
 
 export default function FeedDialog() {
-  const { open, feed, onSave } = appState.ui.feedDialog;
+  const { open, feed, onSave } = appState.feedDialog;
   const existing = useComputed(() => Boolean(lookupFeed(feed.value?.url)));
 
   // reset local states

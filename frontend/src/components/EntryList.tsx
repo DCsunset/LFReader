@@ -14,14 +14,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, List, ListItemButton, Pagination, Stack, Typography } from "@mui/material";
+import { Box, Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField, Typography } from "@mui/material";
 import { computedState, lookupFeed, appState } from "../store/state";
 import { getFeedTitle, toEntryId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
-import { computed } from "@preact/signals";
-// import Icon from "@mdi/react";
-// import { mdiCircle } from "@mdi/js";
+import { batch, computed, effect, signal } from "@preact/signals";
 import { displayDateDiff } from "../utils/date";
+import { mdiArrowLeft, mdiClose, mdiMagnify } from "@mdi/js";
+import Icon from "@mdi/react";
+import { preventEventDefault } from "../utils/dom";
 
 const selectedEntry = computedState.selectedEntry;
 
@@ -40,10 +41,96 @@ const displayedEntries = computed(() => {
   );
 })
 
+const searching = signal(false);
+const entryTitleFilter = signal("");
+const toolbar = computed(() => !searching.value);
+
+function cancelSearch() {
+  updateQueryParams({ entryTitleFilter: undefined });
+}
+
+function handleSearch() {
+  const filter = entryTitleFilter.value;
+  updateQueryParams({
+    entryTitleFilter: filter.length > 0 ? filter : undefined
+  });
+}
+
+function handleSearchKeyDown(event: KeyboardEvent) {
+  if (event.key === "Escape") {
+    cancelSearch();
+  }
+  else if (event.key === "Enter") {
+    handleSearch();
+    event.preventDefault();
+  }
+}
+
+effect(() => {
+  const filter = appState.queryParams.value.entryTitleFilter || "";
+  batch(() => {
+    entryTitleFilter.value = filter;
+    searching.value = Boolean(filter);
+  });
+});
+
 function EntryList() {
 	return (
     <Stack direction="column" sx={{ height: "100%" }}>
-      <List sx={{ overflow: "auto", flexGrow: 1 }}>
+      {toolbar.value &&
+        <Stack direction="row" sx={{ px: 0.8 }}>
+          <IconButton
+            color="inherit"
+            title="Search entries"
+            onClick={() => searching.value = true}
+          >
+            <Icon path={mdiMagnify} size={1} />
+          </IconButton>
+        </Stack>
+      }
+      {searching.value &&
+        <Stack direction="row" sx={{ px: 0.8, alignItems: "center" }}>
+          <IconButton
+            color="inherit"
+            title="Cancel"
+            onClick={cancelSearch}
+          >
+            <Icon path={mdiArrowLeft} size={1} />
+          </IconButton>
+          <TextField
+            inputRef={input => input?.focus()}
+            variant="standard"
+            sx={{ flexGrow: 1 }}
+            value={entryTitleFilter.value}
+            onChange={(event: any) => {
+              entryTitleFilter.value = event.target.value;
+            }}
+            onKeyDown={handleSearchKeyDown}
+            InputProps={{
+              endAdornment: (
+                entryTitleFilter.value.length > 0 &&
+                  <IconButton
+                    size="small"
+                    onClick={() => entryTitleFilter.value = ""}
+                    onMouseDown={preventEventDefault}
+                    edge="end"
+                  >
+                    <Icon path={mdiClose} size={0.9} />
+                  </IconButton>
+              )
+            }}
+          />
+          <IconButton
+            color="inherit"
+            title="Search entries by title"
+            onClick={handleSearch}
+          >
+            <Icon path={mdiMagnify} size={1} />
+          </IconButton>
+        </Stack>
+      }
+      <Divider />
+      <List disablePadding sx={{ overflow: "auto", flexGrow: 1 }}>
         {displayedEntries.value.map(e => {
           const entryId = toEntryId(e);
           const feedTitle = getFeedTitle(lookupFeed(e.feed_url));

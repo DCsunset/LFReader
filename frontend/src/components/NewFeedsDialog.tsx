@@ -22,6 +22,7 @@ import { mdiClose, mdiLeadPencil } from "@mdi/js";
 import { Feed, FeedUserData } from "../store/feed";
 import { appState } from "../store/state";
 import { useCallback } from "preact/hooks";
+import { preventEventDefault } from "../utils/dom";
 
 // added feeds
 const feeds = signal<Feed[]>([]);
@@ -30,11 +31,6 @@ const feeds = signal<Feed[]>([]);
 const feedUrl = signal("");
 const feedUrlError = signal("");
 const fetchDataInProgress = signal(false);
-
-// used on buttons to prevent switching focus
-function preventDefault(event: Event) {
-  event.preventDefault();
-}
 
 function setFeedUrl(value: string) {
   batch(() => {
@@ -149,7 +145,7 @@ export default function NewFeedsDialog({ open }: {
                 sx={{  }}
                 onClick={() => {
                   batch(() => {
-                    const { feedDialog } = appState.ui;
+                    const { feedDialog } = appState;
                     feedDialog.open.value = true;
                     feedDialog.feed.value = f;
                     feedDialog.onSave = update;
@@ -160,7 +156,7 @@ export default function NewFeedsDialog({ open }: {
               </IconButton>
               <IconButton
                 onClick={() => remove(f)}
-                onMouseDown={preventDefault}
+                onMouseDown={preventEventDefault}
               >
                 <Icon path={mdiClose} size={0.9} />
               </IconButton>
@@ -168,7 +164,7 @@ export default function NewFeedsDialog({ open }: {
           ))}
         </List>
         <TextField
-          inputRef={input => input && input.focus()}
+          inputRef={input => input?.focus()}
           sx={{ mt: 2, width: "100%", minWidth: "400px" }}
           label="Feed URL"
           error={feedUrlError.value.length > 0}
@@ -182,7 +178,7 @@ export default function NewFeedsDialog({ open }: {
                 <IconButton
                   size="small"
                   onClick={resetFeedUrl}
-                  onMouseDown={preventDefault}
+                  onMouseDown={preventEventDefault}
                   edge="end"
                 >
                   <Icon path={mdiClose} size={0.9} />
@@ -193,7 +189,7 @@ export default function NewFeedsDialog({ open }: {
       </DialogContent>
       <DialogActions>
         <Button color="inherit" onClick={close}>Cancel</Button>
-        <Button color="error" onClick={reset} onMouseDown={preventDefault}>Reset</Button>
+        <Button color="error" onClick={reset} onMouseDown={preventEventDefault}>Reset</Button>
         <Button
           color="primary"
           onClick={submit}

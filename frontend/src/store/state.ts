@@ -16,7 +16,7 @@
 
 import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
-import { Entry, Feed, FeedUserData } from "./feed";
+import { Entry, Feed, FeedUserData, getEntryTitle } from "./feed";
 import { loadData } from "./actions";
 import { Base64 } from "js-base64";
 
@@ -43,7 +43,8 @@ export type Settings = {
 export type QueryParams = {
   feed?: string,
   entry?: string,
-  page?: string
+  page?: string,
+  entryTitleFilter?: string
 };
 
 function merge(value: any, init: any) {
@@ -93,11 +94,7 @@ export const appState = {
 	})),
   ui: {
     excludedTags: signal([] as string[]),
-    editingFeeds: signal(false),
-    feedDialog: {
-      open: signal(false),
-      feed: signal(undefined),
-    } as FeedDialogState
+    editingFeeds: signal(false)
   },
   data: signal({
     feeds: [] as Feed[],
@@ -110,7 +107,11 @@ export const appState = {
     open: signal(false),
     content: signal<Element|string>(""),
     onConfirm: () => {}
-  }
+  },
+  feedDialog: {
+    open: signal(false),
+    feed: signal(undefined),
+  } as FeedDialogState
 };
 
 // Feed map to quickly look up feed by feed_url
@@ -180,17 +181,29 @@ const selectedEntryFeed = computed(() => {
   return entry && lookupFeed(entry.feed_url);
 });
 
+function regexpFromString(str?: string) {
+  return str && (str.length > 0 ? new RegExp(str) : undefined);
+}
+
 const filteredEntries = computed(() => {
   const entries = appState.data.value.entries;
-  const selectedUrl = selectedFeed.value?.url;
-  if (selectedUrl) {
-    return entries.filter(v => v.feed_url === selectedUrl);
-  }
-  else {
-    // show entries of filtered feeds
-    const urls = new Set(filteredFeeds.value.map(f => f.url));
-    return entries.filter(v => urls.has(v.feed_url));
-  }
+  const selectedFeedUrl = selectedFeed.value?.url;
+  // show entries of filtered feeds
+  const urls = selectedFeedUrl ? undefined : new Set(filteredFeeds.value.map(f => f.url));
+  const entryTitleRe = regexpFromString(appState.queryParams.value.entryTitleFilter);
+
+  const filters: ((entry: Entry) => boolean)[] = [
+    // filter by feeds
+    v => (
+      selectedFeedUrl
+        ? v.feed_url === selectedFeedUrl
+        : urls.has(v.feed_url)
+    ),
+    // filter by entryTitle
+    v => !entryTitleRe || entryTitleRe.test(getEntryTitle(v))
+  ];
+
+  return entries.filter(v => filters.map(f => f(v)).every(r => r));
 });
 
 export const computedState = {

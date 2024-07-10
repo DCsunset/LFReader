@@ -85,7 +85,7 @@ function FeedList() {
                     sx={{ p: 0.5 }}
                     onClick={() => {
                       batch(() => {
-                        const { feedDialog } = appState.ui;
+                        const { feedDialog } = appState;
                         feedDialog.open.value = true;
                         feedDialog.feed.value = feed;
                         feedDialog.onSave = updateFeed;
