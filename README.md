@@ -23,10 +23,24 @@ LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python 
 ### Using docker/podman
 
 ```sh
+# create data dir
+mkdir -p data
 docker run -d -p 8080:80 --name lfreader -v $PWD/data:/app/data dcsunset/lfreader
 ```
 
 Then access `http://localhost:8080` in browser.
+
+The database and archived files will be stored in the volume `/app/data` in container (or where you mount it in the host).
+The log of backend server is stored at `/app/logs/backend.log` inside the container.
+You can quickly check the log by `docker exec lfreader tail /app/logs/backend.log`.
+
+The default config file can be found in `docker/config.json` in this repo.
+You can use your own config simply by mounting it to `/app/config.json`:
+```sh
+# suppose your config is at ./config.json
+docker run -d -p 8080:80 --name lfreader -v $PWD/config.json:/app/config.json -v $PWD/data:/app/data dcsunset/lfreader
+```
+
 
 ### Using pip
 

@@ -1,0 +1,6 @@
+{
+  "db_file": "/app/data/db.sqlite",
+  "archiver": {
+    "base_dir": "/app/data/archives"
+  }
+}
