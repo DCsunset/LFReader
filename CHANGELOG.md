@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.2.1](https://github.com/DCsunset/LFReader/compare/v2.2.0...v2.2.1) (2024-07-11)
+
+
+### Bug Fixes
+
+* fix config in docker image ([8b59823](https://github.com/DCsunset/LFReader/commit/8b59823fbd733a8905b65c9389d79af86a31e773))
+
 ## [2.2.0](https://github.com/DCsunset/LFReader/compare/v2.1.6...v2.2.0) (2024-07-10)
 
 
