@@ -185,7 +185,7 @@ class Storage:
   async def fetch_feeds(self, feeds: list, archive: bool, force_archive: bool):
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
       feeds = feeds or self.get_feeds_metadata()
-      feeds = map(lambda f: (f.url, f["user_data"], feedparser.parse(f.url, resolve_relative_uris=False)), feeds)
+      feeds = map(lambda f: (f["url"], f["user_data"], feedparser.parse(f["url"], resolve_relative_uris=False)), feeds)
       now = datetime.now().astimezone().isoformat()
       update_feed_field = partial(sql_update_field, "feeds")
       update_entry_field = partial(sql_update_field, "entries")
