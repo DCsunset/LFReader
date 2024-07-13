@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.2.2](https://github.com/DCsunset/LFReader/compare/v2.2.1...v2.2.2) (2024-07-13)
+
+
+### Bug Fixes
+
+* **backend:** fix access to attribute ([32ceb12](https://github.com/DCsunset/LFReader/commit/32ceb12c502d7f7911aea6985e5a2fa0d54179b6))
+
 ## [2.2.1](https://github.com/DCsunset/LFReader/compare/v2.2.0...v2.2.1) (2024-07-11)
 
 
