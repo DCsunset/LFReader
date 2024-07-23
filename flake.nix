@@ -14,13 +14,14 @@
       perSystem = { self', system, pkgs, ... }: let
         # common dependencies
         deps = with pkgs; [
-          (python3.withPackages(p: with p; [
+          (python3.withPackages (p: with p; [
             aiohttp
             beautifulsoup4
             feedparser
             fastapi
             uvicorn
             pydantic
+            python-lsp-server
           ]))
         ];
 
