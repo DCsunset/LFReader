@@ -172,6 +172,7 @@ export default function NewFeedsDialog({ open }: {
           value={feedUrl.value}
           onChange={(event: any) => setFeedUrl(event.target.value)}
           onKeyDown={handleKeyDown}
+          disabled={fetchDataInProgress.value}
           InputProps={{
             endAdornment: (
               feedUrl.value.length > 0 &&
