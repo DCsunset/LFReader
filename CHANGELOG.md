@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.2.3](https://github.com/DCsunset/LFReader/compare/v2.2.2...v2.2.3) (2024-07-31)
+
+
+### Bug Fixes
+
+* **backend:** use same session to get feed and improve error handling ([3da6f2a](https://github.com/DCsunset/LFReader/commit/3da6f2ad5af79b83043833780730ff88236d9f93))
+* **frontend:** disable feed input when fetching data ([92bd0fb](https://github.com/DCsunset/LFReader/commit/92bd0fb8446a17ec56c408f1b308a6d00b7f1de8))
+
+
+### Misc
+
+* add direnv and pylsp for devShell ([dd04298](https://github.com/DCsunset/LFReader/commit/dd042981b3c56f7ca725faf43b431dcc5b0f94d4))
+
 ## [2.2.2](https://github.com/DCsunset/LFReader/compare/v2.2.1...v2.2.2) (2024-07-13)
 
 
