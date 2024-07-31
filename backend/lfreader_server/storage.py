@@ -33,6 +33,18 @@ from fastapi import HTTPException
 from .archive import Archiver
 from .config import Config
 
+async def parse_feed(session: aiohttp.ClientSession, f: dict):
+  async with session.get(f["url"]) as resp:
+    return (
+      f["url"],
+      f["user_data"],
+      # use aiohttp to download for better error handling, headers and timeout
+      feedparser.parse(
+        await resp.read(),
+        resolve_relative_uris=False
+      )
+    )
+
 def parsed_time_to_iso(parsed_time: struct_time | None):
   # the parsed time is guaranteed to be utc
   return parsed_time and datetime(*parsed_time[:6], tzinfo=timezone.utc).isoformat()
@@ -185,7 +197,7 @@ class Storage:
   async def fetch_feeds(self, feeds: list, archive: bool, force_archive: bool):
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
       feeds = feeds or self.get_feeds_metadata()
-      feeds = map(lambda f: (f["url"], f["user_data"], feedparser.parse(f["url"], resolve_relative_uris=False)), feeds)
+      feeds = await asyncio.gather(*map(partial(parse_feed, session), feeds))
       now = datetime.now().astimezone().isoformat()
       update_feed_field = partial(sql_update_field, "feeds")
       update_entry_field = partial(sql_update_field, "entries")

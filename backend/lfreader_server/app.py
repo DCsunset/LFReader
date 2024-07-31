@@ -23,7 +23,8 @@ import logging
 import os
 import sys
 from pydantic import BaseModel, ValidationError
-from sqlite3 import DatabaseError
+import sqlite3
+import aiohttp
 from typing import Annotated, Literal
 import traceback
 import uvicorn
@@ -152,11 +153,14 @@ async def patch_api(args: ArchiveArgs):
 
 ## Error handlers
 
-@app.exception_handler(DatabaseError)
-async def db_exception(request, err: DatabaseError):
+@app.exception_handler(sqlite3.DatabaseError)
+async def db_exception(request, err: sqlite3.DatabaseError):
   traceback.print_exc()
   raise HTTPException(status_code=409, detail=f"Database Error: {err}")
 
+@app.exception_handler(aiohttp.ClientError)
+async def db_exception(request, err: aiohttp.ClientError):
+  raise HTTPException(status_code=400, detail=f"HTTP Error: {err}")
 
 def main():
   # pass this app as first arg in uvicorn
