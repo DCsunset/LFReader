@@ -65,7 +65,9 @@ export async function fetchData(feeds?: Feed[]) {
     body: JSON.stringify({
       feeds,
       archive: appState.settings.value.archive,
-      force_archive: appState.settings.value.forceArchive
+      force_archive: appState.settings.value.forceArchive,
+      // ignore error when updating all feeds
+      ignore_error: !feeds
     })
   });
   if (!resp.ok) {
