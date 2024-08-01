@@ -16,7 +16,7 @@
 
 import { createRef } from "preact";
 import { computed } from "@preact/signals";
-import { computedState, lookupFeed  } from "../store/state";
+import { appState, computedState, lookupEntry, lookupFeed  } from "../store/state";
 import { getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
 import { Box, Divider, Typography } from "@mui/material";
 import Icon from "@mdi/react";
@@ -75,7 +75,16 @@ export default function Entry() {
       });
       // open link in external page
       element.querySelectorAll("a").forEach((el: HTMLElement) => {
-        el.setAttribute("target", "_blank");
+        const e = lookupEntry(el.getAttribute("href"));
+        if (e) {
+          // replace external link with internal link
+          el.setAttribute("href", `/?${new URLSearchParams({
+            ...appState.queryParams.value,
+            entry: toEntryId(e)
+          })}`);
+        } else {
+          el.setAttribute("target", "_blank");
+        }
         el.addEventListener("click", handleExternalLink);
       });
     }
@@ -107,7 +116,7 @@ export default function Entry() {
             {getEntryTitle(entry)}
           </Typography>
           <Divider sx={{ mb: 1 }} />
-          <Typography variant="info" sx={{ display: "flex" }}>
+          <Typography variant="info" sx={{ display: "flex", mb: 2 }}>
             <Icon path={mdiCalendarMonth} size={0.9} />
             <Box sx={{ ml: 0.5, mr: 1.5 }}>
               {displayDate(entry.published_at ?? entry.updated_at)}

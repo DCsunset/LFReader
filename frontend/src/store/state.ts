@@ -114,16 +114,26 @@ export const appState = {
   } as FeedDialogState
 };
 
-// Feed map to quickly look up feed by feed_url
+// Map to quickly look up feed or entry by url
 const feedMap = computed(
   () => appState.data.value.feeds.reduce(
     (acc, cur) => acc.set(cur.url, cur),
     new Map<string, Feed>()
   )
 );
+const entryMap = computed(
+  () => appState.data.value.entries.reduce(
+    (acc, cur) => cur.link ? acc.set(cur.link, cur) : acc,
+    new Map<string, Entry>()
+  )
+);
 
 export function lookupFeed(url?: string) {
   return url && feedMap.value.get(url);
+}
+
+export function lookupEntry(url?: string) {
+  return url && entryMap.value.get(url);
 }
 
 export function fromEntryId(entry_id: string) {

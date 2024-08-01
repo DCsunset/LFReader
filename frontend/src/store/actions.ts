@@ -22,7 +22,7 @@ import { Feed, FeedUserData } from "./feed";
 
 export function handleExternalLink(e: MouseEvent) {
   if (appState.settings.value.confirmOnExternalLink) {
-    // use getAttrbiutes to get the raw href value
+    // use getAttribute to get the raw href value
     const link = (e.currentTarget as HTMLAnchorElement | null)?.getAttribute("href") || "";
     if (/^\w+:/.test(link) && !confirm(`Confirm to open external link ${link}`)) {
       // Must to preventDefault as return value doesn't work for target=_blank
