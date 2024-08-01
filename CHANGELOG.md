@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.3.0](https://github.com/DCsunset/LFReader/compare/v2.2.3...v2.3.0) (2024-08-01)
+
+
+### Features
+
+* **backend:** support ignoring errors when fetching feeds ([1c312d6](https://github.com/DCsunset/LFReader/commit/1c312d605997b831a2ff99798bebe923f77ef742))
+* **frontend:** ignore errors when updating all feeds ([e1f6b59](https://github.com/DCsunset/LFReader/commit/e1f6b592e161eb28099672bc527c1b4f0c23c50f))
+* **frontend:** support jump to local entries and fix style ([365875e](https://github.com/DCsunset/LFReader/commit/365875e9112497c73af3963af5f951815851c072))
+
+
+### Misc
+
+* update flake inputs ([675ddd0](https://github.com/DCsunset/LFReader/commit/675ddd097213adb97243cd4257c5371453d5565d))
+
 ## [2.2.3](https://github.com/DCsunset/LFReader/compare/v2.2.2...v2.2.3) (2024-07-31)
 
 
