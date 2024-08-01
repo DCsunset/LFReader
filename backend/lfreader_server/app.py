@@ -116,13 +116,14 @@ class FetchArgs(BaseModel):
   archive: bool = True
   # whether to force archiving even if content doesn't change
   force_archive: bool = False
+  ignore_error: bool = False
 
 """
 Fetch feeds and their entries from origin (can be new feeds)
 """
 @app.post("/")
 async def fetch_api(args: FetchArgs):
-  await storage.fetch_feeds(args.feeds, args.archive, args.force_archive)
+  await storage.fetch_feeds(args.feeds, args.archive, args.force_archive, args.ignore_error)
   return {}
 
 """

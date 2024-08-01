@@ -33,17 +33,23 @@ from fastapi import HTTPException
 from .archive import Archiver
 from .config import Config
 
-async def parse_feed(session: aiohttp.ClientSession, f: dict):
-  async with session.get(f["url"]) as resp:
-    return (
-      f["url"],
-      f["user_data"],
-      # use aiohttp to download for better error handling, headers and timeout
-      feedparser.parse(
-        await resp.read(),
-        resolve_relative_uris=False
+async def parse_feed(session: aiohttp.ClientSession, ignore_error: bool, feed: dict):
+  try:
+    async with session.get(feed["url"]) as resp:
+      return (
+        feed["url"],
+        feed["user_data"],
+        # use aiohttp to download for better error handling, headers and timeout
+        feedparser.parse(
+          await resp.read(),
+          resolve_relative_uris=False
+        )
       )
-    )
+  except Exception as e:
+    if ignore_error:
+      return (feed["url"], feed["user_data"], None)
+    else:
+      raise e
 
 def parsed_time_to_iso(parsed_time: struct_time | None):
   # the parsed time is guaranteed to be utc
@@ -194,15 +200,20 @@ class Storage:
   Fetch feeds.
   If feeds is None, fetch all feeds
   """
-  async def fetch_feeds(self, feeds: list, archive: bool, force_archive: bool):
+  async def fetch_feeds(self, feeds: list, archive: bool, force_archive: bool, ignore_error: bool):
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
       feeds = feeds or self.get_feeds_metadata()
-      feeds = await asyncio.gather(*map(partial(parse_feed, session), feeds))
+      feeds = await asyncio.gather(*map(partial(parse_feed, session, ignore_error), feeds))
       now = datetime.now().astimezone().isoformat()
       update_feed_field = partial(sql_update_field, "feeds")
       update_entry_field = partial(sql_update_field, "entries")
 
       for url, f_user_data, f in feeds:
+        # Failed to fetch feeds
+        if f is None:
+          logging.warning(f"Error fetching feed {url}")
+          continue
+
         if f.bozo:
           err_msg = getattr(f.bozo_exception, 'message', str(f.bozo_exception))
           # don't raise exception as the feed may still be readable
