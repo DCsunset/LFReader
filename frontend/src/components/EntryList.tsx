@@ -170,7 +170,7 @@ function EntryList() {
                   {feedTitle}
                 </Box>
                 <Box>
-                  {displayDateDiff(e.published_at ?? e.updated_at)}
+                  {displayDateDiff(e.published_at ?? e.updated_at ?? e.server_data.added_at)}
                 </Box>
               </Typography>
               <Box>{e.title || "(No Title)"}</Box>

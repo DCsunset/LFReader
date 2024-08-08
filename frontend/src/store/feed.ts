@@ -47,6 +47,11 @@ export type Enclosure = {
   length: number,
 };
 
+export type EntryServerData = {
+  fetched_at: string,
+  added_at: string,
+};
+
 export type Entry = {
   feed_url: string,
   id: string,
@@ -58,7 +63,8 @@ export type Entry = {
   enclosures?: Enclosure[],
   updated_at?: string,
   published_at?: string,
-  user_data?: any
+  user_data: any,
+  server_data: EntryServerData
 };
 
 export function toFeedId(feed: Feed) {

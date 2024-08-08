@@ -144,7 +144,7 @@ export default function Entry() {
             <Box sx={{ display: "inline-flex", mb: 1 }}>
               <Icon path={mdiCalendarMonth} size={1} />
               <Box sx={{ ml: 0.5, mr: 1.5 }}>
-                {displayDate(entry.published_at ?? entry.updated_at)}
+                {displayDate(entry.published_at ?? entry.updated_at ?? entry.server_data.added_at)}
               </Box>
             </Box>
 
