@@ -30,7 +30,7 @@ export type Feed = {
   title?: string,
   author?: string,
   updated_at?: string,
-  user_data: FeedUserData;
+  user_data: FeedUserData
 }
 
 export type Content = {
@@ -41,6 +41,12 @@ export type Content = {
   base: string
 };
 
+export type Enclosure = {
+  href: string,
+  type: string,
+  length: number,
+};
+
 export type Entry = {
   feed_url: string,
   id: string,
@@ -49,6 +55,7 @@ export type Entry = {
   title?: string,
   summary?: Content,
   contents?: Content[],
+  enclosures?: Enclosure[],
   updated_at?: string,
   published_at?: string,
   user_data?: any
