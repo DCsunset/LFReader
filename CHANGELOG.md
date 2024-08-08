@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.4.0](https://github.com/DCsunset/LFReader/compare/v2.3.0...v2.4.0) (2024-08-08)
+
+
+### Features
+
+* **backend:** support archiving enclosures ([4df40c0](https://github.com/DCsunset/LFReader/commit/4df40c0fdbff6a9ee2bbacf4c239f5f11b695565))
+* **frontend:** add button to add feed url ([0148e88](https://github.com/DCsunset/LFReader/commit/0148e88454c962209eae2d5748f794650df3c4ba))
+* **frontend:** support display enclosures ([065aba7](https://github.com/DCsunset/LFReader/commit/065aba7a3e70b5fac54cfddaf2323bb6ded2599d))
+
+
+### Bug Fixes
+
+* **frontend:** display server added date if other dates unavailable ([b7b76fe](https://github.com/DCsunset/LFReader/commit/b7b76fe3b390fb3e9ff5ac6450072be67da73c91))
+
 ## [2.3.0](https://github.com/DCsunset/LFReader/compare/v2.2.3...v2.3.0) (2024-08-01)
 
 
