@@ -153,8 +153,9 @@ class Storage:
           -- server data in JSON format
           -- - fetched_at: when it was last fetched
           -- - added_at: when it was first added to db
-          -- - summary_hash: hash value of the summary
-          -- - contents_hash: hash value of the summary
+          -- - summary_hash: hash value of summary
+          -- - contents_hash: hash value of contents
+          -- - enclosures_hash: hash value of enclosures
           server_data TEXT,
 
           -- user data used by client in JSON format
@@ -195,6 +196,16 @@ class Storage:
       )
     )
     return contents
+
+  async def archive_enclosures(self, session, feed_url: str, enclosures, base_url: str | None, user_data: dict):
+    async def archive_enclosure(enclosure):
+      resource_url = await self.archiver.archive_resource(session, feed_url, enclosure.get("href"), base_url, user_data)
+      # only update url when archiving succeeds
+      if resource_url:
+        enclosure["href"] = resource_url
+    await asyncio.gather(*map(archive_enclosure, enclosures))
+    return enclosures
+
 
   """
   Fetch feeds.
@@ -263,7 +274,6 @@ class Storage:
           )
         )
 
-        # TODO: parallelize fetching
         for e in f.entries:
           e_id = e.get("id", e.link)
           e_title = e.get("title", e_id)
@@ -286,8 +296,10 @@ class Storage:
           base_url = e.get("link")
           summary = e.get("summary_detail")
           contents = e.get("content")
+          enclosures = e.get("enclosures")
           summary_hash = hash_dicts([summary]) if summary else None
           contents_hash = hash_dicts(contents) if contents else None
+          enclosures_hash = hash_dicts(enclosures) if enclosures else None
           if archive:
             if summary and (summary_hash != e_server_data.get("summary_hash")
                             or force_archive):
@@ -295,7 +307,7 @@ class Storage:
               summary = await self.archive_content(session, url, summary, base_url, f_user_data)
               e_server_data["summary_hash"] = summary_hash
             else:
-              # don't update summary
+              # don't update
               summary = None
             if contents and (contents_hash != e_server_data.get("contents_hash")
                              or force_archive):
@@ -303,8 +315,14 @@ class Storage:
               contents = await self.archive_contents(session, url, contents, base_url, f_user_data)
               e_server_data["contents_hash"] = contents_hash
             else:
-              # don't update contents
               contents = None
+            if enclosures and (enclosures_hash != e_server_data.get("enclosures_hash")
+                             or force_archive):
+              logging.info(f'Archiving enclosures of entry {e_title}...')
+              enclosures = await self.archive_enclosures(session, url, enclosures, base_url, f_user_data)
+              e_server_data["enclosures_hash"] = enclosures_hash
+            else:
+              enclosures = None
 
           self.db.execute(
             f'''
@@ -329,7 +347,7 @@ class Storage:
               e.get("title"),
               pack_data(summary),
               pack_data(contents),
-              pack_data(e.get("enclosures")),
+              pack_data(enclosures),
               parsed_time_to_iso(e.get("published_parsed")),
               parsed_time_to_iso(e.get("updated_parsed")),
               pack_data(e_server_data),
@@ -397,29 +415,34 @@ class Storage:
         ):
           f_user_data = f["user_data"] or {}
           for e in self.db.execute(
-            "SELECT id, link, summary, contents FROM entries WHERE feed_url = ?",
+            "SELECT id, link, summary, contents, enclosures FROM entries WHERE feed_url = ?",
             (url,)
           ):
             base_url = e["link"]
             e_id = e["id"]
             summary = e["summary"]
             contents = e["contents"]
+            enclosures = e["enclosures"]
             if summary:
               logging.info(f'Archiving summary of entry {e_id}...')
               summary = await self.archive_content(session, url, summary, base_url, f_user_data)
             if contents:
               logging.info(f'Archiving contents of entry {e_id}...')
               contents = await self.archive_contents(session, url, contents, base_url, f_user_data)
+            if enclosures:
+              logging.info(f'Archiving enclosures of entry {e_id}...')
+              enclosures = await self.archive_enclosures(session, url, enclosures, base_url, f_user_data)
 
             self.db.execute(
               f'''
               UPDATE entries
-              SET summary = ?, contents = ?
+              SET summary = ?, contents = ?, enclosures = ?
               WHERE feed_url = ? AND id = ?
               ''',
               (
                 pack_data(summary),
                 pack_data(contents),
+                pack_data(enclosures),
                 url,
                 e_id
               )
