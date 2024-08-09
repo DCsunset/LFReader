@@ -32,6 +32,7 @@ from fastapi import HTTPException
 
 from .archive import Archiver
 from .config import Config
+from .utils import async_map
 
 async def parse_feed(session: aiohttp.ClientSession, ignore_error: bool, feed: dict):
   try:
@@ -189,11 +190,10 @@ class Storage:
     return content
 
   async def archive_contents(self, session, feed_url: str, contents, base_url: str | None, user_data: dict):
-    await asyncio.gather(
-      *map(
-        lambda c: self.archive_content(session, feed_url, c, base_url, user_data),
-        contents
-      )
+    await async_map(
+      lambda c: self.archive_content(session, feed_url, c, base_url, user_data),
+      contents,
+      user_data.get("archive_sequential", False)
     )
     return contents
 
@@ -203,7 +203,7 @@ class Storage:
       # only update url when archiving succeeds
       if resource_url:
         enclosure["href"] = resource_url
-    await asyncio.gather(*map(archive_enclosure, enclosures))
+    await async_map(archive_enclosure, enclosures, user_data.get("archive_sequential", False))
     return enclosures
 
 

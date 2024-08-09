@@ -29,6 +29,7 @@ import os
 import re
 
 from .config import ArchiverConfig
+from .utils import async_map
 
 """
 Use Base64 (url safe) to encode feed url
@@ -61,11 +62,11 @@ class Archiver:
       attrs = opt.attr_filters
       if opt.attr not in attrs:
         attrs[opt.attr] = True
-      await asyncio.gather(
-        *map(
-          partial(update_tag, opt.attr),
-          soup.find_all(opt.tag_filter, attrs=attrs)
-        )
+      await async_map(
+        partial(update_tag, opt.attr),
+        soup.find_all(opt.tag_filter, attrs=attrs),
+        user_data.get("archive_sequential", False),
+        user_data.get("archive_interval", 0)
       )
     return str(soup)
 
