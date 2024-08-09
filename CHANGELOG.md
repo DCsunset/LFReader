@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.5.0](https://github.com/DCsunset/LFReader/compare/v2.4.0...v2.5.0) (2024-08-09)
+
+
+### Features
+
+* **backend:** support add entries after specific_date ([c145ef5](https://github.com/DCsunset/LFReader/commit/c145ef59f1806667101266b74baec0a982003d8c))
+* **backend:** support archiving sequentially and add interval ([a938f4d](https://github.com/DCsunset/LFReader/commit/a938f4d2ea2736c684794bf997a756109e5893df))
+* **frontend:** add UI for archive sequential and interval config ([116df22](https://github.com/DCsunset/LFReader/commit/116df2249c3c3aa4e286d0eb18da10e04e04d3c8))
+* **frontend:** support afterDate option ([d6635f1](https://github.com/DCsunset/LFReader/commit/d6635f1cc1da651c9ea5482d2175079a4269a718))
+
+
+### Bug Fixes
+
+* **backend:** fix url quoting in aiohttp ([a605011](https://github.com/DCsunset/LFReader/commit/a605011b66038d44fcaedfe52297719791e8d01e))
+
 ## [2.4.0](https://github.com/DCsunset/LFReader/compare/v2.3.0...v2.4.0) (2024-08-08)
 
 
