@@ -19,6 +19,7 @@ import { Base64 } from "js-base64";
 export type FeedUserData = {
   alias?: string,
   base_url?: string,
+  after_date?: string,
   archive_blacklist?: string,
   archive_sequential?: boolean,
   archive_interval?: number,

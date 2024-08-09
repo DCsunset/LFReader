@@ -42,6 +42,7 @@ import { appState, lookupFeed } from "../store/state";
 // local states
 const alias = signal("");
 const baseUrl = signal("");
+const afterDate = signal("");
 const archiveBlacklist = signal("");
 const archiveSequential = signal(false);
 const archiveInterval = signal("");
@@ -57,8 +58,9 @@ export default function FeedDialog() {
     // subscribe to feed
     const f = feed.value;
     batch(() => {
-      baseUrl.value = f?.user_data.base_url ?? "";
       alias.value = f?.user_data.alias ?? "";
+      baseUrl.value = f?.user_data.base_url ?? "";
+      afterDate.value = f?.user_data.after_date ?? "";
       archiveBlacklist.value = f?.user_data.archive_blacklist ?? "";
       archiveSequential.value = f?.user_data.archive_sequential ?? false;
       archiveInterval.value = f?.user_data.archive_interval?.toString() ?? "";
@@ -75,6 +77,7 @@ export default function FeedDialog() {
       ...(feed.value?.user_data || {}),
       alias: alias.value || undefined,
       base_url: baseUrl.value || undefined,
+      after_date: afterDate.value || undefined,
       archive_blacklist: archiveBlacklist.value || undefined,
       archive_sequential: archiveSequential.value || undefined,
       archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined
@@ -235,6 +238,30 @@ export default function FeedDialog() {
               <Grid item>
                 <ListItemText secondary={
                   <span>
+                    only fetch entries after a date (ISO format)
+                  </span>
+                }>
+                  After Date
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <TextField
+                  variant="standard"
+                  value={afterDate.value}
+                  placeholder="(none)"
+                  onChange={(event: any) => {
+                    afterDate.value = event.target.value;
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
                     url regex to blacklist when archiving
                   </span>
                 }>
@@ -259,7 +286,7 @@ export default function FeedDialog() {
               <Grid item>
                 <ListItemText secondary={
                   <span>
-                    Archive resources sequentially instead of concurrently
+                    archive resources sequentially instead of concurrently
                   </span>
                 }>
                   Archive Sequentially
