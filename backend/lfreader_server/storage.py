@@ -27,6 +27,7 @@ from time import struct_time
 from functools import partial
 import asyncio
 import aiohttp
+from yarl import URL
 from hashlib import blake2s
 from fastapi import HTTPException
 
@@ -36,7 +37,8 @@ from .utils import async_map
 
 async def parse_feed(session: aiohttp.ClientSession, ignore_error: bool, feed: dict):
   try:
-    async with session.get(feed["url"]) as resp:
+    # disable requoting to prevent invalid char in url
+    async with session.get(URL(feed["url"], encoded=True)) as resp:
       return (
         feed["url"],
         feed["user_data"],
@@ -215,7 +217,8 @@ class Storage:
   If feeds is None, fetch all feeds
   """
   async def fetch_feeds(self, feeds: list, archive: bool, force_archive: bool, ignore_error: bool):
-    async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
+    # must disable requoting to prevent invalid char in url
+    async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout, requote_redirect_url=False) as session:
       feeds = feeds or self.get_feeds_metadata()
       feeds = await asyncio.gather(*map(partial(parse_feed, session, ignore_error), feeds))
       now = datetime.now().astimezone().isoformat()
@@ -426,7 +429,8 @@ class Storage:
   async def archive_feeds(self, feed_urls: Iterable[str] | None = None):
     urls = feed_urls or map(lambda v: v["url"], self.get_feeds_metadata())
 
-    async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout) as session:
+    # must disable requoting to prevent invalid char in url
+    async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout, requote_redirect_url=False) as session:
       for url in urls:
         for f in self.db.execute(
           "SELECT user_data FROM feeds WHERE url = ?",

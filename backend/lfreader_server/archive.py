@@ -23,6 +23,7 @@ from hashlib import blake2s
 from pathlib import Path
 import shutil
 import asyncio
+from yarl import URL
 from base64 import urlsafe_b64encode, urlsafe_b64decode
 from functools import partial
 import os
@@ -121,9 +122,9 @@ class Archiver:
     logging.debug(f'Archiving resources in html {url}...')
     for i in range(self.cfg.retry_attempts):
       try:
-        async with session.get(url) as resp:
-          if resp.status != 200:
-            raise Exception(f"http error {resp.status}")
+        # disable quoting to prevent invalid char in url
+        async with session.get(URL(url, encoded=True)) as resp:
+          resp.raise_for_status()
           with open(resource_path, "wb") as f:
             async for chunk in resp.content.iter_chunked(10240):
               f.write(chunk)
