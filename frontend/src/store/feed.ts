@@ -20,6 +20,8 @@ export type FeedUserData = {
   alias?: string,
   base_url?: string,
   archive_blacklist?: string,
+  archive_sequential?: boolean,
+  archive_interval?: number,
   tags?: string[]
 };
 

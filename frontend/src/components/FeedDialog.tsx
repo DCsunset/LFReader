@@ -17,6 +17,7 @@
 import {
   Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
@@ -42,6 +43,9 @@ import { appState, lookupFeed } from "../store/state";
 const alias = signal("");
 const baseUrl = signal("");
 const archiveBlacklist = signal("");
+const archiveSequential = signal(false);
+const archiveInterval = signal("");
+const archiveIntervalError = signal(false);
 const archiveInProgress = signal(false);
 
 export default function FeedDialog() {
@@ -56,6 +60,9 @@ export default function FeedDialog() {
       baseUrl.value = f?.user_data.base_url ?? "";
       alias.value = f?.user_data.alias ?? "";
       archiveBlacklist.value = f?.user_data.archive_blacklist ?? "";
+      archiveSequential.value = f?.user_data.archive_sequential ?? false;
+      archiveInterval.value = f?.user_data.archive_interval?.toString() ?? "";
+      archiveIntervalError.value = false;
     });
   };
   const close = () => {
@@ -68,7 +75,9 @@ export default function FeedDialog() {
       ...(feed.value?.user_data || {}),
       alias: alias.value || undefined,
       base_url: baseUrl.value || undefined,
-      archive_blacklist: archiveBlacklist.value || undefined
+      archive_blacklist: archiveBlacklist.value || undefined,
+      archive_sequential: archiveSequential.value || undefined,
+      archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined
     };
     const ok = await onSave(feed.value, userData);
     if (ok) {
@@ -239,6 +248,54 @@ export default function FeedDialog() {
                   placeholder="(none)"
                   onChange={(event: any) => {
                     archiveBlacklist.value = event.target.value;
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    Archive resources sequentially instead of concurrently
+                  </span>
+                }>
+                  Archive Sequentially
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <Checkbox
+                  checked={archiveSequential.value}
+                  onChange={(e: any) => archiveSequential.value = e.target.checked}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    only applied when archiving sequentially (in seconds)
+                  </span>
+                }>
+                  Archive Interval
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <TextField
+                  variant="standard"
+                  sx={{ maxWidth: "45px" }}
+                  error={archiveIntervalError.value}
+                  value={archiveInterval.value}
+                  disabled={!archiveSequential.value}
+                  onChange={(event: any) => {
+                    const value = event.target.value;
+                    archiveIntervalError.value = Boolean(value && !(parseFloat(value) > 0));
+                    archiveInterval.value = value;
                   }}
                 />
               </Grid>
