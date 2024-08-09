@@ -52,9 +52,12 @@ async def parse_feed(session: aiohttp.ClientSession, ignore_error: bool, feed: d
     else:
       raise e
 
-def parsed_time_to_iso(parsed_time: struct_time | None):
+def parse_datetime(parsed_time: struct_time | None):
   # the parsed time is guaranteed to be utc
-  return parsed_time and datetime(*parsed_time[:6], tzinfo=timezone.utc).isoformat()
+  return parsed_time and datetime(*parsed_time[:6], tzinfo=timezone.utc)
+
+def datetime_to_iso(dt: datetime | None):
+  return dt and dt.isoformat()
 
 def hash_dicts(dicts: list[dict]):
   """
@@ -267,14 +270,30 @@ class Storage:
             f.feed.get("title"),
             f.feed.get("subtitle"),
             f.feed.get("logo"),
-            parsed_time_to_iso(f.feed.get("published_parsed")),
-            parsed_time_to_iso(f.feed.get("updated_parsed")),
+            datetime_to_iso(parse_datetime(f.feed.get("published_parsed"))),
+            datetime_to_iso(parse_datetime(f.feed.get("updated_parsed"))),
             pack_data(f_server_data),
             pack_data(f_user_data)
           )
         )
 
+        after_date_raw = f_user_data.get("after_date")
+        after_date = None
+        if after_date_raw:
+          try:
+            after_date = datetime.fromisoformat(after_date_raw).astimezone()
+          except:
+            raise HTTPException(status_code=400, detail=f"Invalid after_date: {after_date_raw}")
+
         for e in f.entries:
+          e_published = parse_datetime(e.get("published_parsed"))
+          e_updated = parse_datetime(e.get("updated_parsed"))
+
+          if after_date:
+            # skip old entries
+            if (e_published and e_published < after_date) or (e_updated and e_updated < after_date):
+              continue
+
           e_id = e.get("id", e.link)
           e_title = e.get("title", e_id)
           logging.debug(f'Processing entry {e_title}...')
@@ -348,8 +367,8 @@ class Storage:
               pack_data(summary),
               pack_data(contents),
               pack_data(enclosures),
-              parsed_time_to_iso(e.get("published_parsed")),
-              parsed_time_to_iso(e.get("updated_parsed")),
+              datetime_to_iso(e_published),
+              datetime_to_iso(e_updated),
               pack_data(e_server_data),
               None
             )
