@@ -59,8 +59,8 @@ export default function Layout() {
   const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
   const feedList = useSignal(!smallDevice);
 
-  // Responsive style for showing feedList
-  const feedListStyle = useComputed<SxProps>(() => ({
+  // Responsive style for showing list peer
+  const feedListPeerStyle = useComputed<SxProps>(() => ({
     // Make animation same as drawer
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.sharp,
@@ -78,7 +78,7 @@ export default function Layout() {
     })
   }));
 
-  const entryListStyle = useComputed<SxProps>(() => ({
+  const entryListPeerStyle = useComputed<SxProps>(() => ({
     // Make animation same as drawer
     transition: theme.transitions.create(["margin", "width"], {
       easing: theme.transitions.easing.sharp,
@@ -91,8 +91,15 @@ export default function Layout() {
         duration: theme.transitions.duration.enteringScreen
       }),
       // width and margin needed when  persisten drawer is shown
-      width: `calc(100% - ${entryListWidth})`,
-      ml: entryListWidth
+      width: {
+        xs: 0,
+        sm: `calc(100% - ${entryListWidth})`
+      },
+      ml: {
+        xs: "100%",
+        sm: entryListWidth
+      },
+      p: { xs: 0 },
     })
   }));
 
@@ -136,7 +143,7 @@ export default function Layout() {
     <>
       {/* Disable backgroundImage to avoid color change in dark theme */}
       <AppBar
-        sx={feedListStyle.value}
+        sx={feedListPeerStyle.value}
         position="sticky"
       >
         <Toolbar variant="dense" sx={{ minHeight: toolbarHeight }}>
@@ -322,15 +329,14 @@ export default function Layout() {
       <ConfirmationDialog />
       <SnackbarProvider anchorOrigin={{ horizontal: "center", vertical: "bottom" }} />
 
-      <Box sx={feedListStyle.value}>
+      <Box sx={feedListPeerStyle.value}>
         <Slide in={entryList.value} direction="right">
           <Box sx={{
             // must be absolute to make main body able to occupy the same space
             position: "absolute",
-            width: entryListWidth,
-            flexDirection: {
-              sm: "column",
-              md: "row"
+            width: {
+              xs: "100%",
+              sm: entryListWidth,
             },
             height: `calc(100vh - ${toolbarHeight})`,
             borderRight: `1px solid ${theme.palette.divider}`
@@ -342,13 +348,14 @@ export default function Layout() {
         <Box ref={entryRef} sx={{
           py: 4,
           px: {
+            xs: 2,
             sm: 4,
             md: 6,
             lg: 8
           },
           height: `calc(100vh - ${toolbarHeight})`,
           overflowY: "scroll",
-          ...entryListStyle.value
+          ...entryListPeerStyle.value
         }}>
           <Entry />
         </Box>
