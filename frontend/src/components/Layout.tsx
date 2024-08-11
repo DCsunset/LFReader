@@ -209,7 +209,7 @@ export default function Layout() {
         // Change width of paper component inside drawer
         PaperProps={{
           sx: {
-            width: feedListWidth
+            width: `min(90%, ${feedListWidth})`
           }
         }}
         // For better performance
