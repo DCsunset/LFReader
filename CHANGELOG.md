@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.6.0](https://github.com/DCsunset/LFReader/compare/v2.5.0...v2.6.0) (2024-08-11)
+
+
+### Features
+
+* **frontend:** allow fetching individual feeds ([0ac0699](https://github.com/DCsunset/LFReader/commit/0ac06993fbfa0fd120c1b509c2db666b7878b316))
+
+
+### Bug Fixes
+
+* **frontend:** fix feed list width on small screen ([6c95fbc](https://github.com/DCsunset/LFReader/commit/6c95fbccf4106b0596838bdfc930bf4409d0c237))
+* **frontend:** fix responsive style for entry list ([3fb5449](https://github.com/DCsunset/LFReader/commit/3fb5449803f76624bcb79380f385b2733871e626))
+* **frontend:** fix responsive ui for small screen ([f0e82e4](https://github.com/DCsunset/LFReader/commit/f0e82e4a61ab449457cce890a33fa8cbd1efa19b))
+
+
+### Misc
+
+* add responsive ui to feature list ([f2f9190](https://github.com/DCsunset/LFReader/commit/f2f9190918678ece39a689b919b85baebfddfa9f))
+
 ## [2.5.0](https://github.com/DCsunset/LFReader/compare/v2.4.0...v2.5.0) (2024-08-09)
 
 
