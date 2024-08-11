@@ -33,9 +33,9 @@ import {
 } from "@mui/material";
 import { batch, signal, useComputed, useSignalEffect } from "@preact/signals";
 import { FeedUserData, getFeedTitle } from "../store/feed";
-import { archiveFeeds, handleExternalLink } from "../store/actions";
+import { archiveFeeds, fetchData, handleExternalLink } from "../store/actions";
 import Icon from "@mdi/react";
-import { mdiContentSave, mdiOpenInNew } from "@mdi/js";
+import { mdiContentSave, mdiDownload, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
 import { appState, lookupFeed } from "../store/state";
 
@@ -48,6 +48,7 @@ const archiveSequential = signal(false);
 const archiveInterval = signal("");
 const archiveIntervalError = signal(false);
 const archiveInProgress = signal(false);
+const fetchInProgress = signal(false);
 
 export default function FeedDialog() {
   const { open, feed, onSave } = appState.feedDialog;
@@ -92,6 +93,12 @@ export default function FeedDialog() {
     archiveInProgress.value = true;
     await archiveFeeds([feed.value.url]);
     archiveInProgress.value = false;
+  }
+
+  async function handleFetch() {
+    fetchInProgress.value = true;
+    await fetchData([feed.value]);
+    fetchInProgress.value = false;
   }
 
   // Reset local states when feed changes
@@ -168,10 +175,20 @@ export default function FeedDialog() {
                   <LoadingButton
                     loading={archiveInProgress.value}
                     loadingPosition="start"
-                    color="primary" onClick={handleArchive}
+                    color="primary"
+                    onClick={handleArchive}
                     startIcon={<Icon path={mdiContentSave} size={1} />}
                   >
                     <Box sx={{ mt: 0.2 }}>Archive</Box>
+                  </LoadingButton>
+                  <LoadingButton
+                    loading={fetchInProgress.value}
+                    loadingPosition="start"
+                    color="success"
+                    onClick={handleFetch}
+                    startIcon={<Icon path={mdiDownload} size={1} />}
+                  >
+                    <Box sx={{ mt: 0.2 }}>Fetch</Box>
                   </LoadingButton>
                 </Grid>
               </Grid>
