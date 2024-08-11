@@ -99,7 +99,6 @@ export default function Layout() {
         xs: "100%",
         sm: entryListWidth
       },
-      p: { xs: 0 },
     })
   }));
 
@@ -341,14 +340,19 @@ export default function Layout() {
             height: `calc(100vh - ${toolbarHeight})`,
             borderRight: `1px solid ${theme.palette.divider}`
           }}>
-            <EntryList />
+            <EntryList onClick={() => {
+              if (smallDevice) {
+                entryList.value = false;
+              }
+              scrollToTop();
+            }} />
           </Box>
         </Slide>
 
         <Box ref={entryRef} sx={{
           py: 4,
           px: {
-            xs: 2,
+            xs: entryList.value ? 0 : 2,
             sm: 4,
             md: 6,
             lg: 8

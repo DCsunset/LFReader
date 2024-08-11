@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField, Typography } from "@mui/material";
+import { Box, Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField, Theme, Typography } from "@mui/material";
 import { computedState, lookupFeed, appState } from "../store/state";
 import { getFeedTitle, toEntryId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
@@ -74,7 +74,9 @@ effect(() => {
   });
 });
 
-function EntryList() {
+function EntryList({ onClick }: {
+  onClick: () => any
+}) {
 	return (
     <Stack direction="column" sx={{ height: "100%" }}>
       {toolbar.value &&
@@ -138,7 +140,10 @@ function EntryList() {
           return (
             <ListItemButton
               key={entryId}
-              onClick={() => updateQueryParams({ entry: entryId })}
+              onClick={() => {
+                onClick();
+                updateQueryParams({ entry: entryId });
+              }}
               sx={{
                 flexDirection: "column",
                 justifyContent: "flex-start",
