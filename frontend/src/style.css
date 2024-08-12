@@ -18,6 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 body {
   margin: 0;
+  overflow-wrap: break-word;
 }
 
 code.hljs {
@@ -31,6 +32,10 @@ pre.hljs {
 /* prevent double padding */
 pre.hljs code.hljs {
   padding: 0;
+}
+
+pre {
+  font-size: 90%;
 }
 
 :not(pre) > code.hljs {
