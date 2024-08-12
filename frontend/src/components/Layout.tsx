@@ -148,6 +148,7 @@ export default function Layout() {
         <Toolbar variant="dense" sx={{ minHeight: toolbarHeight }}>
           <IconButton
             color="inherit"
+            title="Feed List"
             onClick={() => feedList.value = !feedList.value}
           >
             <Icon
@@ -191,7 +192,7 @@ export default function Layout() {
 
           <IconButton
             color="inherit"
-            title="Entry Panel"
+            title="Entry List"
             onClick={() => entryList.value = !entryList.value}
           >
             <Icon
@@ -287,7 +288,12 @@ export default function Layout() {
           flexGrow: 1,
           overflow: "auto"
         }}>
-          <FeedList />
+          <FeedList onClick={() => {
+            if (smallDevice) {
+              feedList.value = false;
+            }
+            entryList.value = true;
+          }} />
         </Box>
 
         <Stack direction="row-reverse" sx={{ m: 1.5 }}>

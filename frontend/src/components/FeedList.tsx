@@ -36,7 +36,9 @@ function confirmDeletion(feed: Feed) {
   });
 }
 
-function FeedList() {
+function FeedList({ onClick }: {
+  onClick: () => any
+}) {
   const feeds = computedState.filteredFeeds.value;
   const entries = appState.data.value.entries;
   const FeedItem = FeedItemComponent.value;
@@ -46,7 +48,12 @@ function FeedList() {
       <List sx={{ width: "100%" }}>
         <FeedItem
           sx={{ p: 1, pl: editing.value ? 10 : 4 }}
-          onClick={() => editing.value || updateQueryParams({}, true)}
+          onClick={() => {
+            if (!editing.value) {
+              onClick();
+              updateQueryParams({}, true);
+            }
+          }}
           selected={!selectedFeed.value}
         >
           <Box sx={{ flexGrow: 1 }}>All</Box>
@@ -66,7 +73,12 @@ function FeedList() {
               key={feedId}
               sx={{ p: 1, pl: editing.value ? 1 : 4 }}
               selected={selectedFeed.value === feed}
-              onClick={() => editing.value || updateQueryParams({ feed: feedId }, true)}
+              onClick={() => {
+                if (!editing.value) {
+                  onClick();
+                  updateQueryParams({ feed: feedId }, true);
+                }
+              }}
             >
               {editing.value &&
                 <Box sx={{ mr: 1.5 }}>
