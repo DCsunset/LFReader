@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.6.1](https://github.com/DCsunset/LFReader/compare/v2.6.0...v2.6.1) (2024-08-12)
+
+
+### Bug Fixes
+
+* **frontend:** adjust font size and fix text overflow ([529eef2](https://github.com/DCsunset/LFReader/commit/529eef21c79adf52133b6ce0f02ba3477a3dc878))
+* **frontend:** show entry list when clicking on a feed ([eacd3b3](https://github.com/DCsunset/LFReader/commit/eacd3b372f41bfaeb54fa5af3e9a9255b99cbd67))
+
 ## [2.6.0](https://github.com/DCsunset/LFReader/compare/v2.5.0...v2.6.0) (2024-08-11)
 
 
