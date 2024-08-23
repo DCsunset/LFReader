@@ -8,6 +8,7 @@ LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python 
 
 ## Features
 
+- Support for various feed formats: RSS, Atom, CDF, and JSON feeds
 - Local-first: Feeds and entries are stored in a sqlite3 database so that you can read local feeds even without Internet access. Futhermore, it supports archiving resources like images in the entries.
 - Dark mode support: Users can choose between light and dark modes
 - Flexible archiving options: User can use regex to filter the html tags and values when archiving
