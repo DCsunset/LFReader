@@ -81,12 +81,14 @@ export default function Entry() {
   // must use useEffect instead of signal effect because it needs the page to load first
   useEffect(() => {
     const element = entryRef.current;
+
     // element will only be null if entry is not defined
     if (element) {
       // render math formula
       renderMathInElement(element, {
         throwOnError: false
       });
+
       // highlight code on update
       element.querySelectorAll("pre code:not(.hljs)").forEach((el: HTMLElement) => {
         hljs.highlightElement(el);
@@ -97,19 +99,27 @@ export default function Entry() {
       element.querySelectorAll(".highlight pre, code:not(.hljs)").forEach((el: HTMLElement) => {
         el.classList.add("hljs")
       });
+
       // open link in external page
       element.querySelectorAll("a").forEach((el: HTMLElement) => {
-        const e = lookupEntry(el.getAttribute("href"));
-        if (e) {
-          // replace external link with internal link
-          el.setAttribute("href", `/?${new URLSearchParams({
-            ...appState.queryParams.value,
-            entry: toEntryId(e)
-          })}`);
-        } else {
-          el.setAttribute("target", "_blank");
+        try {
+          const url = new URL(el.getAttribute("href"));
+          const e = lookupEntry(url.origin);
+          if (e) {
+            // replace external link with internal link
+            el.setAttribute("href", `/?${new URLSearchParams({
+              ...appState.queryParams.value,
+              entry: toEntryId(e)
+            })}${url.hash}`);
+          }
+          else {
+            el.setAttribute("target", "_blank");
+            el.addEventListener("click", handleExternalLink);
+          }
         }
-        el.addEventListener("click", handleExternalLink);
+        catch (_) {
+          // do nothing for relative link (including hash)
+        }
       });
     }
   }, [entry]);
