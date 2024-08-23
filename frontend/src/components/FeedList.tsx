@@ -24,7 +24,6 @@ import Icon from '@mdi/react';
 
 const selectedFeed = computedState.selectedFeed;
 const editing = appState.ui.editingFeeds;
-const FeedItemComponent = computed(() => editing.value ? ListItem : ListItemButton);
 
 function confirmDeletion(feed: Feed) {
   batch(() => {
@@ -41,18 +40,15 @@ function FeedList({ onClick }: {
 }) {
   const feeds = computedState.filteredFeeds.value;
   const entries = appState.data.value.entries;
-  const FeedItem = FeedItemComponent.value;
 
 	return (
     <>
       <List sx={{ width: "100%" }}>
-        <FeedItem
+        <ListItemButton
           sx={{ p: 1, pl: editing.value ? 10 : 4 }}
           onClick={() => {
-            if (!editing.value) {
-              onClick();
-              updateQueryParams({}, true);
-            }
+            onClick();
+            updateQueryParams({}, true);
           }}
           selected={!selectedFeed.value}
         >
@@ -65,19 +61,17 @@ function FeedList({ onClick }: {
           }}>
             ({entries.length})
           </Box>
-        </FeedItem>
+        </ListItemButton>
         {feeds.map(feed => {
           const feedId = toFeedId(feed);
           return (
-            <FeedItem
+            <ListItemButton
               key={feedId}
               sx={{ p: 1, pl: editing.value ? 1 : 4 }}
               selected={selectedFeed.value === feed}
               onClick={() => {
-                if (!editing.value) {
-                  onClick();
-                  updateQueryParams({ feed: feedId }, true);
-                }
+                onClick();
+                updateQueryParams({ feed: feedId }, true);
               }}
             >
               {editing.value &&
@@ -134,7 +128,7 @@ function FeedList({ onClick }: {
               }}>
                 ({entries.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
               </Box>
-            </FeedItem>
+            </ListItemButton>
           );
         })}
       </List>
