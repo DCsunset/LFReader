@@ -19,19 +19,11 @@ import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
 import { Route, Router } from "preact-router";
 import { useEffect } from "preact/hooks";
 import Layout from './components/Layout';
-import { appState } from "./store/state";
+import { appState, QueryParams } from "./store/state";
 import { grey } from "@mui/material/colors";
 
-interface PageProps {
-  // query paramters (from preact-router)
-  matches: {
-    feed_tag?: string,
-    feed?: string,
-    entry?: string
-  },
-};
-
-function Page(props: PageProps) {
+// update query paramters (from preact-router)
+function Page(props: { matches: QueryParams }) {
   useEffect(() => {
     appState.queryParams.value = props.matches;
   }, [props.matches]);
