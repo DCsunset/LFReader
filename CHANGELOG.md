@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.6.2](https://github.com/DCsunset/LFReader/compare/v2.6.1...v2.6.2) (2024-08-24)
+
+
+### Bug Fixes
+
+* **backend:** delete partial download to prevent propagating corruption ([0f21f2e](https://github.com/DCsunset/LFReader/commit/0f21f2e7be6f918cabaac6e827a365520128c5cf))
+* **frontend:** allow switching feed in editing mode ([58b9dbd](https://github.com/DCsunset/LFReader/commit/58b9dbdff73262cf52c36b530e9a049d28769394))
+* **frontend:** fix link rewrite by allowing local links with hash ([0f63b86](https://github.com/DCsunset/LFReader/commit/0f63b86537d3951f869330e68653322977b04092))
+* **frontend:** move delete action to feed settings ([e3eb6e0](https://github.com/DCsunset/LFReader/commit/e3eb6e058afb3114c3dfa1778216670f9e296b24))
+* **frontend:** remove redundant type definition ([b6bc4fd](https://github.com/DCsunset/LFReader/commit/b6bc4fdaafe35edf230ec6cef5321b6a417275cb))
+
+
+### Misc
+
+* add feed formats in readme ([823495d](https://github.com/DCsunset/LFReader/commit/823495d0b4ddf8c1a853c1ae52546d662847dd3f))
+
 ## [2.6.1](https://github.com/DCsunset/LFReader/compare/v2.6.0...v2.6.1) (2024-08-12)
 
 
