@@ -31,11 +31,11 @@ import {
   TextField,
   Typography
 } from "@mui/material";
-import { batch, signal, useComputed, useSignalEffect } from "@preact/signals";
-import { FeedUserData, getFeedTitle } from "../store/feed";
-import { archiveFeeds, fetchData, handleExternalLink } from "../store/actions";
+import { batch, computed, effect, signal } from "@preact/signals";
+import { Feed, FeedUserData, getFeedTitle } from "../store/feed";
+import { archiveFeeds, deleteFeed, fetchData, handleExternalLink } from "../store/actions";
 import Icon from "@mdi/react";
-import { mdiContentSave, mdiDownload, mdiOpenInNew } from "@mdi/js";
+import { mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
 import { appState, lookupFeed } from "../store/state";
 
@@ -49,61 +49,77 @@ const archiveInterval = signal("");
 const archiveIntervalError = signal(false);
 const archiveInProgress = signal(false);
 const fetchInProgress = signal(false);
+const deleteInProgress = signal(false);
+
+const { open, feed } = appState.feedDialog;
+const existing = computed(() => Boolean(lookupFeed(feed.value?.url)));
+
+const close = () => {
+  open.value = false;
+};
+// reset local states
+const reset = () => {
+  // subscribe to feed
+  const f = feed.value;
+  batch(() => {
+    alias.value = f?.user_data.alias ?? "";
+    baseUrl.value = f?.user_data.base_url ?? "";
+    afterDate.value = f?.user_data.after_date ?? "";
+    archiveBlacklist.value = f?.user_data.archive_blacklist ?? "";
+    archiveSequential.value = f?.user_data.archive_sequential ?? false;
+    archiveInterval.value = f?.user_data.archive_interval?.toString() ?? "";
+    archiveIntervalError.value = false;
+  });
+};
+const save = async () => {
+  // No need to update the feed signal as no UI depends on user_data
+  const userData: FeedUserData = {
+    ...(feed.value?.user_data || {}),
+    alias: alias.value || undefined,
+    base_url: baseUrl.value || undefined,
+    after_date: afterDate.value || undefined,
+    archive_blacklist: archiveBlacklist.value || undefined,
+    archive_sequential: archiveSequential.value || undefined,
+    archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined
+  };
+  // Must load onSave here to keep it up ot date
+  const ok = await appState.feedDialog.onSave(feed.value, userData);
+  if (ok) {
+    close();
+  }
+};
+
+async function handleArchive() {
+  archiveInProgress.value = true;
+  await archiveFeeds([feed.value.url]);
+  archiveInProgress.value = false;
+}
+
+async function handleFetch() {
+  fetchInProgress.value = true;
+  await fetchData([feed.value]);
+  fetchInProgress.value = false;
+}
+
+function handleDelete() {
+  batch(() => {
+    appState.confirmation.open.value = true;
+    appState.confirmation.content.value = <>Confirm deletion of feed <em>{getFeedTitle(feed.value)}</em>?</>;
+    appState.confirmation.onConfirm = async () => {
+      deleteInProgress.value = true;
+      await deleteFeed(feed.value.url);
+      batch(() => {
+        close();
+        deleteInProgress.value = false;
+      });
+    };
+  });
+}
+
+// Reset local states when feed changes
+effect(reset);
 
 export default function FeedDialog() {
-  const { open, feed, onSave } = appState.feedDialog;
-  const existing = useComputed(() => Boolean(lookupFeed(feed.value?.url)));
-
-  // reset local states
-  const reset = () => {
-    // subscribe to feed
-    const f = feed.value;
-    batch(() => {
-      alias.value = f?.user_data.alias ?? "";
-      baseUrl.value = f?.user_data.base_url ?? "";
-      afterDate.value = f?.user_data.after_date ?? "";
-      archiveBlacklist.value = f?.user_data.archive_blacklist ?? "";
-      archiveSequential.value = f?.user_data.archive_sequential ?? false;
-      archiveInterval.value = f?.user_data.archive_interval?.toString() ?? "";
-      archiveIntervalError.value = false;
-    });
-  };
-  const close = () => {
-    open.value = false;
-  };
-
-  const save = async () => {
-    // No need to update the feed signal as no UI depends on user_data
-    const userData: FeedUserData = {
-      ...(feed.value?.user_data || {}),
-      alias: alias.value || undefined,
-      base_url: baseUrl.value || undefined,
-      after_date: afterDate.value || undefined,
-      archive_blacklist: archiveBlacklist.value || undefined,
-      archive_sequential: archiveSequential.value || undefined,
-      archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined
-    };
-    const ok = await onSave(feed.value, userData);
-    if (ok) {
-      close();
-    }
-  };
-
-  async function handleArchive() {
-    archiveInProgress.value = true;
-    await archiveFeeds([feed.value.url]);
-    archiveInProgress.value = false;
-  }
-
-  async function handleFetch() {
-    fetchInProgress.value = true;
-    await fetchData([feed.value]);
-    fetchInProgress.value = false;
-  }
-
-  // Reset local states when feed changes
-  useSignalEffect(reset);
-
   return (
     <Dialog
       open={open.value}
@@ -189,6 +205,15 @@ export default function FeedDialog() {
                     startIcon={<Icon path={mdiDownload} size={1} />}
                   >
                     <Box sx={{ mt: 0.2 }}>Fetch</Box>
+                  </LoadingButton>
+                  <LoadingButton
+                    loading={deleteInProgress.value}
+                    loadingPosition="start"
+                    color="error"
+                    onClick={handleDelete}
+                    startIcon={<Icon path={mdiDelete} size={1} />}
+                  >
+                    <Box sx={{ mt: 0.2 }}>Delete</Box>
                   </LoadingButton>
                 </Grid>
               </Grid>

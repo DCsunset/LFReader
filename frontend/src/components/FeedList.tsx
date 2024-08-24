@@ -14,26 +14,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, IconButton, List, ListItem, ListItemButton } from "@mui/material";
+import { Box, IconButton, List, ListItemButton } from "@mui/material";
 import { computedState, appState } from "../store/state";
-import { Feed, getFeedTitle, toFeedId } from "../store/feed";
-import { deleteFeed, updateFeed, updateQueryParams } from "../store/actions";
-import { batch, computed } from "@preact/signals";
-import { mdiDelete, mdiLeadPencil } from "@mdi/js";
+import { getFeedTitle, toFeedId } from "../store/feed";
+import { updateFeed, updateQueryParams } from "../store/actions";
+import { batch } from "@preact/signals";
+import { mdiLeadPencil } from "@mdi/js";
 import Icon from '@mdi/react';
 
 const selectedFeed = computedState.selectedFeed;
 const editing = appState.ui.editingFeeds;
-
-function confirmDeletion(feed: Feed) {
-  batch(() => {
-    appState.confirmation.open.value = true;
-    appState.confirmation.content.value = <>Confirm deletion of feed <em>{getFeedTitle(feed)}</em>?</>;
-    appState.confirmation.onConfirm = () => {
-      deleteFeed(feed.url);
-    };
-  });
-}
 
 function FeedList({ onClick }: {
   onClick: () => any
@@ -45,7 +35,7 @@ function FeedList({ onClick }: {
     <>
       <List sx={{ width: "100%" }}>
         <ListItemButton
-          sx={{ p: 1, pl: editing.value ? 10 : 4 }}
+          sx={{ p: 1, pl: editing.value ? 6 : 4 }}
           onClick={() => {
             onClick();
             updateQueryParams({}, true);
@@ -76,15 +66,6 @@ function FeedList({ onClick }: {
             >
               {editing.value &&
                 <Box sx={{ mr: 1.5 }}>
-                  <IconButton
-                    size="small"
-                    color="error"
-                    sx={{ p: 0.5 }}
-                    onClick={() => confirmDeletion(feed)}
-                  >
-                    <Icon path={mdiDelete} size={0.9} />
-                  </IconButton>
-
                   <IconButton
                     size="small"
                     color="inherit"
