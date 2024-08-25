@@ -29,7 +29,7 @@ class Config(BaseModel):
   db_file: str = "db.sqlite"
   # user agent used to fetch feeds and resources
   user_agent: str | None = None
-  # timeout for http requests in seconds
+  # timeout for establishing connection (in seconds)
   timeout: int = 10
   log_level: str = "info"
   archiver: ArchiverConfig = ArchiverConfig()

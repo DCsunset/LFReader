@@ -115,7 +115,7 @@ class Storage:
     self.headers = {}
     if config.user_agent is not None:
       self.headers["User-Agent"] = config.user_agent
-    self.timeout = aiohttp.ClientTimeout(total=config.timeout)
+    self.timeout = aiohttp.ClientTimeout(sock_connect=config.timeout)
 
   def init_db(self):
     try:

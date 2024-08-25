@@ -134,7 +134,7 @@ class Archiver:
         resource_path.unlink(missing_ok=True)
 
         retry_status = "Retrying..." if i != self.cfg.retry_attempts - 1 else "All retries failed."
-        logging.warn(f"Failed to fetch resource from {url} ({user_base_url}, {base_url}, {src}): {str(e)}")
+        logging.warn(f"Failed to fetch resource from {url} ({user_base_url}, {base_url}, {src}): {type(e).__name__}: {str(e)}")
         if i != self.cfg.retry_attempts - 1:
           logging.info(f"Retrying to fetch resource from {url} ({user_base_url}, {base_url}, {src})...")
           await asyncio.sleep(
