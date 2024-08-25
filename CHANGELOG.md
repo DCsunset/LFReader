@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.6.3](https://github.com/DCsunset/LFReader/compare/v2.6.2...v2.6.3) (2024-08-25)
+
+
+### Bug Fixes
+
+* **backend:** fix timeout config and improve error logging ([fb04e2a](https://github.com/DCsunset/LFReader/commit/fb04e2a1d37e5a4dd3310333dd2e9dfa652549a3))
+
 ## [2.6.2](https://github.com/DCsunset/LFReader/compare/v2.6.1...v2.6.2) (2024-08-24)
 
 
