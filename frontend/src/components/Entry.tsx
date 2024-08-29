@@ -14,21 +14,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { createRef } from "preact";
 import { computed, signal } from "@preact/signals";
+import { createRef } from "preact";
 import { appState, computedState, lookupEntry, lookupFeed  } from "../store/state";
 import { Enclosure, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
-import { Box, Collapse, Divider, List, ListItem, Typography } from "@mui/material";
 import Icon from "@mdi/react";
-import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiRss } from "@mdi/js";
-import { displayDate } from "../utils/date";
-import { useEffect } from "preact/hooks";
 import renderMathInElement from "katex/contrib/auto-render";
 import hljs from "highlight.js";
 import "katex/dist/katex.css";
 import "highlight.js/styles/base16/tomorrow-night.css";
 import { anchorNoStyle } from "../utils/styles";
 import { handleExternalLink } from "../store/actions";
+import { displayDate } from "../utils/date";
+import MediaPlayer from "./MediaPlayer";
+import { useEffect } from "preact/hooks";
+import { Box, Collapse, Divider, List, ListItem, Typography } from "@mui/material";
+import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiRss } from "@mdi/js";
 
 hljs.configure({
   // prevent logging the errors in console
@@ -49,22 +50,23 @@ const currentEntryId = computed(() => {
 })
 const entryRef = createRef<HTMLElement>();
 
+
 function EnclosureView({ value }: { value: Enclosure }) {
   if (value.type.startsWith("image/")) {
     return <img src={value.href} />;
   }
   else if (value.type.startsWith("audio/")) {
     return (
-      <audio controls>
+      <MediaPlayer video={false}>
         <source src={value.href} type={value.type} />
-      </audio>
+      </MediaPlayer>
     );
   }
   else if (value.type.startsWith("video/")) {
     return (
-      <video controls>
+      <MediaPlayer video={true}>
         <source src={value.href} type={value.type} />
-      </video>
+      </MediaPlayer>
     );
   }
   else {
