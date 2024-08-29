@@ -70,7 +70,7 @@ export default function MediaPlayer(props: {
         ? <video ref={mediaRef} controls>{props.children}</video>
         : <audio ref={mediaRef} controls>{props.children}</audio>}
 
-      <IconButton onClick={handleSettingsClick}>
+      <IconButton onClick={handleSettingsClick} title="Settings">
         <Icon path={mdiCog} size={1} />
       </IconButton>
       <Menu
@@ -86,11 +86,11 @@ export default function MediaPlayer(props: {
           <span>Speed</span>
           <div className="flex grow" />
 
-          <IconButton onClick={decreaseSpeed}>
+          <IconButton onClick={decreaseSpeed} title="Decrease 0.1x">
             <Icon path={mdiMinus} size={0.8} />
           </IconButton>
           <span>{speedStr}</span>
-          <IconButton onClick={increaseSpeed}>
+          <IconButton onClick={increaseSpeed} title="Increase 0.1x">
             <Icon path={mdiPlus} size={0.8} />
           </IconButton>
         </ListItem>
@@ -100,10 +100,10 @@ export default function MediaPlayer(props: {
           <span>Seek</span>
           <div className="flex grow" />
 
-          <IconButton onClick={rewind}>
+          <IconButton onClick={rewind} title="Rewind 10s">
             <Icon path={mdiRewind10} size={0.9} />
           </IconButton>
-          <IconButton onClick={fastForward}>
+          <IconButton onClick={fastForward} title="Fast-forward 10s">
             <Icon path={mdiFastForward10} size={0.9} />
           </IconButton>
         </ListItem>
@@ -113,11 +113,11 @@ export default function MediaPlayer(props: {
           <span>Volume</span>
           <div className="flex grow" />
 
-          <IconButton onClick={decreaseVolume}>
+          <IconButton onClick={decreaseVolume} title="Decrease 5%">
             <Icon path={mdiMinus} size={0.8} />
           </IconButton>
           <span>{volumeStr}</span>
-          <IconButton onClick={increaseVolume}>
+          <IconButton onClick={increaseVolume} title="Increase 5%">
             <Icon path={mdiPlus} size={0.8} />
           </IconButton>
         </ListItem>
