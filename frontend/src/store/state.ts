@@ -129,11 +129,11 @@ const entryMap = computed(
 );
 
 export function lookupFeed(url?: string) {
-  return url && feedMap.value.get(url);
+  return url ? feedMap.value.get(url) : undefined;
 }
 
 export function lookupEntry(url?: string) {
-  return url && entryMap.value.get(url);
+  return url ? entryMap.value.get(url) : undefined;
 }
 
 export function fromEntryId(entry_id: string) {
@@ -207,7 +207,7 @@ const filteredEntries = computed(() => {
     v => (
       selectedFeedUrl
         ? v.feed_url === selectedFeedUrl
-        : urls.has(v.feed_url)
+        : Boolean(urls?.has(v.feed_url))
     ),
     // filter by entryTitle
     v => !entryTitleRe || entryTitleRe.test(getEntryTitle(v))
@@ -218,7 +218,7 @@ const filteredEntries = computed(() => {
 
 export const computedState = {
   page: computed(() => {
-    const pageInt = parseInt(appState.queryParams.value.page);
+    const pageInt = parseInt(appState.queryParams.value.page ?? "1");
     return pageInt > 0 ? pageInt : 1;
   }),
   feedTags: computed(() => getTags(appState.data.value.feeds)),

@@ -92,26 +92,23 @@ export default function Entry() {
       });
 
       // highlight code on update
-      element.querySelectorAll("pre code:not(.hljs)").forEach((el: HTMLElement) => {
-        hljs.highlightElement(el);
+      element.querySelectorAll("pre code:not(.hljs)").forEach(el => {
+        hljs.highlightElement(el as HTMLElement);
       });
-      element.querySelectorAll("pre code:not(.hljs)").forEach((el: HTMLElement) => {
-        hljs.highlightElement(el);
-      });
-      element.querySelectorAll(".highlight pre, code:not(.hljs)").forEach((el: HTMLElement) => {
-        el.classList.add("hljs")
+      element.querySelectorAll(".highlight pre, code:not(.hljs)").forEach(el => {
+        el.classList.add("hljs");
       });
 
       // open link in external page
       element.querySelectorAll("a").forEach((el: HTMLElement) => {
         try {
-          const url = new URL(el.getAttribute("href"));
+          const url = new URL(el.getAttribute("href") || "");
           const e = lookupEntry(url.origin);
           if (e) {
             // replace external link with internal link
             el.setAttribute("href", `/?${new URLSearchParams({
               ...appState.queryParams.value,
-              entry: toEntryId(e)
+              entry: toEntryId(e)!
             })}${url.hash}`);
           }
           else {
@@ -185,7 +182,7 @@ export default function Entry() {
               </>
             }
           </Typography>
-          {entry.enclosures.length > 0 &&
+          {entry.enclosures?.length &&
             <>
               <Typography variant="info" sx={{ display: "flex" }} onClick={() => showEnclosures.value = !showEnclosures.value}>
                 <Icon

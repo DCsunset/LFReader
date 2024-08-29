@@ -1,6 +1,6 @@
 import { mdiCog, mdiFastForward10, mdiMinus, mdiPlus, mdiRewind10, mdiSpeedometer, mdiSwapHorizontal, mdiVolumeHigh } from "@mdi/js";
 import Icon from "@mdi/react";
-import { Box, IconButton, ListItem, Menu } from "@mui/material";
+import { IconButton, ListItem, Menu } from "@mui/material";
 import { batch, computed } from "@preact/signals";
 import { signal } from "@preact/signals";
 

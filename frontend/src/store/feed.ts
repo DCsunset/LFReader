@@ -74,8 +74,8 @@ export function toFeedId(feed: Feed) {
   return Base64.encode(feed.url, true);
 }
 
-export function toEntryId(entry: Entry) {
-  return Base64.encode(JSON.stringify([entry.feed_url, entry.id]), true);
+export function toEntryId(entry?: Entry) {
+  return entry && Base64.encode(JSON.stringify([entry.feed_url, entry.id]), true);
 }
 
 export function getEntryTitle(entry?: Entry, fallback: string = "(No Title)") {

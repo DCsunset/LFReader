@@ -375,12 +375,7 @@ export default function Layout() {
           <Fab
             size="small"
             title="Scroll to top"
-            sx={{
-              // position: "absolute",
-              position: "fixed",
-              bottom: theme => theme.spacing(3),
-              right: theme => theme.spacing(3)
-            }}
+            className="!fixed bottom-5 right-5"
             onClick={scrollToTop}
           >
             <Icon path={mdiArrowCollapseUp} size={0.9} />
