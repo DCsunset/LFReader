@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField, Theme, Typography } from "@mui/material";
+import { Box, Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField } from "@mui/material";
 import { computedState, lookupFeed, appState } from "../store/state";
 import { getFeedTitle, toEntryId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
@@ -152,14 +152,7 @@ function EntryList({ onClick }: {
               }}
               selected={selectedEntry.value === e}
             >
-              <Typography variant="body2" sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                mb: 0.5,
-                opacity: 0.8,
-                fontWeight: 500,
-                width: "100%"
-              }}>
+              <div className="text-sm inline-flex item center mb-1 opacity-80 font-medium w-full">
                 {/* TODO: Used for unread entries
                 <Box sx={{ mr: 1 }}>
                   <Icon path={mdiCircle} size={0.4} />
@@ -177,8 +170,8 @@ function EntryList({ onClick }: {
                 <Box>
                   {displayDateDiff(e.published_at ?? e.updated_at ?? e.server_data.added_at)}
                 </Box>
-              </Typography>
-              <Box>{e.title || "(No Title)"}</Box>
+              </div>
+              <div>{e.title || "(No Title)"}</div>
             </ListItemButton>
           )
         })}
