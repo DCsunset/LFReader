@@ -174,7 +174,7 @@ export default function Entry() {
               </>
             }
           </Typography>
-          {(entry.enclosures?.length ?? 0) > 0 &&
+          {entry.enclosures && entry.enclosures.length > 0 &&
             <>
               <Typography variant="info" sx={{ display: "flex" }} onClick={() => showEnclosures.value = !showEnclosures.value}>
                 <Icon
@@ -194,7 +194,7 @@ export default function Entry() {
               <Collapse in={showEnclosures.value}>
                 <List>
                   {entry.enclosures.map(e => (
-                    <ListItem key={e.href} dense>
+                    <ListItem key={e.href} dense className="overflow-x-scroll overflow-y-hidden">
                       <EnclosureView value={e} />
                     </ListItem>
                   ))}
