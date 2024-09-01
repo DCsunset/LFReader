@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.7.0](https://github.com/DCsunset/LFReader/compare/v2.6.3...v2.7.0) (2024-09-01)
+
+
+### Features
+
+* **frontend:** add custom media player for better controls ([c8dcf8c](https://github.com/DCsunset/LFReader/commit/c8dcf8c6a4f0cf95f672ac338ae314dd3a0f6768))
+* **frontend:** add unocss ([eb28da1](https://github.com/DCsunset/LFReader/commit/eb28da1b87818462a497119e5b27bfd86ce32627))
+* **frontend:** use media-chrome as media player ([79d9fd6](https://github.com/DCsunset/LFReader/commit/79d9fd64b253423fcf45fbdbc3f3821447b04c5d))
+
+
+### Bug Fixes
+
+* **frontend:** add title to media control buttons ([b8c8e22](https://github.com/DCsunset/LFReader/commit/b8c8e224fd921e9b1f048a7a0dc3921ad061a7b0))
+* **frontend:** update dependencies and fix some styles ([f9b0565](https://github.com/DCsunset/LFReader/commit/f9b05652a1f168affe34fd99820563b72b950a34))
+
+
+### Misc
+
+* **frontend:** enable strict type check ([8681f9e](https://github.com/DCsunset/LFReader/commit/8681f9ec7942de9e83d8da6702d47175adab192c))
+
 ## [2.6.3](https://github.com/DCsunset/LFReader/compare/v2.6.2...v2.6.3) (2024-08-25)
 
 
