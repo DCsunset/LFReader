@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.7.1](https://github.com/DCsunset/LFReader/compare/v2.7.0...v2.7.1) (2024-09-01)
+
+
+### Bug Fixes
+
+* **frontend:** remove redundant number in entry ([f86d8a1](https://github.com/DCsunset/LFReader/commit/f86d8a10f902019757582b89b2b033845d115540))
+
 ## [2.7.0](https://github.com/DCsunset/LFReader/compare/v2.6.3...v2.7.0) (2024-09-01)
 
 
