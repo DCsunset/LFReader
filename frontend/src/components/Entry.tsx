@@ -56,18 +56,10 @@ function EnclosureView({ value }: { value: Enclosure }) {
     return <img src={value.href} />;
   }
   else if (value.type.startsWith("audio/")) {
-    return (
-      <MediaPlayer video={false}>
-        <source src={value.href} type={value.type} />
-      </MediaPlayer>
-    );
+    return <MediaPlayer audio src={value.href} />;
   }
   else if (value.type.startsWith("video/")) {
-    return (
-      <MediaPlayer video={true}>
-        <source src={value.href} type={value.type} />
-      </MediaPlayer>
-    );
+    return <MediaPlayer src={value.href} />;
   }
   else {
     return <a href={value.href}>{value.href}</a>;

@@ -20,6 +20,7 @@
 		"js-base64": "^3.7.7",
 		"katex": "^0.16.11",
 		"luxon": "^3.5.0",
+		"media-chrome": "^4.1.0",
 		"notistack": "^3.0.1",
 		"preact": "^10.23.2",
 		"preact-router": "^4.1.2"
