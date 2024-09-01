@@ -174,7 +174,7 @@ export default function Entry() {
               </>
             }
           </Typography>
-          {entry.enclosures?.length &&
+          {(entry.enclosures?.length ?? 0) > 0 &&
             <>
               <Typography variant="info" sx={{ display: "flex" }} onClick={() => showEnclosures.value = !showEnclosures.value}>
                 <Icon
