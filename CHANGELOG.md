@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.7.2](https://github.com/DCsunset/LFReader/compare/v2.7.1...v2.7.2) (2024-09-02)
+
+
+### Bug Fixes
+
+* **frontend:** allow scrolling when media player overflows ([6248dd4](https://github.com/DCsunset/LFReader/commit/6248dd4091dfaa8f6e829ac6a3bfc5bb2e1d33ba))
+
 ## [2.7.1](https://github.com/DCsunset/LFReader/compare/v2.7.0...v2.7.1) (2024-09-01)
 
 
