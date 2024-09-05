@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.7.3](https://github.com/DCsunset/LFReader/compare/v2.7.2...v2.7.3) (2024-09-05)
+
+
+### Bug Fixes
+
+* **frontend:** add more playback rates and disable selection for media ([20696a4](https://github.com/DCsunset/LFReader/commit/20696a4c68e92fec5d2e23a546250fd272cac164))
+
 ## [2.7.2](https://github.com/DCsunset/LFReader/compare/v2.7.1...v2.7.2) (2024-09-02)
 
 
