@@ -37,7 +37,8 @@ export type Settings = {
   pageSize: number,
   archive: boolean,
   forceArchive: boolean,
-  confirmOnExternalLink: boolean
+  confirmOnExternalLink: boolean,
+  playbackRates?: string[]
 };
 
 export type QueryParams = {

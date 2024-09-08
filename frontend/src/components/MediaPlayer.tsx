@@ -1,17 +1,14 @@
 import { MediaControlBar, MediaController, MediaFullscreenButton, MediaMuteButton, MediaPlaybackRateButton, MediaPlayButton, MediaSeekBackwardButton, MediaSeekForwardButton, MediaTimeDisplay, MediaTimeRange, MediaVolumeRange } from "media-chrome/react";
-import { RefCallback } from "preact";
-
-const playbackRateRefCallback: RefCallback<HTMLElement> = el => {
-  // HACK: set attr correctly as Preact doesn't support it well yet
-  // See https://github.com/preactjs/preact/issues/4486
-  el?.setAttribute("rates", "1.1 1.2 1.3 1.4 1.5 1.75 2");
-};
+import { appState } from "../store/state";
 
 export default function MediaPlayer(props: {
   audio?: boolean
   src: string
 }) {
   const mediaProps = { slot: "media", src: props.src };
+  // this causes re-render after rates change
+  const rates = appState.settings.value.playbackRates;
+
   return (
     // disable selection to prevent select on double click for mobile devices
     <MediaController audio={props.audio} className="select-none">
@@ -27,7 +24,16 @@ export default function MediaPlayer(props: {
         <MediaVolumeRange />
         <MediaSeekForwardButton seekOffset="10" />
         <MediaSeekBackwardButton seekOffset="10" />
-        <MediaPlaybackRateButton ref={playbackRateRefCallback as any} />
+        <MediaPlaybackRateButton ref={(el: any) => {
+          // HACK: set attr correctly as Preact doesn't support it well yet
+          // See https://github.com/preactjs/preact/issues/4486
+          if (rates) {
+            el?.setAttribute("rates", rates.join(" "));
+          }
+          else {
+            el?.removeAttribute("rates");
+          }
+        }} />
         {!props.audio &&
           <MediaFullscreenButton />}
       </MediaControlBar>
