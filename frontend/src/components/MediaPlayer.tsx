@@ -20,8 +20,6 @@ export default function MediaPlayer(props: {
         <MediaPlayButton />
         <MediaTimeRange />
         <MediaTimeDisplay showDuration />
-        <MediaMuteButton />
-        <MediaVolumeRange />
         <MediaSeekForwardButton seekOffset="10" />
         <MediaSeekBackwardButton seekOffset="10" />
         <MediaPlaybackRateButton ref={(el: any) => {
@@ -34,6 +32,8 @@ export default function MediaPlayer(props: {
             el?.removeAttribute("rates");
           }
         }} />
+        <MediaMuteButton />
+        <MediaVolumeRange />
         {!props.audio &&
           <MediaFullscreenButton />}
       </MediaControlBar>
