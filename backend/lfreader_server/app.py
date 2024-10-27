@@ -30,9 +30,20 @@ import traceback
 import uvicorn
 import json
 from enum import Enum
+import asyncio
 
 from .storage import Storage
 from .config import Config
+
+# App state
+class Status(BaseModel):
+  loading: bool
+
+class State:
+  status: Status
+  def __init__(self):
+    self.status = Status(loading=False)
+
 
 try:
   config_file = os.getenv("LFREADER_CONFIG", "")
@@ -50,6 +61,19 @@ if config_file:
   logging.info(f"Config file loaded: {config_file}")
 
 app = FastAPI(root_path="/api", docs_url=None, redoc_url=None)
+state = State()
+storage = Storage(config)
+
+async def taskRunner(task):
+  state.status.loading = True
+  await task
+  state.status.loading = False
+
+def runLoadingTask(task):
+  if state.status.loading:
+    raise HTTPException(status_code=409, detail="Server is already loading data")
+  asyncio.create_task(taskRunner(task))
+
 
 # self-host js and css assets for Swagger UI
 @app.get("/docs", include_in_schema=False)
@@ -68,7 +92,13 @@ async def swagger_ui_redirect():
     return get_swagger_ui_oauth2_redirect_html()
 
 
-storage = Storage(config)
+"""
+Get status of server
+"""
+@app.get("/status")
+async def get_feeds_api() -> Status:
+  return state.status
+
 
 """
 Get feeds from local database
@@ -123,7 +153,7 @@ Fetch feeds and their entries from origin (can be new feeds)
 """
 @app.post("/")
 async def fetch_api(args: FetchArgs):
-  await storage.fetch_feeds(args.feeds, args.archive, args.force_archive, args.ignore_error)
+  runLoadingTask(storage.fetch_feeds(args.feeds, args.archive, args.force_archive, args.ignore_error))
   return {}
 
 """
@@ -147,7 +177,7 @@ Update (re-archive) feeds and entries in db
 async def patch_api(args: ArchiveArgs):
   match args.operation:
     case "archive":
-      await storage.archive_feeds(args.feed_urls)
+      runLoadingTask(storage.archive_feeds(args.feed_urls))
     case _:
       raise HTTPException(status_code=400, detail=f"Invalid operation: {args.operation}")
   return {}
