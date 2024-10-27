@@ -101,6 +101,9 @@ export const appState = {
     feeds: [] as Feed[],
     entries: [] as Entry[]
   }),
+  status: {
+    loading: signal(false)
+  },
   // query parameters from url
   queryParams: signal<QueryParams>({}),
   notification: signal<Notification | null>(null),

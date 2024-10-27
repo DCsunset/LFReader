@@ -54,7 +54,6 @@ const allRates = signal(appState.settings.value.playbackRates ?? []);
 const archive = signal(appState.settings.value.archive);
 const forceArchive = signal(appState.settings.value.forceArchive);
 const confirmOnExternalLink = signal(appState.settings.value.confirmOnExternalLink);
-const archiveInProgress = signal(false);
 
 // reset local states
 const reset = () => {
@@ -87,12 +86,6 @@ export default function SettingsDialog({ open }: {
       });
     }
   };
-
-  async function handleArchive() {
-    archiveInProgress.value = true;
-    await archiveFeeds();
-    archiveInProgress.value = false;
-  }
 
   return (
     <Dialog
@@ -241,9 +234,9 @@ export default function SettingsDialog({ open }: {
               </Grid>
               <Grid item>
                 <LoadingButton
-                  loading={archiveInProgress.value}
+                  loading={appState.status.loading.value}
                   loadingPosition="start"
-                  color="primary" onClick={handleArchive}
+                  color="primary" onClick={archiveFeeds}
                   startIcon={<Icon path={mdiContentSave} size={1} />}
                 >
                   <Box sx={{ mt: 0.2 }}>Archive</Box>

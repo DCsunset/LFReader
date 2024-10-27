@@ -41,7 +41,7 @@ const dark = computed(() => appState.settings.value.dark);
 const settingsDialog = signal(false);
 const feedsDialog = signal(false);
 const editing = appState.ui.editingFeeds;
-const fetchDataInProgress = signal(false);
+const loading = appState.status.loading;
 const loadDataInProgress = signal(false);
 
 const selectedFeed = computedState.selectedFeed;
@@ -108,12 +108,6 @@ export default function Layout() {
       dark: !dark.value
     };
   };
-
-  async function handleFetchData() {
-    fetchDataInProgress.value = true;
-    await fetchData();
-    fetchDataInProgress.value = false;
-  }
 
   async function handleLoadData() {
     loadDataInProgress.value = true;
@@ -251,10 +245,10 @@ export default function Layout() {
             size="small"
             color="inherit"
             title="Fetch feeds from origin"
-            onClick={handleFetchData}
-            disabled={fetchDataInProgress.value}
+            onClick={fetchData}
+            disabled={loading.value}
           >
-            {fetchDataInProgress.value
+            {loading.value
               ? <CircularProgress color="inherit" size={24} />
               : <Icon path={mdiDownload} size={1} />
             }

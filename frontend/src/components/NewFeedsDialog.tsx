@@ -29,7 +29,7 @@ const feeds = signal<Feed[]>([]);
 // current unadded feed url
 const feedUrl = signal("");
 const feedUrlError = signal("");
-const fetchDataInProgress = signal(false);
+const loading = appState.status.loading;
 
 function setFeedUrl(value: string) {
   batch(() => {
@@ -102,12 +102,10 @@ export default function NewFeedsDialog({ open }: {
   };
 
   async function submit() {
-    fetchDataInProgress.value = true;
     const success = await fetchData(feeds.value);
     if (success) {
       close();
     }
-    fetchDataInProgress.value = false;
   }
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -115,7 +113,7 @@ export default function NewFeedsDialog({ open }: {
       return;
     }
     if (event.ctrlKey) {
-      if (!(feeds.value.length === 0 || fetchDataInProgress.value)) {
+      if (!(feeds.value.length === 0 || loading.value)) {
         submit();
       }
       return;
@@ -183,7 +181,7 @@ export default function NewFeedsDialog({ open }: {
             value={feedUrl.value}
             onChange={(event: any) => setFeedUrl(event.target.value)}
             onKeyDown={handleKeyDown}
-            disabled={fetchDataInProgress.value}
+            disabled={loading.value}
             InputProps={{
               endAdornment: (
                 feedUrl.value.length > 0 &&
@@ -209,9 +207,9 @@ export default function NewFeedsDialog({ open }: {
         <Button
           color="primary"
           onClick={submit}
-          disabled={feeds.value.length === 0 || fetchDataInProgress.value}
+          disabled={feeds.value.length === 0 || loading.value}
         >
-          {fetchDataInProgress.value
+          {loading.value
             ? <CircularProgress color="inherit" size={20} />
             : <span>Submit</span>}
         </Button>

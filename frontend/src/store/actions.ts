@@ -38,11 +38,34 @@ export function notify(color: AlertColor, text: string) {
 async function notifyRespError(resp: Response) {
   const err = await resp.json();
   notify("error", `${resp.statusText}: ${err.detail}`)
+}
 
+async function getStatus() {
+  const resp = await fetch("/api/status");
+  if (!resp.ok) {
+    notifyRespError(resp);
+    return null;
+  }
+  return resp.json();
+}
+
+async function waitForLoading() {
+  appState.status.loading.value = true;
+  const maxBackoff = 10000;
+  let backoff = 500;
+  while (true) {
+    await new Promise(r => setTimeout(r, backoff));
+    const status = await getStatus();
+    if (!status?.loading) {
+      appState.status.loading.value = false;
+      break;
+    }
+    backoff = Math.min(maxBackoff, backoff * 2);
+  }
 }
 
 async function getData() {
-  const responses  =  await Promise.all([
+  const responses = await Promise.all([
     fetch("/api/feeds"),
     fetch("/api/entries")
   ]);
@@ -74,6 +97,9 @@ export async function fetchData(feeds?: Feed[]) {
     notifyRespError(resp);
     return false;
   }
+
+  // wait until server finish loading
+  await waitForLoading();
 
   const data = await getData();
   if (data) {
@@ -179,6 +205,9 @@ export async function archiveFeeds(urls?: string[]) {
     notifyRespError(resp);
     return false;
   }
+
+  // wait until server finish loading
+  await waitForLoading();
 
   const data = await getData();
   if (data) {

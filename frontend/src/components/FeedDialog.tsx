@@ -32,7 +32,7 @@ import {
   Typography
 } from "@mui/material";
 import { batch, computed, effect, signal } from "@preact/signals";
-import { Feed, FeedUserData, getFeedTitle } from "../store/feed";
+import { FeedUserData, getFeedTitle } from "../store/feed";
 import { archiveFeeds, deleteFeed, fetchData, handleExternalLink } from "../store/actions";
 import Icon from "@mdi/react";
 import { mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
@@ -47,9 +47,8 @@ const archiveBlacklist = signal("");
 const archiveSequential = signal(false);
 const archiveInterval = signal("");
 const archiveIntervalError = signal(false);
-const archiveInProgress = signal(false);
-const fetchInProgress = signal(false);
 const deleteInProgress = signal(false);
+const loading = appState.status.loading;
 
 const { open, feed } = appState.feedDialog;
 const existing = computed(() => Boolean(lookupFeed(feed.value?.url)));
@@ -90,15 +89,15 @@ const save = async () => {
 };
 
 async function handleArchive() {
-  archiveInProgress.value = true;
-  await archiveFeeds([feed.value.url]);
-  archiveInProgress.value = false;
+  if (feed.value) {
+    await archiveFeeds([feed.value.url]);
+  }
 }
 
 async function handleFetch() {
-  fetchInProgress.value = true;
-  await fetchData([feed.value]);
-  fetchInProgress.value = false;
+  if (feed.value) {
+    await fetchData([feed.value]);
+  }
 }
 
 function handleDelete() {
@@ -106,12 +105,14 @@ function handleDelete() {
     appState.confirmation.open.value = true;
     appState.confirmation.content.value = <>Confirm deletion of feed <em>{getFeedTitle(feed.value)}</em>?</>;
     appState.confirmation.onConfirm = async () => {
-      deleteInProgress.value = true;
-      await deleteFeed(feed.value.url);
-      batch(() => {
-        close();
-        deleteInProgress.value = false;
-      });
+      if (feed.value) {
+        deleteInProgress.value = true;
+        await deleteFeed(feed.value.url);
+        batch(() => {
+          close();
+          deleteInProgress.value = false;
+        });
+      }
     };
   });
 }
@@ -189,7 +190,7 @@ export default function FeedDialog() {
                 </Grid>
                 <Grid item>
                   <LoadingButton
-                    loading={archiveInProgress.value}
+                    loading={loading.value}
                     loadingPosition="start"
                     color="primary"
                     onClick={handleArchive}
@@ -198,7 +199,7 @@ export default function FeedDialog() {
                     <Box sx={{ mt: 0.2 }}>Archive</Box>
                   </LoadingButton>
                   <LoadingButton
-                    loading={fetchInProgress.value}
+                    loading={loading.value}
                     loadingPosition="start"
                     color="success"
                     onClick={handleFetch}
