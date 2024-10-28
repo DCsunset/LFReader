@@ -2,6 +2,31 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.8.0](https://github.com/DCsunset/LFReader/compare/v2.7.4...v2.8.0) (2024-10-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **frontend:** load entry content on demand
+* **backend:** support more query parameters for getting entries
+
+### Features
+
+* **backend:** run time-consuming tasks in background ([c175ec7](https://github.com/DCsunset/LFReader/commit/c175ec757900971efe894604f88634f0610c07de))
+* **backend:** support more query parameters for getting entries ([b17fd8f](https://github.com/DCsunset/LFReader/commit/b17fd8f0aba17545824e9414b586d4007c1dca1b))
+* **frontend:** load entry content on demand ([8ecc80d](https://github.com/DCsunset/LFReader/commit/8ecc80d805e594570353533cc678b351789b1aae))
+* **frontend:** use polling get status from backend for some tasks ([d6b3ead](https://github.com/DCsunset/LFReader/commit/d6b3eada9869ad0d379f0f4639bd961f0536327f))
+
+
+### Bug Fixes
+
+* **frontend:** move volume control to the end ([b764bad](https://github.com/DCsunset/LFReader/commit/b764badf800d58e2e689040d590fe3098dcbc550))
+
+
+### Misc
+
+* **frontend:** update deps ([aaec0b4](https://github.com/DCsunset/LFReader/commit/aaec0b46cc0223ab99bd5a5cd13886bbfebbda79))
+
 ## [2.7.4](https://github.com/DCsunset/LFReader/compare/v2.7.3...v2.7.4) (2024-09-08)
 
 
