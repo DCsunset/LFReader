@@ -20,7 +20,7 @@ import sys
 import json
 from pathlib import Path
 from typing import Iterable, Any
-from itertools import product, repeat
+from itertools import product, repeat, chain
 import feedparser
 from datetime import datetime, timezone
 from time import struct_time
@@ -34,6 +34,7 @@ from fastapi import HTTPException
 from .archive import Archiver
 from .config import Config
 from .utils import async_map
+from .models import QueryEntry
 
 async def parse_feed(session: aiohttp.ClientSession, ignore_error: bool, feed: dict):
   try:
@@ -390,16 +391,28 @@ class Storage:
   def get_entries(
     self,
     feed_urls: list[str] | None = None,
+    entries: list[QueryEntry] | None = None,
     offset: int = -1,
-    limit: int = -1
+    limit: int = -1,
+    columns: list[str] | None = None
   ) -> list[dict]:
-    query = "SELECT * FROM entries"
+    cols = ", ".join(columns) if columns else "*"
+    query = f"SELECT {cols} FROM entries"
     args = []
     if feed_urls is not None:
       # use placeholder to prevent SQL injection
       placeholders = ", ".join(repeat("?", len(feed_urls)))
       query += f" WHERE feed_url IN ({placeholders})"
       args.extend(feed_urls)
+    if entries is not None:
+      if len(entries) == 0:
+        return []
+      if feed_urls is not None:
+        raise HTTPException(status_code=400, detail=f"Invalid query with both feed_urls and entries set")
+      # use placeholder to prevent SQL injection
+      placeholders = " OR ".join(repeat("(feed_url = ? AND id = ?)", len(entries)))
+      query += f" WHERE {placeholders}"
+      args.extend(chain(*map(lambda e: [e.feed_url, e.id], entries)))
 
     # -1 means no limit or offset
     query += " ORDER BY COALESCE(published_at, updated_at) DESC LIMIT ? OFFSET ?"

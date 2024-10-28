@@ -22,10 +22,10 @@ from fastapi.openapi.docs import (
 import logging
 import os
 import sys
-from pydantic import BaseModel, ValidationError
+from pydantic import ValidationError
 import sqlite3
 import aiohttp
-from typing import Annotated, Literal
+from typing import Annotated
 import traceback
 import uvicorn
 import json
@@ -34,15 +34,7 @@ import asyncio
 
 from .storage import Storage
 from .config import Config
-
-# App state
-class Status(BaseModel):
-  loading: bool
-
-class State:
-  status: Status
-  def __init__(self):
-    self.status = Status(loading=False)
+from .models import AppState, AppStatus, UpdateFeedArgs, QueryEntriesArgs, FetchArgs, ArchiveArgs
 
 
 try:
@@ -61,7 +53,7 @@ if config_file:
   logging.info(f"Config file loaded: {config_file}")
 
 app = FastAPI(root_path="/api", docs_url=None, redoc_url=None)
-state = State()
+state = AppState()
 storage = Storage(config)
 
 async def taskRunner(task):
@@ -96,7 +88,7 @@ async def swagger_ui_redirect():
 Get status of server
 """
 @app.get("/status")
-async def get_feeds_api() -> Status:
+async def get_feeds_api() -> AppStatus:
   return state.status
 
 
@@ -108,15 +100,6 @@ async def get_feeds_api() -> list[dict]:
   return storage.get_feeds()
 
 
-class UpdateFeedArgs(BaseModel):
-  # put it in body to prevent encoding
-  url: str
-  user_data: dict
-
-  # allow using subscript to access
-  def __getitem__(self, item):
-    return getattr(self, item)
-
 """
 Update feed user_data
 """
@@ -127,26 +110,12 @@ async def update_feed_api(args: UpdateFeedArgs):
 
 
 """
-Get entries from local database
+Query entries from local database
 """
-@app.get("/entries")
-async def get_entries_api(
-  # for list type, must annotate with Query explicitly
-  feed_urls: Annotated[list[str], Query()] = None,
-  offset: int = -1,
-  limit: int = -1
-) -> list[dict]:
-  return storage.get_entries(feed_urls, offset, limit)
+@app.post("/entries/query")
+async def query_entries_api(args: QueryEntriesArgs) -> list[dict]:
+  return storage.get_entries(args.feed_urls, args.entries, args.offset, args.limit, args.columns)
 
-
-class FetchArgs(BaseModel):
-  # specific feed URLs
-  feeds: list[UpdateFeedArgs] | None = None
-  # whether to archive resources
-  archive: bool = True
-  # whether to force archiving even if content doesn't change
-  force_archive: bool = False
-  ignore_error: bool = False
 
 """
 Fetch feeds and their entries from origin (can be new feeds)
@@ -165,16 +134,11 @@ async def delete_api(feed_urls: Annotated[list[str], Query()]):
   return {}
 
 
-class ArchiveArgs(BaseModel):
-  operation: Literal["archive"]
-  feed_urls: list[str] | None = None
-
-
 """
 Update (re-archive) feeds and entries in db
 """
 @app.patch("/")
-async def patch_api(args: ArchiveArgs):
+async def archive_api(args: ArchiveArgs):
   match args.operation:
     case "archive":
       runLoadingTask(storage.archive_feeds(args.feed_urls))
