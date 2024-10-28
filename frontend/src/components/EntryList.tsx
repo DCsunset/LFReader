@@ -32,15 +32,6 @@ const numPages = computed(() => (
   )
 ))
 
-const displayedEntries = computed(() => {
-  const page = computedState.page.value;
-  const pageSize = appState.settings.value.pageSize;
-  return computedState.filteredEntries.value.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
-})
-
 const searching = signal(false);
 const entryTitleFilter = signal("");
 const toolbar = computed(() => !searching.value);
@@ -133,7 +124,7 @@ function EntryList({ onClick }: {
       }
       <Divider />
       <List disablePadding sx={{ overflow: "auto", flexGrow: 1 }}>
-        {displayedEntries.value.map(e => {
+        {computedState.displayedEntries.value.map(e => {
           const entryId = toEntryId(e);
           const feedTitle = getFeedTitle(lookupFeed(e.feed_url));
 
@@ -184,7 +175,7 @@ function EntryList({ onClick }: {
         }}
         count={numPages.value}
         siblingCount={0}
-        page={computedState.page.value}
+        page={computedState.currentPage.value}
         onChange={(_, v) => updateQueryParams({ page: v.toString() })}
       />
     </Stack>

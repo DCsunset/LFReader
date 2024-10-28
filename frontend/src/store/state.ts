@@ -17,7 +17,7 @@
 import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
 import { Entry, Feed, FeedUserData, getEntryTitle } from "./feed";
-import { loadData } from "./actions";
+import { loadData, loadEntryContents } from "./actions";
 import { Base64 } from "js-base64";
 
 
@@ -97,10 +97,13 @@ export const appState = {
     excludedTags: signal([] as string[]),
     editingFeeds: signal(false)
   },
-  data: signal({
-    feeds: [] as Feed[],
-    entries: [] as Entry[]
-  }),
+  data: {
+    feeds: signal([] as Feed[]),
+    // Entries without content
+    entries: signal([] as Entry[]),
+    // Fetch content on demand and cache it
+    entryContents: signal(new Map<string, Entry>())
+  },
   status: {
     loading: signal(false)
   },
@@ -120,13 +123,13 @@ export const appState = {
 
 // Map to quickly look up feed or entry by url
 const feedMap = computed(
-  () => appState.data.value.feeds.reduce(
+  () => appState.data.feeds.value.reduce(
     (acc, cur) => acc.set(cur.url, cur),
     new Map<string, Feed>()
   )
 );
 const entryMap = computed(
-  () => appState.data.value.entries.reduce(
+  () => appState.data.entries.value.reduce(
     (acc, cur) => cur.link ? acc.set(cur.link, cur) : acc,
     new Map<string, Entry>()
   )
@@ -142,7 +145,9 @@ export function lookupEntry(url?: string) {
 
 export function fromEntryId(entry_id: string) {
   const [feed_url, id] = JSON.parse(Base64.decode(entry_id));
-  return appState.data.value.entries.find(e => e.feed_url === feed_url && e.id === id);
+  const data = appState.data;
+  // Check if content is cached first
+  return data.entryContents.value.get(entry_id) || data.entries.value.find(e => e.feed_url === feed_url && e.id === id);
 }
 
 export function fromFeedId(feed_id: string) {
@@ -161,7 +166,7 @@ function getTags(items: any[]) {
 // Feeds to show in FeedList
 const filteredFeeds = computed(() => {
   const excludedTags = appState.ui.excludedTags.value;
-  return appState.data.value.feeds.filter(feed => {
+  return appState.data.feeds.value.filter(feed => {
     for (const t of feed.user_data?.tags ?? []) {
       if (excludedTags.includes(t)) {
         return false;
@@ -200,7 +205,7 @@ function regexpFromString(str?: string) {
 }
 
 const filteredEntries = computed(() => {
-  const entries = appState.data.value.entries;
+  const entries = appState.data.entries.value;
   const selectedFeedUrl = selectedFeed.value?.url;
   // show entries of filtered feeds
   const urls = selectedFeedUrl ? undefined : new Set(filteredFeeds.value.map(f => f.url));
@@ -220,18 +225,30 @@ const filteredEntries = computed(() => {
   return entries.filter(v => filters.map(f => f(v)).every(r => r));
 });
 
+const currentPage = computed(() => {
+  const pageInt = parseInt(appState.queryParams.value.page ?? "1");
+  return pageInt > 0 ? pageInt : 1;
+});
+
+const displayedEntries = computed(() => {
+  const page = currentPage.value;
+  const pageSize = appState.settings.value.pageSize;
+  return filteredEntries.value.slice(
+    (page - 1) * pageSize,
+    page * pageSize
+  );
+})
+
 export const computedState = {
-  page: computed(() => {
-    const pageInt = parseInt(appState.queryParams.value.page ?? "1");
-    return pageInt > 0 ? pageInt : 1;
-  }),
-  feedTags: computed(() => getTags(appState.data.value.feeds)),
-  entryTags: computed(() => getTags(appState.data.value.entries)),
+  currentPage,
+  feedTags: computed(() => getTags(appState.data.feeds.value)),
+  entryTags: computed(() => getTags(appState.data.entries.value)),
   selectedFeed,
   selectedEntry,
   selectedEntryFeed,
   filteredFeeds,
-  filteredEntries
+  filteredEntries,
+  displayedEntries
 };
 
 // Persist settings on change
@@ -245,6 +262,15 @@ for (const [key, item] of Object.entries(appState.ui)) {
     localStorage.setItem(appKey(`ui.${key}`), JSON.stringify(item.value));
   });
 }
+
+// Fetch content on page change
+effect(() => {
+  let entries = displayedEntries.value;
+  if (selectedEntry.value) {
+    entries = entries.concat(selectedEntry.value);
+  }
+  loadEntryContents(entries);
+});
 
 // Load data on mount
 loadData();

@@ -61,21 +61,21 @@ export type Entry = {
   author?: string,
   link?: string,
   title?: string,
-  summary?: Content,
-  contents?: Content[],
-  enclosures?: Enclosure[],
   updated_at?: string,
   published_at?: string,
   user_data: any,
-  server_data: EntryServerData
+  server_data: EntryServerData,
+  summary?: Content,
+  contents?: Content[],
+  enclosures?: Enclosure[],
 };
 
 export function toFeedId(feed: Feed) {
   return Base64.encode(feed.url, true);
 }
 
-export function toEntryId(entry?: Entry) {
-  return entry && Base64.encode(JSON.stringify([entry.feed_url, entry.id]), true);
+export function toEntryId(entry: Entry) {
+  return Base64.encode(JSON.stringify([entry.feed_url, entry.id]), true);
 }
 
 export function getEntryTitle(entry?: Entry, fallback: string = "(No Title)") {

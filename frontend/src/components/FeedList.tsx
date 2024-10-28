@@ -29,7 +29,7 @@ function FeedList({ onClick }: {
   onClick: () => any
 }) {
   const feeds = computedState.filteredFeeds.value;
-  const entries = appState.data.value.entries;
+  const entries = appState.data.entries.value;
 
 	return (
     <>

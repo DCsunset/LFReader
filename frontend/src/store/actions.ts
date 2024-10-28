@@ -18,7 +18,7 @@ import { route } from "preact-router";
 import { QueryParams, appState } from "./state";
 import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
-import { Feed, FeedUserData } from "./feed";
+import { Entry, Feed, FeedUserData, toEntryId } from "./feed";
 
 export function handleExternalLink(e: MouseEvent) {
   if (appState.settings.value.confirmOnExternalLink) {
@@ -64,23 +64,56 @@ async function waitForLoading() {
   }
 }
 
+async function queryEntries(query: {
+  feed_urls?: string[],
+  entries?: Array<{ feed_url: string, id: string }>,
+  columns?: string[]
+}) {
+  return await fetch("/api/entries/query", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(query)
+  });
+}
+
 async function getData() {
   const responses = await Promise.all([
     fetch("/api/feeds"),
-    fetch("/api/entries")
+    // Only get entries without content for efficiency
+    queryEntries({
+      columns: [
+        "feed_url",
+        "id",
+        "link",
+        "author",
+        "title",
+        "published_at",
+        "updated_at",
+        "server_data",
+        "user_data"
+      ]
+    })
   ]);
   for (const resp of responses) {
     if (!resp.ok) {
       notifyRespError(resp);
-      return undefined;
+      return false;
     }
   }
   const [feeds, entries] = await Promise.all(responses.map(r => r.json()));
-  return { feeds, entries };
+  batch(() => {
+    appState.data.feeds.value = feeds;
+    appState.data.entries.value = entries;
+    // clear cached entry contents
+    appState.data.entryContents.value = new Map();
+  })
+  return true;
 }
 
 export async function fetchData(feeds?: Feed[]) {
-  const resp =  await fetch("/api/", {
+  const resp = await fetch("/api/", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -101,25 +134,44 @@ export async function fetchData(feeds?: Feed[]) {
   // wait until server finish loading
   await waitForLoading();
 
-  const data = await getData();
-  if (data) {
-    batch(() => {
-      appState.data.value = data;
-      notify("success", "Updated feeds successfully")
-    })
-    return true;
+  const ok = await getData();
+  if (ok) {
+    notify("success", "Updated feeds successfully")
   }
-  return false;
+  return ok;
 }
 
 export async function loadData() {
-  const data = await getData();
-  if (data) {
-    batch(() => {
-      appState.data.value = data;
-      notify("success", "Loaded feeds successfully")
-    });
+  const ok = await getData();
+  if (ok) {
+    notify("success", "Loaded feeds successfully")
   }
+}
+
+export async function loadEntryContents(entries: Entry[]) {
+  // prevent depending on itself
+  const entryContents = appState.data.entryContents.peek();
+  const absentEntries = entries
+    .filter(e => !entryContents.has(toEntryId(e)))
+    .map(e => ({
+      feed_url: e.feed_url,
+      id: e.id
+    }));
+  if (absentEntries.length === 0) {
+    return;
+  }
+
+  const resp = await queryEntries({ entries: absentEntries });
+  if (!resp.ok) {
+    notifyRespError(resp);
+    return;
+  }
+
+  const contents: Entry[] = await resp.json();
+  appState.data.entryContents.value = new Map([
+    ...entryContents.entries(),
+    ...contents.map(e => [toEntryId(e), e] as [string, Entry])
+  ]);
 }
 
 export async function updateFeed(feed: Feed, userData: FeedUserData) {
@@ -140,15 +192,12 @@ export async function updateFeed(feed: Feed, userData: FeedUserData) {
   }
 
   // update feeds locally for performance
-  appState.data.value = {
-    feeds: appState.data.value.feeds.map(f => (
-      f.url === feed.url ? {
-        ...f,
-        user_data: userData
-      } : f
-    )),
-    entries: appState.data.value.entries
-  };
+  appState.data.feeds.value = appState.data.feeds.value.map(f => (
+    f.url === feed.url ? {
+      ...f,
+      user_data: userData
+    } : f
+  ));
   notify("success", "Updated feed successfully");
   return true;
 }
@@ -179,12 +228,10 @@ export async function deleteFeed(url: string) {
   }
 
   // Fast deletion in frontend
-  const data = appState.data.value;
+  const data = appState.data;
   batch(() => {
-    appState.data.value = {
-      feeds: data.feeds.filter(f => f.url !== url),
-      entries: data.entries.filter(e => e.feed_url !== url)
-    };
+    data.feeds.value = data.feeds.value.filter(f => f.url !== url);
+    data.entries.value = data.entries.value.filter(e => e.feed_url !== url);
     notify("success", "Feed deleted successfully");
   });
 }
@@ -209,14 +256,10 @@ export async function archiveFeeds(urls?: string[]) {
   // wait until server finish loading
   await waitForLoading();
 
-  const data = await getData();
-  if (data) {
-    batch(() => {
-      appState.data.value = data;
-      notify("success", "Database archived successfully");
-    })
-    return true;
+  const ok = await getData();
+  if (ok) {
+    notify("success", "Database archived successfully");
   }
-  return false;
+  return ok;
 }
 

@@ -46,7 +46,8 @@ const currentContents = computed(() => {
   return contents;
 });
 const currentEntryId = computed(() => {
-  return toEntryId(computedState.selectedEntry.value);
+  const e = computedState.selectedEntry.value;
+  return e && toEntryId(e);
 })
 const entryRef = createRef<HTMLElement>();
 
@@ -100,7 +101,7 @@ export default function Entry() {
             // replace external link with internal link
             el.setAttribute("href", `/?${new URLSearchParams({
               ...appState.queryParams.value,
-              entry: toEntryId(e)!
+              entry: toEntryId(e)
             })}${url.hash}`);
           }
           else {
