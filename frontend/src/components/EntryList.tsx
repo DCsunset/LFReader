@@ -25,6 +25,10 @@ import Icon from "@mdi/react";
 import { preventEventDefault } from "../utils/dom";
 
 const selectedEntry = computedState.selectedEntry;
+const selectedEntryId = computed(() => {
+  const e = selectedEntry.value;
+  return e && toEntryId(e);
+});
 
 const numPages = computed(() => (
   Math.ceil(
@@ -141,7 +145,7 @@ function EntryList({ onClick }: {
                 display: "block",
                 py: 1.5
               }}
-              selected={selectedEntry.value === e}
+              selected={selectedEntryId.value === entryId}
             >
               <div className="text-sm inline-flex item center mb-1 opacity-80 font-medium w-full">
                 {/* TODO: Used for unread entries
