@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.8.1](https://github.com/DCsunset/LFReader/compare/v2.8.0...v2.8.1) (2024-10-29)
+
+
+### Bug Fixes
+
+* **frontend:** fix entry list highlighting ([b1596cd](https://github.com/DCsunset/LFReader/commit/b1596cdee16c92fbd462904b93d1cb33428e8e52))
+
 ## [2.8.0](https://github.com/DCsunset/LFReader/compare/v2.7.4...v2.8.0) (2024-10-28)
 
 
