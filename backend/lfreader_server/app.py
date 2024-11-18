@@ -57,13 +57,13 @@ state = AppState()
 storage = Storage(config)
 
 async def taskRunner(task):
-  state.status.loading = True
-  await task
+  await task()
   state.status.loading = False
 
 def runLoadingTask(task):
   if state.status.loading:
     raise HTTPException(status_code=409, detail="Server is already loading data")
+  state.status.loading = True
   asyncio.create_task(taskRunner(task))
 
 
@@ -122,7 +122,7 @@ Fetch feeds and their entries from origin (can be new feeds)
 """
 @app.post("/")
 async def fetch_api(args: FetchArgs):
-  runLoadingTask(storage.fetch_feeds(args.feeds, args.archive, args.force_archive, args.ignore_error))
+  runLoadingTask(lambda: storage.fetch_feeds(args.feeds, args.archive, args.force_archive, args.ignore_error))
   return {}
 
 """
@@ -141,7 +141,7 @@ Update (re-archive) feeds and entries in db
 async def archive_api(args: ArchiveArgs):
   match args.operation:
     case "archive":
-      runLoadingTask(storage.archive_feeds(args.feed_urls))
+      runLoadingTask(lambda: storage.archive_feeds(args.feed_urls))
     case _:
       raise HTTPException(status_code=400, detail=f"Invalid operation: {args.operation}")
   return {}
