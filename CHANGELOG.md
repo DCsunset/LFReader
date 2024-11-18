@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.8.2](https://github.com/DCsunset/LFReader/compare/v2.8.1...v2.8.2) (2024-11-18)
+
+
+### Bug Fixes
+
+* **backend:** fix loading state and async task runner ([99c2fd8](https://github.com/DCsunset/LFReader/commit/99c2fd8e16ee5af20c229be6e01ca82d846dc273))
+
 ## [2.8.1](https://github.com/DCsunset/LFReader/compare/v2.8.0...v2.8.1) (2024-10-29)
 
 
