@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.8.4](https://github.com/DCsunset/LFReader/compare/v2.8.3...v2.8.4) (2024-11-25)
+
+
+### Bug Fixes
+
+* **frontend:** fix fetching data ([6b62c36](https://github.com/DCsunset/LFReader/commit/6b62c3614c54e8e0b38c7de27b65f9c4d733f13c))
+
 ## [2.8.3](https://github.com/DCsunset/LFReader/compare/v2.8.2...v2.8.3) (2024-11-25)
 
 
