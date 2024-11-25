@@ -245,7 +245,7 @@ export default function Layout() {
             size="small"
             color="inherit"
             title="Fetch feeds from origin"
-            onClick={fetchData}
+            onClick={() => fetchData()}
             disabled={loading.value}
           >
             {loading.value
