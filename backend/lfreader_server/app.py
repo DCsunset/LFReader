@@ -57,8 +57,12 @@ state = AppState()
 storage = Storage(config)
 
 async def taskRunner(task):
-  await task()
-  state.status.loading = False
+  try:
+    await task()
+  except Exception as e:
+    logging.error(f"Error occurred: {str(e)}")
+  finally:
+    state.status.loading = False
 
 def runLoadingTask(task):
   if state.status.loading:
