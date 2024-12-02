@@ -47,13 +47,14 @@ const validNumber = (value: string, min: number, max: number, int: boolean) => {
 };
 
 // local states
-const pageSize = signal(appState.settings.value.pageSize.toString());
 const pageSizeError = signal(false);
 const currentRate = signal("");
+const pageSize = signal(appState.settings.value.pageSize.toString());
 const allRates = signal(appState.settings.value.playbackRates ?? []);
 const archive = signal(appState.settings.value.archive);
 const forceArchive = signal(appState.settings.value.forceArchive);
 const confirmOnExternalLink = signal(appState.settings.value.confirmOnExternalLink);
+const apiBaseUrl = signal(appState.settings.value.apiBaseUrl);
 
 // reset local states
 const reset = () => {
@@ -61,6 +62,9 @@ const reset = () => {
     pageSize.value = appState.settings.value.pageSize.toString();
     allRates.value = appState.settings.value.playbackRates ?? [];
     archive.value = appState.settings.value.archive;
+    forceArchive.value = appState.settings.value.forceArchive;
+    confirmOnExternalLink.value = appState.settings.value.confirmOnExternalLink;
+    apiBaseUrl.value = appState.settings.value.apiBaseUrl;
   });
 };
 
@@ -80,7 +84,8 @@ export default function SettingsDialog({ open }: {
           playbackRates: allRates.value.length > 0 ? allRates.value : undefined,
           archive: archive.value,
           forceArchive: forceArchive.value,
-          confirmOnExternalLink: confirmOnExternalLink.value
+          confirmOnExternalLink: confirmOnExternalLink.value,
+          apiBaseUrl: apiBaseUrl.value
         };
         open.value = false;
       });
@@ -220,6 +225,29 @@ export default function SettingsDialog({ open }: {
                 <Checkbox
                   checked={confirmOnExternalLink.value}
                   onChange={(e: any) => confirmOnExternalLink.value = e.target.checked}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    Either path or a full URL
+                  </span>
+                }>
+                  API Base URL
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <TextField
+                  variant="standard"
+                  value={apiBaseUrl.value}
+                  onChange={(event: any) => {
+                    apiBaseUrl.value = event.target.value;
+                  }}
                 />
               </Grid>
             </Grid>

@@ -38,7 +38,8 @@ export type Settings = {
   archive: boolean,
   forceArchive: boolean,
   confirmOnExternalLink: boolean,
-  playbackRates?: string[]
+  playbackRates?: string[],
+  apiBaseUrl: string
 };
 
 export type QueryParams = {
@@ -91,7 +92,8 @@ export const appState = {
     pageSize: 20,
     archive: true,
     forceArchive: false,
-    confirmOnExternalLink: false
+    confirmOnExternalLink: false,
+    apiBaseUrl: "/api"
 	})),
   ui: {
     excludedTags: signal([] as string[]),

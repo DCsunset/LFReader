@@ -20,6 +20,26 @@ import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
 import { Entry, Feed, FeedUserData, toEntryId } from "./feed";
 
+function apiUrl(rest?: string) {
+}
+
+export async function fetchApi(rest?: string, options?: any) {
+  const url = `${appState.settings.value.apiBaseUrl}/${rest ?? ""}`;
+  try {
+    const resp = await fetch(url, options);
+    const body = await resp.json()
+    if (!resp.ok) {
+      notify("error", `${body.statusText}: ${body.detail}`)
+      return undefined;
+    }
+    return body;
+  }
+  catch (err: any) {
+    notify("error", err.message);
+    return undefined;
+  }
+}
+
 export function handleExternalLink(e: MouseEvent) {
   if (appState.settings.value.confirmOnExternalLink) {
     // use getAttribute to get the raw href value
@@ -35,27 +55,13 @@ export function notify(color: AlertColor, text: string) {
   appState.notification.value = { color, text };
 }
 
-async function notifyRespError(resp: Response) {
-  const err = await resp.json();
-  notify("error", `${resp.statusText}: ${err.detail}`)
-}
-
-async function getStatus() {
-  const resp = await fetch("/api/status");
-  if (!resp.ok) {
-    notifyRespError(resp);
-    return null;
-  }
-  return resp.json();
-}
-
 async function waitForLoading() {
   appState.status.loading.value = true;
   const maxBackoff = 10000;
   let backoff = 500;
   while (true) {
     await new Promise(r => setTimeout(r, backoff));
-    const status = await getStatus();
+    const status = await fetchApi("status");
     if (!status?.loading) {
       appState.status.loading.value = false;
       break;
@@ -69,7 +75,7 @@ async function queryEntries(query: {
   entries?: Array<{ feed_url: string, id: string }>,
   columns?: string[]
 }) {
-  return await fetch("/api/entries/query", {
+  return await fetchApi("entries/query", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -79,8 +85,8 @@ async function queryEntries(query: {
 }
 
 async function getData() {
-  const responses = await Promise.all([
-    fetch("/api/feeds"),
+  const [feeds, entries] = await Promise.all([
+    fetchApi("feeds"),
     // Only get entries without content for efficiency
     queryEntries({
       columns: [
@@ -96,13 +102,10 @@ async function getData() {
       ]
     })
   ]);
-  for (const resp of responses) {
-    if (!resp.ok) {
-      notifyRespError(resp);
-      return false;
-    }
+  if (feeds === undefined || entries == undefined) {
+    return false;
   }
-  const [feeds, entries] = await Promise.all(responses.map(r => r.json()));
+
   batch(() => {
     appState.data.feeds.value = feeds;
     appState.data.entries.value = entries;
@@ -113,7 +116,7 @@ async function getData() {
 }
 
 export async function fetchData(feeds?: Feed[]) {
-  const resp = await fetch("/api/", {
+  const resp = await fetchApi("", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -126,9 +129,8 @@ export async function fetchData(feeds?: Feed[]) {
       ignore_error: !feeds
     })
   });
-  if (!resp.ok) {
-    notifyRespError(resp);
-    return false;
+  if (resp === undefined) {
+    return undefined;
   }
 
   // wait until server finish loading
@@ -161,13 +163,11 @@ export async function loadEntryContents(entries: Entry[]) {
     return;
   }
 
-  const resp = await queryEntries({ entries: absentEntries });
-  if (!resp.ok) {
-    notifyRespError(resp);
+  const contents: Entry[] = await queryEntries({ entries: absentEntries });
+  if (contents === undefined) {
     return;
   }
 
-  const contents: Entry[] = await resp.json();
   appState.data.entryContents.value = new Map([
     ...entryContents.entries(),
     ...contents.map(e => [toEntryId(e), e] as [string, Entry])
@@ -176,7 +176,7 @@ export async function loadEntryContents(entries: Entry[]) {
 
 export async function updateFeed(feed: Feed, userData: FeedUserData) {
   // needs double encoding to include slash in url and decode it once at the server
-  const resp =  await fetch(`/api/feeds`, {
+  const resp =  await fetchApi("feeds", {
     method: "PUT",
     headers: {
       "Content-Type": "application/json"
@@ -186,8 +186,7 @@ export async function updateFeed(feed: Feed, userData: FeedUserData) {
       user_data: userData
     })
   });
-  if (!resp.ok) {
-    notifyRespError(resp);
+  if (resp === undefined) {
     return false;
   }
 
@@ -221,10 +220,9 @@ export async function deleteFeed(url: string) {
   const query = new URLSearchParams({
     feed_urls: url
   });
-  const resp = await fetch(`/api/?${query}`, { method: "DELETE" });
-  if (!resp.ok) {
-    notifyRespError(resp);
-    return;
+  const resp = await fetchApi(`?${query}`, { method: "DELETE" });
+  if (resp === undefined) {
+    return false;
   }
 
   // Fast deletion in frontend
@@ -234,11 +232,12 @@ export async function deleteFeed(url: string) {
     data.entries.value = data.entries.value.filter(e => e.feed_url !== url);
     notify("success", "Feed deleted successfully");
   });
+  return true;
 }
 
 /// Archive entries in database
 export async function archiveFeeds(urls?: string[]) {
-  const resp =  await fetch(`/api/`, {
+  const resp =  await fetchApi("", {
     method: "PATCH",
     headers: {
       "Content-Type": "application/json"
@@ -248,8 +247,7 @@ export async function archiveFeeds(urls?: string[]) {
       feed_urls: urls
     })
   });
-  if (!resp.ok) {
-    notifyRespError(resp);
+  if (resp === undefined) {
     return false;
   }
 
