@@ -17,7 +17,7 @@
 import { computed, signal } from "@preact/signals";
 import { createRef } from "preact";
 import { appState, computedState, lookupEntry, lookupFeed  } from "../store/state";
-import { Enclosure, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
+import { Enclosure, Feed, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
 import Icon from "@mdi/react";
 import renderMathInElement from "katex/contrib/auto-render";
 import hljs from "highlight.js";
@@ -52,18 +52,21 @@ const currentEntryId = computed(() => {
 const entryRef = createRef<HTMLElement>();
 
 
-function EnclosureView({ value }: { value: Enclosure }) {
-  if (value.type.startsWith("image/")) {
-    return <img src={value.href} />;
+function EnclosureView({ feed, enclosure }: {
+  feed?: Feed,
+  enclosure: Enclosure
+}) {
+  if (enclosure.type.startsWith("image/")) {
+    return <img src={enclosure.href} />;
   }
-  else if (value.type.startsWith("audio/")) {
-    return <MediaPlayer audio src={value.href} />;
+  else if (enclosure.type.startsWith("audio/")) {
+    return <MediaPlayer audio src={enclosure.href} rate={feed?.user_data.playback_rate} />;
   }
-  else if (value.type.startsWith("video/")) {
-    return <MediaPlayer src={value.href} />;
+  else if (enclosure.type.startsWith("video/")) {
+    return <MediaPlayer src={enclosure.href} rate={feed?.user_data.playback_rate} />;
   }
   else {
-    return <a href={value.href}>{value.href}</a>;
+    return <a href={enclosure.href}>{enclosure.href}</a>;
   }
 }
 
@@ -196,7 +199,7 @@ export default function Entry() {
                 <List>
                   {entry.enclosures.map(e => (
                     <ListItem key={e.href} dense className="overflow-x-scroll overflow-y-hidden">
-                      <EnclosureView value={e} />
+                      <EnclosureView feed={feed} enclosure={e} />
                     </ListItem>
                   ))}
                 </List>

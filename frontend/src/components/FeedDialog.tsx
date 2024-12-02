@@ -43,6 +43,7 @@ import { appState, lookupFeed } from "../store/state";
 const alias = signal("");
 const baseUrl = signal("");
 const afterDate = signal("");
+const playbackRate = signal("");
 const archiveBlacklist = signal("");
 const archiveSequential = signal(false);
 const archiveInterval = signal("");
@@ -64,6 +65,7 @@ const reset = () => {
     alias.value = f?.user_data.alias ?? "";
     baseUrl.value = f?.user_data.base_url ?? "";
     afterDate.value = f?.user_data.after_date ?? "";
+    playbackRate.value = f?.user_data.playback_rate ?? "";
     archiveBlacklist.value = f?.user_data.archive_blacklist ?? "";
     archiveSequential.value = f?.user_data.archive_sequential ?? false;
     archiveInterval.value = f?.user_data.archive_interval?.toString() ?? "";
@@ -77,12 +79,13 @@ const save = async () => {
     alias: alias.value || undefined,
     base_url: baseUrl.value || undefined,
     after_date: afterDate.value || undefined,
+    playback_rate: playbackRate.value || undefined,
     archive_blacklist: archiveBlacklist.value || undefined,
     archive_sequential: archiveSequential.value || undefined,
     archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined
   };
   // Must load onSave here to keep it up ot date
-  const ok = await appState.feedDialog.onSave(feed.value, userData);
+  const ok = await appState.feedDialog.onSave?.(feed.value!, userData);
   if (ok) {
     close();
   }
@@ -294,6 +297,30 @@ export default function FeedDialog() {
                   placeholder="(none)"
                   onChange={(event: any) => {
                     afterDate.value = event.target.value;
+                  }}
+                />
+              </Grid>
+            </Grid>
+          </ListItem>
+
+          <ListItem>
+            <Grid container justifyContent="space-between" alignItems="center">
+              <Grid item>
+                <ListItemText secondary={
+                  <span>
+                    default playback rate for media in enclosures
+                  </span>
+                }>
+                  Playback Rate
+                </ListItemText>
+              </Grid>
+              <Grid item>
+                <TextField
+                  variant="standard"
+                  value={playbackRate.value}
+                  placeholder="(unchanged)"
+                  onChange={(event: any) => {
+                    playbackRate.value = event.target.value;
                   }}
                 />
               </Grid>

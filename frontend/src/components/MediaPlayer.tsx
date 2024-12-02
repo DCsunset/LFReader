@@ -3,9 +3,19 @@ import { appState } from "../store/state";
 
 export default function MediaPlayer(props: {
   audio?: boolean
-  src: string
+  src: string,
+  rate?: string
 }) {
-  const mediaProps = { slot: "media", src: props.src };
+  const mediaProps = {
+    slot: "media",
+    src: props.src,
+    ref: (el: HTMLMediaElement | null) => {
+      // set default playback rate
+      if (el && props.rate) {
+        el.playbackRate = parseFloat(props.rate);
+      }
+    }
+  };
   // this causes re-render after rates change
   const rates = appState.settings.value.playbackRates;
 
