@@ -20,7 +20,7 @@ import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, St
 import { SnackbarProvider, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags, mdiInformation, mdiInformationOutline } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -32,6 +32,7 @@ import Entry from "./Entry";
 import { getEntryTitle, getFeedTitle } from "../store/feed";
 import { anchorNoStyle } from "../utils/styles";
 import FeedDialog from "./FeedDialog";
+import AboutDialog from "./AboutDialog";
 
 const feedListWidth = "250px";
 const entryListWidth = "350px";
@@ -40,6 +41,7 @@ const entryList = signal(true);
 const dark = computed(() => appState.settings.value.dark);
 const settingsDialog = signal(false);
 const feedsDialog = signal(false);
+const aboutDialog = signal(false);
 const editing = appState.ui.editingFeeds;
 const loading = appState.status.loading;
 const loadDataInProgress = signal(false);
@@ -300,7 +302,6 @@ export default function Layout() {
           </IconButton>
 
           <IconButton
-            size="small"
             color="inherit"
             title={`Switch to ${dark.value ? "light" : "dark"} mode`}
             onClick={toggleTheme}
@@ -318,9 +319,18 @@ export default function Layout() {
           >
             <Icon path={mdiCodeTags} size={1} />
           </IconButton>
+
+          <IconButton
+            color="inherit"
+            title="About"
+            onClick={() => aboutDialog.value = true}
+          >
+            <Icon path={mdiInformationOutline} size={1} />
+          </IconButton>
         </Stack>
       </Drawer>
 
+      <AboutDialog open={aboutDialog} />
       <SettingsDialog open={settingsDialog} />
       <NewFeedsDialog open={feedsDialog} />
       <FeedDialog />
