@@ -24,10 +24,8 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Grid,
-  List,
-  ListItem,
   ListItemText,
+  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -68,6 +66,22 @@ const reset = () => {
   });
 };
 
+function Item({ title, subtitle, children }: {
+  title: string,
+  subtitle?: any,
+  children: any
+}) {
+  return (
+    <Stack direction="row" className="w-full items-center">
+      <ListItemText secondary={subtitle && <span>{subtitle}</span>}>
+        {title}
+      </ListItemText>
+      <span className="grow" />
+      <span className="text-right">{children}</span>
+    </Stack>
+  );
+}
+
 export default function SettingsDialog({ open }: {
   open: Signal<boolean>
 }) {
@@ -99,179 +113,113 @@ export default function SettingsDialog({ open }: {
       disableBackdropClick
       fullWidth
     >
-      <DialogTitle sx={{ pb: 0 }}>Settings</DialogTitle>
-      <DialogContent sx={{ px: 1 }}>
-        <List>
-          <Box sx={{ mx: 2, mt: 2 }}>
+      <DialogTitle>Settings</DialogTitle>
+      <DialogContent>
+        <Stack spacing={1}>
+          <div>
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>
               General
             </Typography>
             <Divider />
-          </Box>
+          </div>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    positive integer
-                  </span>
-                }>
-                  Number of entries per page
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <TextField
-                  variant="standard"
-                  type="number"
-                  sx={{ maxWidth: "45px" }}
-                  error={pageSizeError.value}
-                  value={pageSize.value}
-                  onChange={(event: any) => {
-                    const value = event.target.value;
-                    pageSizeError.value = !validNumber(value, 1, Number.MAX_SAFE_INTEGER, true);
-                    pageSize.value = value;
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="Number of entries per page"
+            subtitle="positive integer"
+          >
+            <TextField
+              variant="standard"
+              type="number"
+              sx={{ maxWidth: "45px" }}
+              error={pageSizeError.value}
+              value={pageSize.value}
+              onChange={(event: any) => {
+                const value = event.target.value;
+                pageSizeError.value = !validNumber(value, 1, Number.MAX_SAFE_INTEGER, true);
+                pageSize.value = value;
+              }}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    Set playback rates (0 to 5) for enclosures. <br />
-                    (Press Enter to add number)
-                  </span>
-                }>
-                  Playback Rates
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <Autocomplete
-                  multiple
-                  freeSolo
-                  style={{ maxWidth: "220px" }}
-                  options={[]}
-                  value={allRates.value}
-                  onChange={(_e, val) => {
-                    allRates.value = val.filter(v => validNumber(v, 0, 5, false));
-                  }}
-                  inputValue={currentRate.value}
-                  onInputChange={(_e, val) => currentRate.value = val}
-                  renderInput={params => (
-                    <TextField {...params} variant="standard" />
-                  )}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="Playback Rates"
+            subtitle={<>Set playback rates (0 to 5) for enclosures. <br /> (Press Enter to add number)</>}
+          >
+            <Autocomplete
+              multiple
+              freeSolo
+              style={{ maxWidth: "220px" }}
+              options={[]}
+              value={allRates.value}
+              onChange={(_e, val) => {
+                allRates.value = val.filter(v => validNumber(v, 0, 5, false));
+              }}
+              inputValue={currentRate.value}
+              onInputChange={(_e, val) => currentRate.value = val}
+              renderInput={params => (
+                <TextField {...params} variant="standard" />
+              )}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    download resources (e.g. images) and save them locally
-                  </span>
-                }>
-                  Archive resources
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <Checkbox
-                  checked={archive.value}
-                  onChange={(e: any) => archive.value = e.target.checked}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item title="Archive resources" subtitle="download resources (e.g. images) and save them locally">
+            <Checkbox
+              checked={archive.value}
+              onChange={(e: any) => archive.value = e.target.checked}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    force archiving entries even if content doesn't change
-                  </span>
-                }>
-                  Force Archiving
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <Checkbox
-                  checked={forceArchive.value}
-                  onChange={(e: any) => forceArchive.value = e.target.checked}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="Force Archiving"
+            subtitle="force archiving entries even if content doesn't change"
+          >
+            <Checkbox
+              checked={forceArchive.value}
+              onChange={(e: any) => forceArchive.value = e.target.checked}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    confirm before opening external link
-                  </span>
-                }>
-                  Confirm on External Link
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <Checkbox
-                  checked={confirmOnExternalLink.value}
-                  onChange={(e: any) => confirmOnExternalLink.value = e.target.checked}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="Confirm on External Link"
+            subtitle="confirm before opening external link"
+          >
+            <Checkbox
+              checked={confirmOnExternalLink.value}
+              onChange={(e: any) => confirmOnExternalLink.value = e.target.checked}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    Either path or a full URL
-                  </span>
-                }>
-                  API Base URL
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <TextField
-                  variant="standard"
-                  value={apiBaseUrl.value}
-                  onChange={(event: any) => {
-                    apiBaseUrl.value = event.target.value;
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="API Base URL"
+            subtitle="either a path or full URL"
+          >
+            <TextField
+              variant="standard"
+              value={apiBaseUrl.value}
+              onChange={(event: any) => {
+                apiBaseUrl.value = event.target.value;
+              }}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText>
-                  Database Operations
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <LoadingButton
-                  loading={appState.status.loading.value}
-                  loadingPosition="start"
-                  color="primary" onClick={archiveFeeds}
-                  startIcon={<Icon path={mdiContentSave} size={1} />}
-                >
-                  <Box sx={{ mt: 0.2 }}>Archive</Box>
-                </LoadingButton>
-              </Grid>
-            </Grid>
-          </ListItem>
-        </List>
+          <div className="pt-4">
+            <Typography color="textSecondary" sx={{ mb: 0.5 }}>
+              Database
+            </Typography>
+            <Divider />
+          </div>
+
+          <Item title="Database Operations">
+            <LoadingButton
+              loading={appState.status.loading.value}
+              loadingPosition="start"
+              color="primary" onClick={archiveFeeds}
+              startIcon={<Icon path={mdiContentSave} size={1} />}
+            >
+              <Box sx={{ mt: 0.2 }}>Archive</Box>
+            </LoadingButton>
+          </Item>
+        </Stack>
       </DialogContent>
       <DialogActions>
         <Button color="inherit" onClick={close}>Cancel</Button>
