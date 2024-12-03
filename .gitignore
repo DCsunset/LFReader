@@ -2,3 +2,4 @@
 /frontend/public/swagger-ui-dist
 /tests
 .direnv
+*.apk
