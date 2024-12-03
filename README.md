@@ -110,6 +110,7 @@ Finally, use your favorite web server to serve the frontend files (`frontend/dis
 and set up the reverse proxy to pass routes prefixed by `/api` to backend.
 If archiving is enabled (default), make sure the archives directory is served at `/archives`.
 
+
 ## Configuration
 
 ### Frontend
@@ -171,6 +172,8 @@ First enter the Nix dev shell by `nix develop` and cd into frontend.
 To re-initialize the Tauri Android code, run `cargo-tauri android init`.
 
 To build the Android app, run `cargo-tauri android build --apk --target aarch64`.
+
+To sign the app after building it, run `scripts/sign-apk.sh <key> <apk>` in the dev shell.
 
 You can build a different Android target by first changing the required libraries in Nix flake.
 
