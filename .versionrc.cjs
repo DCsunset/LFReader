@@ -1,6 +1,13 @@
 const re = /version = "v(\d\.\d\.\d)"/;
 
-const versionTracker = {
+function jsonTracker(filename) {
+  return {
+	  filename,
+    type: "json"
+  };
+}
+
+const frontendTracker = {
 	filename: "frontend/src/_version.ts",
 	updater: {
 		readVersion: (contents) => contents.match(re)[1],
@@ -22,7 +29,7 @@ module.exports = {
     {"type": "build", "section": "Misc"}
   ],
 	// read version
-	packageFiles: [versionTracker],
+	packageFiles: [ jsonTracker("frontend/package.json") ],
 	// write version
-	bumpFiles: [versionTracker]
+	bumpFiles: [ jsonTracker("frontend/package.json"), jsonTracker("frontend/package-lock.json"), frontendTracker, jsonTracker("frontend/src-tauri/tauri.conf.json") ]
 };
