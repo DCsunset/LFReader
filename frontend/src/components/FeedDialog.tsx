@@ -174,6 +174,7 @@ export default function FeedDialog() {
               <Grid item>
                 <IconButton
                   color="inherit"
+                  target="_blank"
                   href={feed.value?.url}
                   onClick={handleExternalLink}
                 >
