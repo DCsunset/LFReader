@@ -1,3 +1,13 @@
+const re = /version = "v(\d\.\d\.\d)"/;
+
+const versionTracker = {
+	filename: "frontend/src/_version.ts",
+	updater: {
+		readVersion: (contents) => contents.match(re)[1],
+		writeVersion: (contents, version) => contents.replace(re, `version = "v${version}"`)
+	}
+};
+
 module.exports = {
   types: [
     {"type": "feat", "section": "Features"},
@@ -10,5 +20,9 @@ module.exports = {
     {"type": "test", "section": "Misc"},
     {"type": "ci", "section": "Misc"},
     {"type": "build", "section": "Misc"}
-  ]
+  ],
+	// read version
+	packageFiles: [versionTracker],
+	// write version
+	bumpFiles: [versionTracker]
 };
