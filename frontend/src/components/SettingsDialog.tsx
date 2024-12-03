@@ -95,7 +95,7 @@ export default function SettingsDialog({ open }: {
   return (
     <Dialog
       open={open.value}
-      onClose={() => open.value = false}
+      onClose={close}
       disableBackdropClick
       fullWidth
     >
@@ -168,7 +168,6 @@ export default function SettingsDialog({ open }: {
               </Grid>
             </Grid>
           </ListItem>
-
 
           <ListItem>
             <Grid container justifyContent="space-between" alignItems="center">
