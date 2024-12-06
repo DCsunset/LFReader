@@ -24,6 +24,8 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
+  IconButton,
+  InputAdornment,
   ListItemText,
   Stack,
   TextField,
@@ -34,7 +36,8 @@ import { archiveFeeds } from "../store/actions";
 import { batch, Signal, signal } from "@preact/signals";
 import { LoadingButton } from "@mui/lab";
 import Icon from "@mdi/react";
-import { mdiContentSave } from "@mdi/js";
+import { mdiContentSave, mdiEye, mdiEyeOff } from "@mdi/js";
+import { preventEventDefault } from "../utils/dom";
 
 const validNumber = (value: string, min: number, max: number, int: boolean) => {
   if (value.length === 0) {
@@ -53,6 +56,9 @@ const archive = signal(appState.settings.value.archive);
 const forceArchive = signal(appState.settings.value.forceArchive);
 const confirmOnExternalLink = signal(appState.settings.value.confirmOnExternalLink);
 const apiBaseUrl = signal(appState.settings.value.apiBaseUrl);
+const apiUsername = signal(appState.settings.value.apiUsername ?? "");
+const apiPassword = signal(appState.settings.value.apiPassword ?? "");
+const apiPasswordVisible = signal(false);
 
 // reset local states
 const reset = () => {
@@ -63,6 +69,8 @@ const reset = () => {
     forceArchive.value = appState.settings.value.forceArchive;
     confirmOnExternalLink.value = appState.settings.value.confirmOnExternalLink;
     apiBaseUrl.value = appState.settings.value.apiBaseUrl;
+    apiUsername.value = appState.settings.value.apiUsername ?? "";
+    apiPassword.value = appState.settings.value.apiPassword ?? "";
   });
 };
 
@@ -76,7 +84,7 @@ function Item({ title, subtitle, children }: {
       <ListItemText secondary={subtitle && <span>{subtitle}</span>}>
         {title}
       </ListItemText>
-      <span className="grow" />
+      <span className="grow min-w-2" />
       <span className="text-right">{children}</span>
     </Stack>
   );
@@ -99,7 +107,9 @@ export default function SettingsDialog({ open }: {
           archive: archive.value,
           forceArchive: forceArchive.value,
           confirmOnExternalLink: confirmOnExternalLink.value,
-          apiBaseUrl: apiBaseUrl.value
+          apiBaseUrl: apiBaseUrl.value,
+          apiUsername: apiUsername.value || undefined,
+          apiPassword: apiPassword.value || undefined,
         };
         open.value = false;
       });
@@ -189,15 +199,71 @@ export default function SettingsDialog({ open }: {
             />
           </Item>
 
+          <div className="pt-4">
+            <Typography color="textSecondary" sx={{ mb: 0.5 }}>
+              API Endpoint
+            </Typography>
+            <Divider />
+          </div>
+
           <Item
             title="API Base URL"
             subtitle="either a path or full URL"
           >
             <TextField
+              className="max-w-48"
               variant="standard"
               value={apiBaseUrl.value}
               onChange={(event: any) => {
                 apiBaseUrl.value = event.target.value;
+              }}
+            />
+          </Item>
+
+          <Item
+            title="API Username"
+            subtitle="username for basic auth"
+          >
+            <TextField
+              className="max-w-48"
+              variant="standard"
+              value={apiUsername.value}
+              placeholder="(None)"
+              onChange={(event: any) => {
+                apiUsername.value = event.target.value;
+              }}
+            />
+          </Item>
+
+          <Item
+            title="API Password"
+            subtitle="password for basic auth"
+          >
+            <TextField
+              className="max-w-48"
+              variant="standard"
+              type={apiPasswordVisible.value ? "text" : "password"}
+              value={apiPassword.value}
+              placeholder="(None)"
+              onChange={(event: any) => {
+                apiPassword.value = event.target.value;
+              }}
+              slotProps={{
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        size="small"
+                        onClick={() => apiPasswordVisible.value = !apiPasswordVisible.value}
+                        onMouseDown={preventEventDefault}
+                        onMouseUp={preventEventDefault}
+                        edge="end"
+                      >
+                        <Icon path={apiPasswordVisible.value ? mdiEyeOff : mdiEye} size={0.9} />
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }
               }}
             />
           </Item>

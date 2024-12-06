@@ -103,18 +103,20 @@ function EntryList({ onClick }: {
               entryTitleFilter.value = event.target.value;
             }}
             onKeyDown={handleSearchKeyDown}
-            InputProps={{
-              endAdornment: (
-                entryTitleFilter.value.length > 0 &&
-                  <IconButton
-                    size="small"
-                    onClick={() => entryTitleFilter.value = ""}
-                    onMouseDown={preventEventDefault}
-                    edge="end"
-                  >
-                    <Icon path={mdiClose} size={0.9} />
-                  </IconButton>
-              )
+            slotProps={{
+              input: {
+                endAdornment: (
+                  entryTitleFilter.value.length > 0 &&
+                    <IconButton
+                      size="small"
+                      onClick={() => entryTitleFilter.value = ""}
+                      onMouseDown={preventEventDefault}
+                      edge="end"
+                    >
+                      <Icon path={mdiClose} size={0.9} />
+                    </IconButton>
+                )
+              }
             }}
           />
           <IconButton

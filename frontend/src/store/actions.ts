@@ -15,18 +15,21 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { route } from "preact-router";
-import { QueryParams, appState } from "./state";
+import { QueryParams, appState, computedState } from "./state";
 import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
 import { Entry, Feed, FeedUserData, toEntryId } from "./feed";
 
-function apiUrl(rest?: string) {
-}
-
 export async function fetchApi(rest?: string, options?: any) {
   const url = `${appState.settings.value.apiBaseUrl}/${rest ?? ""}`;
   try {
-    const resp = await fetch(url, options);
+    const resp = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        ...computedState.authHeader.value
+      },
+      ...options
+    });
     const body = await resp.json()
     if (!resp.ok) {
       notify("error", `${body.statusText}: ${body.detail}`)
@@ -77,9 +80,6 @@ async function queryEntries(query: {
 }) {
   return await fetchApi("entries/query", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify(query)
   });
 }
@@ -118,9 +118,6 @@ async function getData() {
 export async function fetchData(feeds?: Feed[]) {
   const resp = await fetchApi("", {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify({
       feeds,
       archive: appState.settings.value.archive,
@@ -178,9 +175,6 @@ export async function updateFeed(feed: Feed, userData: FeedUserData) {
   // needs double encoding to include slash in url and decode it once at the server
   const resp =  await fetchApi("feeds", {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify({
       url: feed.url,
       user_data: userData
@@ -239,9 +233,6 @@ export async function deleteFeed(url: string) {
 export async function archiveFeeds(urls?: string[]) {
   const resp =  await fetchApi("", {
     method: "PATCH",
-    headers: {
-      "Content-Type": "application/json"
-    },
     body: JSON.stringify({
       operation: "archive",
       feed_urls: urls

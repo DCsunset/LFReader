@@ -39,7 +39,9 @@ export type Settings = {
   forceArchive: boolean,
   confirmOnExternalLink: boolean,
   playbackRates?: string[],
-  apiBaseUrl: string
+  apiBaseUrl: string,
+  apiUsername?: string,
+  apiPassword?: string,
 };
 
 export type QueryParams = {
@@ -241,6 +243,14 @@ const displayedEntries = computed(() => {
   );
 })
 
+const authHeader = computed(() => {
+  const { apiUsername, apiPassword } = appState.settings.value;
+  if (apiUsername && apiPassword) {
+    const cred = btoa(apiUsername + ":" + apiPassword);
+    return { "Authorization": `Basic ${cred}` }
+  }
+})
+
 export const computedState = {
   currentPage,
   feedTags: computed(() => getTags(appState.data.feeds.value)),
@@ -250,7 +260,8 @@ export const computedState = {
   selectedEntryFeed,
   filteredFeeds,
   filteredEntries,
-  displayedEntries
+  displayedEntries,
+  authHeader
 };
 
 // Persist settings on change
