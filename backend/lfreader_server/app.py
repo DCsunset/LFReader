@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastapi import FastAPI, Query, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import (
   get_swagger_ui_html,
   get_swagger_ui_oauth2_redirect_html
@@ -56,12 +55,6 @@ if config_file:
 app = FastAPI(root_path="/api", docs_url=None, redoc_url=None)
 state = AppState()
 storage = Storage(config)
-
-app.add_middleware(
-  CORSMiddleware,
-  allow_origins=["*"],
-  allow_methods=["*"]
-)
 
 async def taskRunner(task):
   try:
