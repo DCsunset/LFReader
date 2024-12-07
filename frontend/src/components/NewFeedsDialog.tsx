@@ -168,8 +168,8 @@ export default function NewFeedsDialog({ open }: {
         <Box sx={{
           display: "flex",
           mt: 2,
-          minWidth: "400px",
-          alignItems: "center"
+          alignItems: "center",
+          minWidth: { md: "400px" }
         }}>
           <TextField
             inputRef={input => input?.focus()}
