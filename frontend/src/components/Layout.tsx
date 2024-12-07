@@ -17,10 +17,10 @@
 import { createRef } from "preact";
 import { computedState, appState } from "../store/state";
 import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, Zoom, Fab, CircularProgress } from "@mui/material";
-import { SnackbarProvider, enqueueSnackbar } from "notistack";
+import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags, mdiInformation, mdiInformationOutline } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags, mdiInformation, mdiInformationOutline, mdiClose } from '@mdi/js';
 import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -336,7 +336,16 @@ export default function Layout() {
       <FeedDialog />
 
       <ConfirmationDialog />
-      <SnackbarProvider anchorOrigin={{ horizontal: "center", vertical: "bottom" }} />
+      <SnackbarProvider
+        anchorOrigin={{ horizontal: "center", vertical: "bottom" }}
+        autoHideDuration={4000}
+        preventDuplicate
+        action={key => (
+          <IconButton size="small" onClick={() => closeSnackbar(key)}>
+            <Icon path={mdiClose} size={0.8} />
+          </IconButton>
+        )}
+      />
 
       <Box sx={feedListPeerStyle.value}>
         <Slide in={entryList.value} direction="right">
