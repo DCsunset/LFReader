@@ -15,6 +15,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from fastapi import FastAPI, Query, HTTPException
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import PlainTextResponse
 from fastapi.openapi.docs import (
   get_swagger_ui_html,
   get_swagger_ui_oauth2_redirect_html
@@ -151,6 +154,15 @@ async def archive_api(args: ArchiveArgs):
   return {}
 
 ## Error handlers
+
+# use plaintext for HTTP and validation exceptions
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request, exc):
+  return PlainTextResponse(str(exc.detail), status_code=exc.status_code)
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return PlainTextResponse(str(exc), status_code=400)
 
 @app.exception_handler(sqlite3.DatabaseError)
 async def db_exception(request, err: sqlite3.DatabaseError):

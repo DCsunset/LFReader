@@ -30,12 +30,11 @@ export async function fetchApi(rest?: string, options?: any) {
       },
       ...options
     });
-    const body = await resp.json()
     if (!resp.ok) {
-      notify("error", `${body.statusText}: ${body.detail}`)
+      notify("error", await resp.text())
       return undefined;
     }
-    return body;
+    return await resp.json()
   }
   catch (err: any) {
     notify("error", err.message);
