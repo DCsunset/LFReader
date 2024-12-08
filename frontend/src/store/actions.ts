@@ -15,18 +15,16 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { route } from "preact-router";
-import { QueryParams, appState, computedState } from "./state";
+import { QueryParams, appState } from "./state";
 import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
 import { Entry, Feed, FeedUserData, toEntryId } from "./feed";
 
-export async function fetchApi(rest?: string, options?: any) {
-  const url = `${appState.settings.value.apiBaseUrl}/${rest ?? ""}`;
+export async function fetchApi(url: string, options?: any) {
   try {
-    const resp = await fetch(url, {
+    const resp = await fetch(`/api/${url}`, {
       headers: {
         "Content-Type": "application/json",
-        ...computedState.authHeader.value
       },
       ...options
     });
@@ -63,7 +61,7 @@ async function waitForLoading() {
   let backoff = 500;
   while (true) {
     await new Promise(r => setTimeout(r, backoff));
-    const status = await fetchApi("status");
+    const status = await fetchApi("/status");
     if (!status?.loading) {
       appState.status.loading.value = false;
       break;
@@ -77,7 +75,7 @@ async function queryEntries(query: {
   entries?: Array<{ feed_url: string, id: string }>,
   columns?: string[]
 }) {
-  return await fetchApi("entries/query", {
+  return await fetchApi("/entries/query", {
     method: "POST",
     body: JSON.stringify(query)
   });
@@ -85,7 +83,7 @@ async function queryEntries(query: {
 
 async function getData() {
   const [feeds, entries] = await Promise.all([
-    fetchApi("feeds"),
+    fetchApi("/feeds"),
     // Only get entries without content for efficiency
     queryEntries({
       columns: [
@@ -115,7 +113,7 @@ async function getData() {
 }
 
 export async function fetchData(feeds?: Feed[]) {
-  const resp = await fetchApi("", {
+  const resp = await fetchApi("/", {
     method: "POST",
     body: JSON.stringify({
       feeds,
@@ -172,7 +170,7 @@ export async function loadEntryContents(entries: Entry[]) {
 
 export async function updateFeed(feed: Feed, userData: FeedUserData) {
   // needs double encoding to include slash in url and decode it once at the server
-  const resp =  await fetchApi("feeds", {
+  const resp =  await fetchApi("/feeds", {
     method: "PUT",
     body: JSON.stringify({
       url: feed.url,
@@ -213,7 +211,7 @@ export async function deleteFeed(url: string) {
   const query = new URLSearchParams({
     feed_urls: url
   });
-  const resp = await fetchApi(`?${query}`, { method: "DELETE" });
+  const resp = await fetchApi(`/?${query}`, { method: "DELETE" });
   if (resp === undefined) {
     return false;
   }
@@ -230,7 +228,7 @@ export async function deleteFeed(url: string) {
 
 /// Archive entries in database
 export async function archiveFeeds(urls?: string[]) {
-  const resp =  await fetchApi("", {
+  const resp =  await fetchApi("/", {
     method: "PATCH",
     body: JSON.stringify({
       operation: "archive",
