@@ -31,5 +31,5 @@ module.exports = {
 	// read version
 	packageFiles: [ jsonTracker("frontend/package.json") ],
 	// write version
-	bumpFiles: [ jsonTracker("frontend/package.json"), jsonTracker("frontend/package-lock.json"), frontendTracker, jsonTracker("frontend/src-tauri/tauri.conf.json") ]
+	bumpFiles: [ jsonTracker("frontend/package.json"), jsonTracker("frontend/package-lock.json"), frontendTracker ]
 };

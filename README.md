@@ -165,18 +165,6 @@ cd backend
 pip install .
 ```
 
-### Android
-
-First enter the Nix dev shell by `nix develop` and cd into frontend.
-
-To re-initialize the Tauri Android code, run `cargo-tauri android init`.
-
-To build the Android app, run `cargo-tauri android build --apk --target aarch64`.
-
-To sign the app after building it, run `scripts/sign-apk.sh <key> <apk>` in the dev shell.
-
-You can build a different Android target by first changing the required libraries in Nix flake.
-
 
 ## Migration
 
