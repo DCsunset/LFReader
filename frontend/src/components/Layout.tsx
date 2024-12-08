@@ -314,7 +314,7 @@ export default function Layout() {
           <IconButton
             color="inherit"
             title="API Docs"
-            href="/api/docs"
+            href={`${appState.settings.value.apiBaseUrl}/docs`}
             target="_blank"
           >
             <Icon path={mdiCodeTags} size={1} />
