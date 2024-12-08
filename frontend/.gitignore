@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# for dev
+/public/archives
+/public/swagger-ui-dist
+# generated assets
+/public/*.png
+/public/*.ico
+/dev-dist
+
