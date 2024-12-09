@@ -29,7 +29,7 @@ export async function fetchApi(url: string, options?: any) {
       ...options
     });
     if (!resp.ok) {
-      notify("error", await resp.text())
+      notify("error", `${resp.status} ${resp.statusText} ${await resp.text()}`);
       return undefined;
     }
     return await resp.json()

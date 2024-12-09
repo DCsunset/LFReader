@@ -36,7 +36,7 @@ function Item({ title, children }: {
   return (
     <Stack direction="row" className="w-full">
       <span className="font-medium opacity-90 flex items-center">{title}</span>
-      <span className="grow" />
+      <span className="grow min-w-6" />
       <span className="text-right">{children}</span>
     </Stack>
   );
@@ -53,7 +53,15 @@ function AboutDialog({ open }: {
 			onClose={close}
 		>
       <DialogTitle>About LFReader</DialogTitle>
-      <DialogContent className="min-w-80 mt-2">
+      <DialogContent
+        sx={{
+          minWidth: {
+            md: "400px",
+            sm: "300px",
+          }
+        }}
+        className="mt-2"
+      >
         <Stack spacing={1.2}>
           <Item title="Version">
             {version}
