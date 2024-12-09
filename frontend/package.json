@@ -1,12 +1,12 @@
 {
 	"private": true,
 	"type": "module",
-	"version": "2.8.4",
+	"version": "2.9.0",
 	"scripts": {
 		"dev": "vite",
 		"build": "npm run generate-pwa-assets && vite build",
 		"preview": "vite preview",
-    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/logo.svg"
+		"generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/logo.svg"
 	},
 	"dependencies": {
 		"@emotion/react": "^11.13.3",
