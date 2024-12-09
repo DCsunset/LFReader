@@ -31,6 +31,7 @@ export default defineConfig({
         short_name: 'LFReader',
         description: 'Self-hosted **L**ocal-first **F**eed **Reader** written in Python and Preact/React',
         theme_color: '#222222',
+        background_color: '#222222',
         icons: [
           {
             src: 'pwa-64x64.png',
