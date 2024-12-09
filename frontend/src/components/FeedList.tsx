@@ -70,13 +70,14 @@ function FeedList({ onClick }: {
                     size="small"
                     color="inherit"
                     sx={{ p: 0.5 }}
-                    onClick={() => {
+                    onClick={e => {
                       batch(() => {
                         const { feedDialog } = appState;
                         feedDialog.open.value = true;
                         feedDialog.feed.value = feed;
                         feedDialog.onSave = updateFeed;
                       });
+                      e.stopPropagation();
                     }}
                   >
                     <Icon path={mdiLeadPencil} size={0.9} />
