@@ -21,7 +21,7 @@ import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
 import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags, mdiInformation, mdiInformationOutline, mdiClose } from '@mdi/js';
-import { computed, signal, useComputed, useSignal, useSignalEffect } from "@preact/signals";
+import { computed, signal, useComputed, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { loadData, fetchData, handleExternalLink } from "../store/actions";
@@ -37,6 +37,7 @@ import AboutDialog from "./AboutDialog";
 const feedListWidth = "250px";
 const entryListWidth = "350px";
 const toolbarHeight = "50px";
+const feedList = signal(false);
 const entryList = signal(true);
 const dark = computed(() => appState.settings.value.dark);
 const settingsDialog = signal(false);
@@ -64,10 +65,41 @@ function onEntryScroll(e: Event) {
   }
 }
 
+// X position of touch start
+let touchStartX: number | null = null;
+
+// Handle swipe event
+function onTouchStart(e: TouchEvent) {
+  touchStartX = e.changedTouches[0].clientX;
+}
+function onTouchEnd(e: TouchEvent) {
+  if (touchStartX != null) {
+    const distance = e.changedTouches[0].clientX - touchStartX;
+    if (distance > 50) {
+      // left-to-right swiping
+      if (entryList.value) {
+        feedList.value = true;
+      }
+      else {
+        entryList.value = true;
+      }
+    }
+    else if (distance < -50) {
+      // right-to-left swiping
+      if (feedList.value) {
+        feedList.value = false;
+      }
+      else {
+        entryList.value = false;
+      }
+    }
+    touchStartX = null;
+  }
+}
+
 export default function Layout() {
   const theme = useTheme();
   const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
-  const feedList = useSignal(!smallDevice);
 
   // Responsive style for showing list peer
   const feedListPeerStyle = useComputed<SxProps>(() => ({
@@ -132,6 +164,23 @@ export default function Layout() {
       enqueueSnackbar(text, { variant: color });
     }
   });
+
+  useEffect(() => {
+    // Capture all touch events
+    document.addEventListener("touchstart", onTouchStart);
+    document.addEventListener("touchend", onTouchEnd);
+
+    // Cleanup
+    return () => {
+      document.removeEventListener("touchstart", onTouchStart);
+      document.removeEventListener("touchend", onTouchEnd);
+    };
+  }, []);
+
+  // Show feedList on large screen on startup
+  useEffect(() => {
+    feedList.value = !smallDevice;
+  }, [smallDevice])
 
   return (
     <>
