@@ -55,6 +55,14 @@ const scrollButton = signal(false);
 const scrollToTop = () => {
   entryRef.current?.scrollTo({ top: 0, behavior: "smooth" });
 };
+// Show scroll button when scrollTop is greater than a value
+function onEntryScroll(e: Event) {
+  const el = e.target as HTMLElement;
+  const visible = el.scrollTop > 200;
+  if (scrollButton.value != visible) {
+    scrollButton.value = visible;
+  }
+}
 
 export default function Layout() {
   const theme = useTheme();
@@ -124,15 +132,6 @@ export default function Layout() {
       enqueueSnackbar(text, { variant: color });
     }
   });
-
-  useEffect(() => {
-    // Show scroll button when pageY is greater than a value
-    // Must use effect hook as entryRef is only available after mounting
-    const element = entryRef.current;
-    element?.addEventListener("scroll", () => {
-      scrollButton.value = element!.scrollTop > 200;
-    });
-  }, []);
 
   return (
     <>
@@ -368,18 +367,21 @@ export default function Layout() {
           </Box>
         </Slide>
 
-        <Box ref={entryRef} sx={{
-          py: 4,
-          px: {
-            xs: entryList.value ? 0 : 2,
-            sm: 4,
-            md: 6,
-            lg: 8
-          },
-          height: `calc(100vh - ${toolbarHeight})`,
-          overflowY: "scroll",
-          ...entryListPeerStyle.value
-        }}>
+        <Box
+          ref={entryRef}
+          onScroll={onEntryScroll}
+          sx={{
+            py: 4,
+            px: {
+              xs: entryList.value ? 0 : 2,
+              sm: 4,
+              md: 6,
+              lg: 8
+            },
+            height: `calc(100vh - ${toolbarHeight})`,
+            overflowY: "scroll",
+            ...entryListPeerStyle.value
+          }}>
           <Entry />
         </Box>
 
