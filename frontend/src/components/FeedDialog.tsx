@@ -23,11 +23,8 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  Grid,
   IconButton,
-  List,
-  ListItem,
-  ListItemText,
+  Stack,
   TextField,
   Typography
 } from "@mui/material";
@@ -38,6 +35,7 @@ import Icon from "@mdi/react";
 import { mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
 import { appState, lookupFeed } from "../store/state";
+import Item from "./SettingsItem";
 
 // local states
 const alias = signal("");
@@ -50,6 +48,8 @@ const archiveInterval = signal("");
 const archiveIntervalError = signal(false);
 const deleteInProgress = signal(false);
 const loading = appState.status.loading;
+
+// TODO add tags
 
 const { open, feed } = appState.feedDialog;
 const existing = computed(() => Boolean(lookupFeed(feed.value?.url)));
@@ -131,276 +131,178 @@ export default function FeedDialog() {
       disableBackdropClick
       fullWidth
     >
-      <DialogTitle sx={{ pb: 0 }}>
+      <DialogTitle>
         Feed Settings for <em>{getFeedTitle(feed.value)}</em>
       </DialogTitle>
-      <DialogContent sx={{ px: 1 }}>
-        <List>
-          <Box sx={{ mx: 2, mt: 2 }}>
+      <DialogContent>
+        <Stack spacing={1}>
+          <div>
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>
               General
             </Typography>
             <Divider />
-          </Box>
+          </div>
 
           {feed.value?.link &&
-            <ListItem>
-              <Grid container justifyContent="space-between" alignItems="center">
-                <Grid item>
-                  <ListItemText>
-                    Feed Home Page
-                  </ListItemText>
-                </Grid>
-                <Grid item>
-                  <a
-                    href={feed.value?.link}
-                    target="_blank"
-                    onClick={handleExternalLink}
-                  >
-                    {feed.value?.title || "(No Title)"}
-                  </a>
-                </Grid>
-              </Grid>
-            </ListItem>
+            <Item title="Feed Home Page">
+              <a
+                href={feed.value?.link}
+                target="_blank"
+                onClick={handleExternalLink}
+              >
+                {feed.value?.title || "(No Title)"}
+              </a>
+            </Item>
           }
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText>
-                  Feed URL
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <IconButton
-                  color="inherit"
-                  target="_blank"
-                  href={feed.value?.url}
-                  onClick={handleExternalLink}
-                >
-                  <Icon path={mdiOpenInNew} size={1} />
-                </IconButton>
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item title="Feed URL">
+            <IconButton
+              color="inherit"
+              target="_blank"
+              href={feed.value?.url}
+              onClick={handleExternalLink}
+            >
+              <Icon path={mdiOpenInNew} size={1} />
+            </IconButton>
+          </Item>
 
           {existing.value &&
-            <ListItem>
-              <Grid container justifyContent="space-between" alignItems="center">
-                <Grid item>
-                  <ListItemText>
-                    Feed Operations
-                  </ListItemText>
-                </Grid>
-                <Grid item>
-                  <LoadingButton
-                    loading={loading.value}
-                    loadingPosition="start"
-                    color="primary"
-                    onClick={handleArchive}
-                    startIcon={<Icon path={mdiContentSave} size={1} />}
-                  >
-                    <Box sx={{ mt: 0.2 }}>Archive</Box>
-                  </LoadingButton>
-                  <LoadingButton
-                    loading={loading.value}
-                    loadingPosition="start"
-                    color="success"
-                    onClick={handleFetch}
-                    startIcon={<Icon path={mdiDownload} size={1} />}
-                  >
-                    <Box sx={{ mt: 0.2 }}>Fetch</Box>
-                  </LoadingButton>
-                  <LoadingButton
-                    loading={deleteInProgress.value}
-                    loadingPosition="start"
-                    color="error"
-                    onClick={handleDelete}
-                    startIcon={<Icon path={mdiDelete} size={1} />}
-                  >
-                    <Box sx={{ mt: 0.2 }}>Delete</Box>
-                  </LoadingButton>
-                </Grid>
-              </Grid>
-            </ListItem>
+            <Item title="feed Operations">
+              <LoadingButton
+                loading={loading.value}
+                loadingPosition="start"
+                color="primary"
+                onClick={handleArchive}
+                startIcon={<Icon path={mdiContentSave} size={1} />}
+              >
+                <Box sx={{ mt: 0.2 }}>Archive</Box>
+              </LoadingButton>
+              <LoadingButton
+                loading={loading.value}
+                loadingPosition="start"
+                color="success"
+                onClick={handleFetch}
+                startIcon={<Icon path={mdiDownload} size={1} />}
+              >
+                <Box sx={{ mt: 0.2 }}>Fetch</Box>
+              </LoadingButton>
+              <LoadingButton
+                loading={deleteInProgress.value}
+                loadingPosition="start"
+                color="error"
+                onClick={handleDelete}
+                startIcon={<Icon path={mdiDelete} size={1} />}
+              >
+                <Box sx={{ mt: 0.2 }}>Delete</Box>
+              </LoadingButton>
+            </Item>
           }
 
-          <Box sx={{ mx: 2, mt: 2 }}>
+
+          <div className="pt-4">
             <Typography color="textSecondary" sx={{ mb: 0.5 }}>
               User Data
             </Typography>
             <Divider />
-          </Box>
+          </div>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    an alias for feed title
-                  </span>
-                }>
-                  Alias
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <TextField
-                  variant="standard"
-                  value={alias.value}
-                  placeholder={feed.value?.title || "(No Title)"}
-                  onChange={(event: any) => {
-                    alias.value = event.target.value;
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item title="Alias" subtitle="an alias for feed title">
+            <TextField
+              variant="standard"
+              value={alias.value}
+              placeholder={feed.value?.title || "(No Title)"}
+              onChange={(event: any) => {
+                alias.value = event.target.value;
+              }}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    used for archiving resources
-                  </span>
-                }>
-                  Resource Base URL
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <TextField
-                  variant="standard"
-                  value={baseUrl.value}
-                  placeholder="(auto)"
-                  onChange={(event: any) => {
-                    baseUrl.value = event.target.value;
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="Resource Base URL"
+            subtitle="used for archiving resources"
+          >
+            <TextField
+              variant="standard"
+              value={baseUrl.value}
+              placeholder="(auto)"
+              onChange={(event: any) => {
+                baseUrl.value = event.target.value;
+              }}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    only fetch entries after a date (ISO format)
-                  </span>
-                }>
-                  After Date
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <TextField
-                  variant="standard"
-                  value={afterDate.value}
-                  placeholder="(none)"
-                  onChange={(event: any) => {
-                    afterDate.value = event.target.value;
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="After Date"
+            subtitle="only fetch entries after a date (ISO format)"
+          >
+            <TextField
+              variant="standard"
+              value={afterDate.value}
+              placeholder="(none)"
+              onChange={(event: any) => {
+                afterDate.value = event.target.value;
+              }}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    default playback rate for media in enclosures
-                  </span>
-                }>
-                  Playback Rate
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <TextField
-                  variant="standard"
-                  value={playbackRate.value}
-                  placeholder="(unchanged)"
-                  onChange={(event: any) => {
-                    playbackRate.value = event.target.value;
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="Playback Rate"
+            subtitle="default playback rate for media in enclosures"
+          >
+            <TextField
+              variant="standard"
+              value={playbackRate.value}
+              placeholder="(unchanged)"
+              onChange={(event: any) => {
+                playbackRate.value = event.target.value;
+              }}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    url regex to blacklist when archiving
-                  </span>
-                }>
-                  Archive Blacklist
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <TextField
-                  variant="standard"
-                  value={archiveBlacklist.value}
-                  placeholder="(none)"
-                  onChange={(event: any) => {
-                    archiveBlacklist.value = event.target.value;
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            subtitle="url regex to blacklist when archiving"
+            title="Archive Blacklist"
+          >
+            <TextField
+              variant="standard"
+              value={archiveBlacklist.value}
+              placeholder="(none)"
+              onChange={(event: any) => {
+                archiveBlacklist.value = event.target.value;
+              }}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    archive resources sequentially instead of concurrently
-                  </span>
-                }>
-                  Archive Sequentially
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <Checkbox
-                  checked={archiveSequential.value}
-                  onChange={(e: any) => archiveSequential.value = e.target.checked}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
+          <Item
+            title="Archive Sequentially"
+            subtitle="archive resources sequentially instead of concurrently"
+          >
+            <Checkbox
+              checked={archiveSequential.value}
+              onChange={(e: any) => archiveSequential.value = e.target.checked}
+            />
+          </Item>
 
-          <ListItem>
-            <Grid container justifyContent="space-between" alignItems="center">
-              <Grid item>
-                <ListItemText secondary={
-                  <span>
-                    only applied when archiving sequentially (in seconds)
-                  </span>
-                }>
-                  Archive Interval
-                </ListItemText>
-              </Grid>
-              <Grid item>
-                <TextField
-                  variant="standard"
-                  sx={{ maxWidth: "45px" }}
-                  error={archiveIntervalError.value}
-                  value={archiveInterval.value}
-                  disabled={!archiveSequential.value}
-                  onChange={(event: any) => {
-                    const value = event.target.value;
-                    archiveIntervalError.value = Boolean(value && !(parseFloat(value) > 0));
-                    archiveInterval.value = value;
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </ListItem>
-        </List>
+          <Item
+            title="Archive Interval"
+            subtitle="only applied when archiving sequentially (in seconds)"
+          >
+            <TextField
+              variant="standard"
+              sx={{ maxWidth: "45px" }}
+              error={archiveIntervalError.value}
+              value={archiveInterval.value}
+              disabled={!archiveSequential.value}
+              onChange={(event: any) => {
+                const value = event.target.value;
+                archiveIntervalError.value = Boolean(value && !(parseFloat(value) > 0));
+                archiveInterval.value = value;
+              }}
+            />
+          </Item>
+        </Stack>
       </DialogContent>
+
       <DialogActions>
         <Button color="inherit" onClick={close}>Cancel</Button>
         <Button color="error" onClick={reset}>Reset</Button>

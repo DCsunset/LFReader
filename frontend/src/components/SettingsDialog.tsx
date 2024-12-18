@@ -24,7 +24,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  ListItemText,
   Stack,
   TextField,
   Typography,
@@ -35,6 +34,7 @@ import { batch, Signal, signal } from "@preact/signals";
 import { LoadingButton } from "@mui/lab";
 import Icon from "@mdi/react";
 import { mdiContentSave } from "@mdi/js";
+import Item from "./SettingsItem";
 
 const validNumber = (value: string, min: number, max: number, int: boolean) => {
   if (value.length === 0) {
@@ -63,22 +63,6 @@ const reset = () => {
     confirmOnExternalLink.value = appState.settings.value.confirmOnExternalLink;
   });
 };
-
-function Item({ title, subtitle, children }: {
-  title: string,
-  subtitle?: any,
-  children: any
-}) {
-  return (
-    <Stack direction="row" className="w-full items-center">
-      <ListItemText secondary={subtitle && <span>{subtitle}</span>}>
-        {title}
-      </ListItemText>
-      <span className="grow min-w-2" />
-      <span className="text-right">{children}</span>
-    </Stack>
-  );
-}
 
 export default function SettingsDialog({ open }: {
   open: Signal<boolean>
