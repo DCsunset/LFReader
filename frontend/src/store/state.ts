@@ -16,7 +16,7 @@
 
 import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
-import { Entry, Feed, FeedUserData, getEntryTitle } from "./feed";
+import { Entry, Feed, FeedUserData, filterEntries, getEntryTitle } from "./feed";
 import { loadData, loadEntryContents } from "./actions";
 import { Base64 } from "js-base64";
 
@@ -42,11 +42,16 @@ export type Settings = {
 };
 
 export type QueryParams = {
+  tag?: string,
   feed?: string,
   entry?: string,
   page?: string,
   entryTitleFilter?: string
 };
+
+function attrByPath(obj: any, path: string) {
+  return path.split(".").reduce((v, key) => v?.[key], obj);
+}
 
 function merge(value: any, init: any) {
   if (value?.constructor === Object) {
@@ -94,8 +99,9 @@ export const appState = {
     confirmOnExternalLink: false,
 	})),
   ui: {
-    excludedTags: signal([] as string[]),
-    editingFeeds: signal(false)
+    editingFeeds: signal(false),
+    // state of each feed group by tag
+    feedGroupStates: signal(loadState("ui.feedGroupStates", {} as { [tag: string]: boolean })),
   },
   data: {
     feeds: signal([] as Feed[]),
@@ -163,19 +169,6 @@ function getTags(items: any[]) {
     .filter(v => v);
 }
 
-// Feeds to show in FeedList
-const filteredFeeds = computed(() => {
-  const excludedTags = appState.ui.excludedTags.value;
-  return appState.data.feeds.value.filter(feed => {
-    for (const t of feed.user_data?.tags ?? []) {
-      if (excludedTags.includes(t)) {
-        return false;
-      }
-    }
-    return true;
-  });
-});
-
 // active feed
 const selectedFeed = computed(() => {
   const feed_id  = appState.queryParams.value.feed;
@@ -201,28 +194,15 @@ const selectedEntryFeed = computed(() => {
 });
 
 function regexpFromString(str?: string) {
-  return str && (str.length > 0 ? new RegExp(str) : undefined);
+  return str ? new RegExp(str) : undefined;
 }
 
 const filteredEntries = computed(() => {
-  const entries = appState.data.entries.value;
-  const selectedFeedUrl = selectedFeed.value?.url;
-  // show entries of filtered feeds
-  const urls = selectedFeedUrl ? undefined : new Set(filteredFeeds.value.map(f => f.url));
-  const entryTitleRe = regexpFromString(appState.queryParams.value.entryTitleFilter);
-
-  const filters: ((entry: Entry) => boolean)[] = [
-    // filter by feeds
-    v => (
-      selectedFeedUrl
-        ? v.feed_url === selectedFeedUrl
-        : Boolean(urls?.has(v.feed_url))
-    ),
-    // filter by entryTitle
-    v => !entryTitleRe || entryTitleRe.test(getEntryTitle(v))
-  ];
-
-  return entries.filter(v => filters.map(f => f(v)).every(r => r));
+  const feed = selectedFeed.value;
+  return filterEntries(appState.data.entries.value, {
+    feeds: feed && [feed],
+    titleRegex: regexpFromString(appState.queryParams.value.entryTitleFilter)
+  });
 });
 
 const currentPage = computed(() => {
@@ -246,22 +226,23 @@ export const computedState = {
   selectedFeed,
   selectedEntry,
   selectedEntryFeed,
-  filteredFeeds,
   filteredEntries,
   displayedEntries,
 };
 
-// Persist settings on change
-effect(() => {
-  localStorage.setItem(appKey("settings"), JSON.stringify(appState.settings.value));
-});
 
-// Persist ui states on change
-for (const [key, item] of Object.entries(appState.ui)) {
+// Persist state on change
+function saveState(path: string) {
   effect(() => {
-    localStorage.setItem(appKey(`ui.${key}`), JSON.stringify(item.value));
+    localStorage.setItem(
+      appKey(path),
+      JSON.stringify(attrByPath(appState, path).value)
+    );
   });
 }
+
+saveState("settings");
+saveState("ui.feedGroupStates");
 
 // Fetch content on page change
 effect(() => {

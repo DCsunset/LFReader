@@ -87,3 +87,47 @@ export function getFeedTitle(feed?: Feed, fallback: string = "(No Title)") {
   return feed?.user_data.alias || feed?.title || fallback;
 }
 
+export function tagTitle(tag?: string) {
+  switch (tag) {
+  case undefined:
+    return "All";
+  case "_none":
+    return "Untagged";
+  default:
+    return tag;
+  }
+}
+
+export function filterFeeds(feeds: Feed[], { tag }: {
+  // undefined means all, empty string means without tag
+  tag?: string
+}) {
+  return feeds.filter(f => {
+    if (tag === undefined) {
+      return true;
+    }
+    if (tag === "_none") {
+      return !f.user_data?.tags?.length;
+    }
+    for (const t of f.user_data?.tags ?? []) {
+      if (tag === t) {
+        return true;
+      }
+    }
+    return false;
+  });
+}
+
+export function filterEntries(entries: Entry[], { feeds, titleRegex }: {
+  feeds?: Feed[],
+  titleRegex?: RegExp
+}) {
+  const urlSet = feeds ? new Set(feeds.map(f => f.url)) : null;
+
+  return entries.filter(v =>
+    // filter by feeds
+    (urlSet?.has(v.feed_url) ?? true)
+      // filter by entryTitle
+      && (titleRegex?.test(getEntryTitle(v)) ?? true)
+  );
+}

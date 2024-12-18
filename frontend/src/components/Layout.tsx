@@ -20,7 +20,7 @@ import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, St
 import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags, mdiInformation, mdiInformationOutline, mdiClose } from '@mdi/js';
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags, mdiInformationOutline, mdiClose } from '@mdi/js';
 import { computed, signal, useComputed, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
@@ -29,7 +29,7 @@ import FeedList from "./FeedList";
 import EntryList from "./EntryList";
 import NewFeedsDialog from "./NewFeedsDialog";
 import Entry from "./Entry";
-import { getEntryTitle, getFeedTitle } from "../store/feed";
+import { getEntryTitle, getFeedTitle, tagTitle } from "../store/feed";
 import { anchorNoStyle } from "../utils/styles";
 import FeedDialog from "./FeedDialog";
 import AboutDialog from "./AboutDialog";
@@ -229,7 +229,7 @@ export default function Layout() {
                 style={anchorNoStyle}
                 onClick={handleExternalLink}
               >
-                {getFeedTitle(selectedFeed.value, "All")}
+                {getFeedTitle(selectedFeed.value, tagTitle(appState.queryParams.value.tag))}
               </a>
             }
           </Typography>
