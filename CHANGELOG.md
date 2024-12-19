@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.10.0](https://github.com/DCsunset/LFReader/compare/v2.9.1...v2.10.0) (2024-12-19)
+
+
+### Features
+
+* **frontend:** group feeds by tags in feed list ([5009d83](https://github.com/DCsunset/LFReader/commit/5009d830e22448822d1a76e72eff49aa95476d2d))
+* **frontend:** support adding tags for feeds and fix some styles ([84a1492](https://github.com/DCsunset/LFReader/commit/84a1492f8b94540bc76b05baab0b146a51f5ebfd))
+* **frontend:** support swiping to toggle feed and entry lists ([dd23e05](https://github.com/DCsunset/LFReader/commit/dd23e0512cc96066dc10d080d7450ea8eed97d02))
+
+
+### Bug Fixes
+
+* **frontend:** make background color same as theme color ([5583baf](https://github.com/DCsunset/LFReader/commit/5583bafa789098a91a42ea12fc7ca527f6eaac22))
+* **frontend:** optimize scroll event on entry ([b576618](https://github.com/DCsunset/LFReader/commit/b5766180599fbaa8fa238f922709b12ecb9593d7))
+* **frontend:** stop propagation after clicking edit icon ([caea5c7](https://github.com/DCsunset/LFReader/commit/caea5c7d9d52943555df7f9bf98d572c17a34a8d))
+
+
+### Misc
+
+* **frontend:** reuse settings item in dialogs ([e4aba1e](https://github.com/DCsunset/LFReader/commit/e4aba1eb3accf83ad02a4500bd1a0594172e4d69))
+* remove unnecessary version and fix versionrc ([3d7025a](https://github.com/DCsunset/LFReader/commit/3d7025a2498f7c3088010582b6a892fdc91e202f))
+
 ## [2.9.1](https://github.com/DCsunset/LFReader/compare/v2.9.0...v2.9.1) (2024-12-09)
 
 
