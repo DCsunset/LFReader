@@ -219,7 +219,10 @@ export default function FeedDialog() {
             />
           </Item>
 
-          <Item title="Tags" subtitle="tags for this feed">
+          <Item
+            title="Tags"
+            subtitle={<>Set tags for this feed. <br /> (Type and press Enter to add new tag)</>}
+          >
             <Autocomplete
               sx={{
                 width: {
