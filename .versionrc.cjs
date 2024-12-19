@@ -1,4 +1,4 @@
-const re = /version = "v(\d\.\d\.\d)"/;
+const re = /version = "v(\d+\.\d+\.\d+)"/;
 
 function jsonTracker(filename) {
   return {
@@ -29,7 +29,7 @@ module.exports = {
     {"type": "build", "section": "Misc"}
   ],
 	// read version
-	packageFiles: [ jsonTracker("frontend/package.json") ],
+	packageFiles: [ frontendTracker ],
 	// write version
-	bumpFiles: [ jsonTracker("frontend/package.json"), jsonTracker("frontend/package-lock.json"), frontendTracker ]
+	bumpFiles: [ frontendTracker ]
 };
