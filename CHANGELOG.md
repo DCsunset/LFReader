@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.10.1](https://github.com/DCsunset/LFReader/compare/v2.10.0...v2.10.1) (2024-12-19)
+
+
+### Bug Fixes
+
+* **frontend:** fix query params encoding & improve ui ([088ecc9](https://github.com/DCsunset/LFReader/commit/088ecc91c5f6bc7354c452b486e8e3341abe5feb))
+* **frontend:** improve description of adding tags ([d89cd8c](https://github.com/DCsunset/LFReader/commit/d89cd8c73e05f9f1f681e45a9fc239f4ff76d364))
+
 ## [2.10.0](https://github.com/DCsunset/LFReader/compare/v2.9.1...v2.10.0) (2024-12-19)
 
 
