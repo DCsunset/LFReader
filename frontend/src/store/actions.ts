@@ -19,6 +19,7 @@ import { QueryParams, appState } from "./state";
 import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
 import { Entry, Feed, FeedUserData, toEntryId } from "./feed";
+import { Base64 } from "js-base64";
 
 export async function fetchApi(url: string, options?: any) {
   try {
@@ -192,6 +193,14 @@ export async function updateFeed(feed: Feed, userData: FeedUserData) {
   return true;
 }
 
+function encodeQueryItem(item?: string) {
+  return item && Base64.encode(item, true);
+}
+
+function decodeQueryItem(item: string) {
+  return Base64.isValid(item) ? Base64.decode(item) : undefined;
+}
+
 // update query params
 export function updateQueryParams(params: QueryParams, reset: boolean = false) {
   // merge with original params if not resetting
@@ -199,11 +208,26 @@ export function updateQueryParams(params: QueryParams, reset: boolean = false) {
     ...appState.queryParams.value,
     ...params,
   };
+  // Encode items
+  newParams.tag = encodeQueryItem(newParams.tag);
+
   // remove undefined fields
-  Object.keys(newParams).forEach(
-    k => newParams[k] === undefined && delete newParams[k]
-  );
+  for (const key of Object.keys(newParams)) {
+    const k = key as keyof QueryParams;
+    if (newParams[k] === undefined) {
+      delete newParams[k];
+    }
+  }
   route(`/?${new URLSearchParams(newParams)}`);
+}
+
+// Decode some fields from raw query params
+export function parseRawQueryParams(params: any): QueryParams {
+  return {
+    ...params,
+    // Decode items
+    tag: decodeQueryItem(params.tag)
+  };
 }
 
 /// Delete feed

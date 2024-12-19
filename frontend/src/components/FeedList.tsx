@@ -16,7 +16,7 @@
 
 import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
 import { computedState, appState } from "../store/state";
-import { filterEntries, filterFeeds, getFeedTitle, tagTitle, toFeedId } from "../store/feed";
+import { filterFeeds, getFeedTitle, tagTitle, toFeedId } from "../store/feed";
 import { updateFeed, updateQueryParams } from "../store/actions";
 import { batch, computed, useComputed } from "@preact/signals";
 import { mdiChevronRight, mdiLeadPencil } from "@mdi/js";
@@ -25,6 +25,8 @@ import Icon from '@mdi/react';
 const selectedFeed = computedState.selectedFeed;
 const editing = appState.ui.editingFeeds;
 const feedGroupStates = appState.ui.feedGroupStates;
+const allEntries = appState.data.entries;
+const queryParams = appState.queryParams;
 
 const tagId = (tag?: string) => tag ?? "_all";
 
@@ -34,7 +36,6 @@ function FeedGroup({ tag, onClick }: {
   onClick: () => any
 }) {
   const feeds = useComputed(() => filterFeeds(appState.data.feeds.value, { tag }));
-  const entries = useComputed(() => filterEntries(appState.data.entries.value, { feeds: feeds.value }));
   const visible = useComputed(() => feedGroupStates.value[tagId(tag)] ?? (tag !== "_none"));
 
   return (
@@ -45,7 +46,7 @@ function FeedGroup({ tag, onClick }: {
           onClick();
           updateQueryParams({ feed: undefined, tag }, true);
         }}
-        selected={appState.queryParams.value.tag === tag}
+        selected={queryParams.value.tag === tag && !queryParams.value.feed}
       >
         <Box sx={{ mr: 0.5 }}>
           <IconButton
@@ -77,7 +78,7 @@ function FeedGroup({ tag, onClick }: {
           fontSize: "0.85rem",
           display: "inline"
         }}>
-          ({entries.value.length})
+          ({feeds.value.length})
         </Box>
       </ListItemButton>
       <Collapse in={visible.value}>
@@ -137,7 +138,7 @@ function FeedGroup({ tag, onClick }: {
                 fontSize: "0.85rem",
                 display: "inline"
               }}>
-                ({entries.value.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
+                ({allEntries.value.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
               </Box>
             </ListItemButton>
           );
