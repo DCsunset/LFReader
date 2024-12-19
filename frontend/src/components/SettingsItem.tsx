@@ -7,10 +7,13 @@ export default function SettingsItem({ title, subtitle, children }: {
 }) {
   return (
     <Stack direction="row" className="w-full items-center">
-      <ListItemText secondary={subtitle && <span>{subtitle}</span>}>
+      <ListItemText
+        className="!min-w-20"
+        secondary={subtitle && <span>{subtitle}</span>}
+      >
         {title}
       </ListItemText>
-      <span className="grow min-w-2" />
+      <span className="grow min-w-3" />
       <span className="text-right">{children}</span>
     </Stack>
   );

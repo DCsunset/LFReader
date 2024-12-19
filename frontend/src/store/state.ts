@@ -164,9 +164,9 @@ export function fromFeedId(feed_id: string) {
 
 // Get tags from feeds or entries
 function getTags(items: any[]) {
-  return items
-    .map(v => v.user_data?.tags)
-    .filter(v => v);
+  const tagSet = new Set<string>();
+  items.forEach(v => v.user_data?.tags?.forEach((t: string) => tagSet.add(t)));
+  return [...tagSet];
 }
 
 // active feed

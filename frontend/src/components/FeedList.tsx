@@ -150,12 +150,16 @@ function FeedGroup({ tag, onClick }: {
 function FeedList({ onClick }: {
   onClick: () => any
 }) {
-  const tags = computed(() => computedState.feedTags.value.concat([ undefined, "_none" ]));
+  const tags = computed(() => [
+    undefined,
+    ...computedState.feedTags.value,
+    "_none"
+  ]);
 
 	return (
     <>
       <List sx={{ width: "100%" }}>
-        {tags.value.map(tag => <FeedGroup tag={tag} onClick={onClick} />)}
+        {tags.value.map(tag => <FeedGroup key={tag} tag={tag} onClick={onClick} />)}
       </List>
     </>
 	);

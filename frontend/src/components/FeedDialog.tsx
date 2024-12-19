@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import {
+  Autocomplete,
   Box,
   Button,
   Checkbox,
@@ -34,11 +35,12 @@ import { archiveFeeds, deleteFeed, fetchData, handleExternalLink } from "../stor
 import Icon from "@mdi/react";
 import { mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
-import { appState, lookupFeed } from "../store/state";
+import { appState, computedState, lookupFeed } from "../store/state";
 import Item from "./SettingsItem";
 
 // local states
 const alias = signal("");
+const tags = signal([] as string[]);
 const baseUrl = signal("");
 const afterDate = signal("");
 const playbackRate = signal("");
@@ -48,8 +50,6 @@ const archiveInterval = signal("");
 const archiveIntervalError = signal(false);
 const deleteInProgress = signal(false);
 const loading = appState.status.loading;
-
-// TODO add tags
 
 const { open, feed } = appState.feedDialog;
 const existing = computed(() => Boolean(lookupFeed(feed.value?.url)));
@@ -63,6 +63,7 @@ const reset = () => {
   const f = feed.value;
   batch(() => {
     alias.value = f?.user_data.alias ?? "";
+    tags.value = f?.user_data.tags ?? [];
     baseUrl.value = f?.user_data.base_url ?? "";
     afterDate.value = f?.user_data.after_date ?? "";
     playbackRate.value = f?.user_data.playback_rate ?? "";
@@ -77,6 +78,7 @@ const save = async () => {
   const userData: FeedUserData = {
     ...(feed.value?.user_data || {}),
     alias: alias.value || undefined,
+    tags: tags.value.length > 0 ? tags.value : undefined,
     base_url: baseUrl.value || undefined,
     after_date: afterDate.value || undefined,
     playback_rate: playbackRate.value || undefined,
@@ -214,6 +216,27 @@ export default function FeedDialog() {
               onChange={(event: any) => {
                 alias.value = event.target.value;
               }}
+            />
+          </Item>
+
+          <Item title="Tags" subtitle="tags for this feed">
+            <Autocomplete
+              sx={{
+                width: {
+                  sm: "200px"
+                },
+                minWidth: {
+                  xs: tags.value.length > 0 ? undefined : "80px"
+                }
+              }}
+              multiple
+              freeSolo
+              options={computedState.feedTags.value}
+              value={tags.value}
+              onChange={(_e, val) => tags.value = val}
+              renderInput={params =>
+                <TextField {...params} variant="standard" />
+              }
             />
           </Item>
 

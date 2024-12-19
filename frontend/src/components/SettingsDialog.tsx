@@ -127,19 +127,19 @@ export default function SettingsDialog({ open }: {
             subtitle={<>Set playback rates (0 to 5) for enclosures. <br /> (Press Enter to add number)</>}
           >
             <Autocomplete
+              className={allRates.value.length > 0 ? undefined : "min-w-15"}
               multiple
               freeSolo
-              style={{ maxWidth: "220px" }}
-              options={[]}
+              options={["1", "1.1", "1.2", "1.3", "1.4", "1.5"]}
               value={allRates.value}
               onChange={(_e, val) => {
                 allRates.value = val.filter(v => validNumber(v, 0, 5, false));
               }}
               inputValue={currentRate.value}
               onInputChange={(_e, val) => currentRate.value = val}
-              renderInput={params => (
+              renderInput={params =>
                 <TextField {...params} variant="standard" />
-              )}
+              }
             />
           </Item>
 
