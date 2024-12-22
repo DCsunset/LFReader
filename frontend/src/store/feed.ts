@@ -32,6 +32,7 @@ export type Feed = {
   link?: string,
   icon?: string,
   title?: string,
+  subtitle?: string,
   author?: string,
   updated_at?: string,
   user_data: FeedUserData

@@ -145,19 +145,7 @@ export default function FeedDialog() {
             <Divider />
           </div>
 
-          {feed.value?.link &&
-            <Item title="Feed Home Page">
-              <a
-                href={feed.value?.link}
-                target="_blank"
-                onClick={handleExternalLink}
-              >
-                {feed.value?.title || "(No Title)"}
-              </a>
-            </Item>
-          }
-
-          <Item title="Feed URL">
+          <Item title="URL">
             <IconButton
               color="inherit"
               target="_blank"
@@ -168,36 +156,56 @@ export default function FeedDialog() {
             </IconButton>
           </Item>
 
-          {existing.value &&
-            <Item title="feed Operations">
-              <LoadingButton
-                loading={loading.value}
-                loadingPosition="start"
-                color="primary"
-                onClick={handleArchive}
-                startIcon={<Icon path={mdiContentSave} size={1} />}
+          {feed.value?.link &&
+            <Item title="Home Page">
+              <a
+                href={feed.value?.link}
+                target="_blank"
+                onClick={handleExternalLink}
               >
-                <Box sx={{ mt: 0.2 }}>Archive</Box>
-              </LoadingButton>
-              <LoadingButton
-                loading={loading.value}
-                loadingPosition="start"
-                color="success"
-                onClick={handleFetch}
-                startIcon={<Icon path={mdiDownload} size={1} />}
-              >
-                <Box sx={{ mt: 0.2 }}>Fetch</Box>
-              </LoadingButton>
-              <LoadingButton
-                loading={deleteInProgress.value}
-                loadingPosition="start"
-                color="error"
-                onClick={handleDelete}
-                startIcon={<Icon path={mdiDelete} size={1} />}
-              >
-                <Box sx={{ mt: 0.2 }}>Delete</Box>
-              </LoadingButton>
+                {feed.value?.title || "(No Title)"}
+              </a>
             </Item>
+          }
+
+          {existing.value &&
+            <>
+              <Item title="Description">
+                <div className="max-w-80 opacity-75">
+                  {feed.value.subtitle}
+                </div>
+              </Item>
+
+              <Item title="Operations">
+                <LoadingButton
+                  loading={loading.value}
+                  loadingPosition="start"
+                  color="primary"
+                  onClick={handleArchive}
+                  startIcon={<Icon path={mdiContentSave} size={1} />}
+                >
+                  <Box sx={{ mt: 0.2 }}>Archive</Box>
+                </LoadingButton>
+                <LoadingButton
+                  loading={loading.value}
+                  loadingPosition="start"
+                  color="success"
+                  onClick={handleFetch}
+                  startIcon={<Icon path={mdiDownload} size={1} />}
+                >
+                  <Box sx={{ mt: 0.2 }}>Fetch</Box>
+                </LoadingButton>
+                <LoadingButton
+                  loading={deleteInProgress.value}
+                  loadingPosition="start"
+                  color="error"
+                  onClick={handleDelete}
+                  startIcon={<Icon path={mdiDelete} size={1} />}
+                >
+                  <Box sx={{ mt: 0.2 }}>Delete</Box>
+                </LoadingButton>
+              </Item>
+            </>
           }
 
 
