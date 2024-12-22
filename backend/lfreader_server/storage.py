@@ -298,7 +298,7 @@ class Storage:
             if (e_published and e_published < after_date) or (e_updated and e_updated < after_date):
               continue
 
-          e_id = e.get("id", e.link)
+          e_id = e.get("id", e.get("link"))
           e_title = e.get("title", e_id)
           logging.debug(f'Processing entry {e_title}...')
 
@@ -316,7 +316,7 @@ class Storage:
 
 
           # base url for feed resources
-          base_url = e.get("link")
+          base_url = e.get("link", f.feed.get("link", url))
           summary = e.get("summary_detail")
           contents = e.get("content")
           enclosures = e.get("enclosures")
