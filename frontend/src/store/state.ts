@@ -16,7 +16,7 @@
 
 import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
-import { Entry, Feed, FeedUserData, filterEntries, getEntryTitle } from "./feed";
+import { Entry, Feed, FeedUserData, filterEntries, filterFeeds } from "./feed";
 import { loadData, loadEntryContents } from "./actions";
 import { Base64 } from "js-base64";
 
@@ -197,10 +197,18 @@ function regexpFromString(str?: string) {
   return str ? new RegExp(str) : undefined;
 }
 
+const filteredFeeds = computed(() => {
+  const params = appState.queryParams.value;
+  const selected = selectedFeed.value
+  if (selected) {
+    return [selected];
+  }
+  return filterFeeds(appState.data.feeds.value, { tag: params.tag });
+});
+
 const filteredEntries = computed(() => {
-  const feed = selectedFeed.value;
   return filterEntries(appState.data.entries.value, {
-    feeds: feed && [feed],
+    feeds: filteredFeeds.value,
     titleRegex: regexpFromString(appState.queryParams.value.entryTitleFilter)
   });
 });
@@ -226,6 +234,7 @@ export const computedState = {
   selectedFeed,
   selectedEntry,
   selectedEntryFeed,
+  filterFeeds,
   filteredEntries,
   displayedEntries,
 };

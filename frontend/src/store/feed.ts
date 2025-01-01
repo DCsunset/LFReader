@@ -121,7 +121,7 @@ export function filterFeeds(feeds: Feed[], { tag }: {
 
 export function filterEntries(entries: Entry[], { feeds, titleRegex }: {
   feeds?: Feed[],
-  titleRegex?: RegExp
+  titleRegex?: RegExp,
 }) {
   const urlSet = feeds ? new Set(feeds.map(f => f.url)) : null;
 
