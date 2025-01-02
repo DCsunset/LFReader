@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.10.2](https://github.com/DCsunset/LFReader/compare/v2.10.1...v2.10.2) (2025-01-02)
+
+
+### Bug Fixes
+
+* **backend:** fix entry link processing ([fdf7716](https://github.com/DCsunset/LFReader/commit/fdf7716e92d45d022692552026af81fba0125d37))
+* **frontend:** add feed description ([c2d0573](https://github.com/DCsunset/LFReader/commit/c2d05731dcf76283c8607617e552779f76a80e6d))
+* **frontend:** fix entries when filtered by tag ([b3f10a8](https://github.com/DCsunset/LFReader/commit/b3f10a865627351e28921880e914bd445d6a2334))
+
 ## [2.10.1](https://github.com/DCsunset/LFReader/compare/v2.10.0...v2.10.1) (2024-12-19)
 
 
