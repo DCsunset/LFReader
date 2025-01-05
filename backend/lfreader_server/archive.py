@@ -15,6 +15,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 from bs4 import BeautifulSoup
+from datetime import datetime
 import random
 import logging
 from urllib.request import urlopen, urljoin, Request
@@ -30,7 +31,7 @@ import os
 import re
 
 from .config import ArchiverConfig
-from .utils import async_map
+from .utils import async_map, sql_update_field
 
 """
 Use Base64 (url safe) to encode feed url
@@ -44,17 +45,18 @@ def decode_feed_url(encoded: str) -> str:
   return urlsafe_b64decode(encoded + padding).decode()
 
 class Archiver:
-  def __init__(self, config: ArchiverConfig):
+  def __init__(self, db, config: ArchiverConfig):
+    self.db = db
     self.cfg = config
 
   """
   Archive all resources in the html content
   and replace the URLs
   """
-  async def archive_html(self, session, feed_url: str, content: str, base_url: str | None, user_data: dict):
+  async def archive_html(self, session, feed_url: str, reference: str, content: str, base_url: str | None, user_data: dict):
     soup = BeautifulSoup(content, "html.parser")
     async def update_tag(attr, tag):
-      resource_url = await self.archive_resource(session, feed_url, tag.get(attr), base_url, user_data)
+      resource_url = await self.archive_resource(session, feed_url, reference, tag.get(attr), base_url, user_data)
       # only update url when archiving succeeds
       if resource_url:
         tag[attr] = resource_url
@@ -71,7 +73,7 @@ class Archiver:
       )
     return str(soup)
 
-  async def archive_resource(self, session, feed_url: str, src: str, base_url: str | None, user_data: dict):
+  async def archive_resource(self, session, feed_url: str, reference: str, src: str, base_url: str | None, user_data: dict):
     # store in feed-specific dir
     encoded_feed_url = encode_feed_url(feed_url)
     feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
@@ -128,6 +130,18 @@ class Archiver:
           with open(resource_path, "wb") as f:
             async for chunk in resp.content.iter_chunked(10240):
               f.write(chunk)
+        # add to resources table
+        self.db.execute(
+          f'''
+          INSERT OR IGNORE INTO resources VALUES (?, ?, ?)
+          ''',
+          (
+            feed_url,
+            reference,
+            url
+          )
+        )
+
         return resource_url
       except Exception as e:
         # delete partial downloads to prevent corruption
@@ -151,6 +165,7 @@ class Archiver:
     return None
 
   def delete_archives(self, feed_urls: list[str]):
+    # TODO: clean up resources table
     for feed_url in feed_urls:
       encoded_feed_url = encode_feed_url(feed_url)
       feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)

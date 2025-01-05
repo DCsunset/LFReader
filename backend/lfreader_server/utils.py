@@ -11,3 +11,7 @@ async def async_map(func, iter, sequential, interval=0):
     return result
   else:
     return await asyncio.gather(*map(func, iter))
+
+# SQL query that updates field by coalescing with old fields
+def sql_update_field(table: str, field: str):
+  return f"{field} = COALESCE(excluded.{field}, {table}.{field})"

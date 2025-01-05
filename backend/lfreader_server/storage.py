@@ -33,7 +33,7 @@ from fastapi import HTTPException
 
 from .archive import Archiver
 from .config import Config
-from .utils import async_map
+from .utils import async_map, sql_update_field
 from .models import QueryEntry
 
 async def parse_feed(session: aiohttp.ClientSession, ignore_error: bool, feed: dict):
@@ -88,7 +88,8 @@ def unpack_data(key, value):
     "user_data": {},
     "enclosures": [],
     "contents": [],
-    "summary": {}
+    "summary": None,
+    "categories": []
   }
   if key in json_fields:
     return json.loads(value) if value else json_fields[key]
@@ -100,10 +101,6 @@ def dict_row_factory(cursor: sqlite3.Cursor, row: sqlite3.Row):
   fields = [column[0] for column in cursor.description]
   return {key: unpack_data(key, value) for key, value in zip(fields, row)}
 
-# SQL query that updates field by coalescing with old fields
-def sql_update_field(table: str, field: str):
-  return f"{field} = COALESCE(excluded.{field}, {table}.{field})"
-
 class Storage:
   def __init__(self, config: Config):
     self.cfg = config
@@ -112,7 +109,7 @@ class Storage:
     self.db = sqlite3.connect(config.db_file)
     self.db.row_factory = dict_row_factory
     self.init_db()
-    self.archiver = Archiver(config.archiver)
+    self.archiver = Archiver(self.db, config.archiver)
     self.headers = {}
     if config.user_agent is not None:
       self.headers["User-Agent"] = config.user_agent
@@ -128,6 +125,8 @@ class Storage:
           author TEXT,
           title TEXT,
           subtitle TEXT,
+          categories TEXT,  -- JSON string
+          generator TEXT,
           logo TEXT,  -- logo filename in resources dir
           published_at TEXT,  -- ISO DateTime
           updated_at TEXT,  -- ISO DateTime
@@ -150,6 +149,7 @@ class Storage:
           link TEXT,
           author TEXT,
           title TEXT,
+          categories TEXT,  -- JSON string
           summary TEXT,  -- JSON string
           contents TEXT,  -- JSON string
           enclosures TEXT,  -- JSON string
@@ -175,6 +175,18 @@ class Storage:
         )
       ''')
       self.db.execute('''
+        -- Resources shared within the same feed
+        CREATE TABLE IF NOT EXISTS resources (
+          feed_url TEXT NOT NULL,
+          reference TEXT NOT NULL,  -- could be entry_id or '@' to denote feed itself
+          url TEXT NOT NULL,  -- original resource url (or archived url for backward compatibility)
+
+          PRIMARY KEY (feed_url, reference, url),
+          FOREIGN KEY (feed_url) REFERENCES feeds(url)
+            ON UPDATE CASCADE
+        )
+      ''')
+      self.db.execute('''
         -- Indexes for fast lookup by feed_url
         CREATE INDEX IF NOT EXISTS entries_by_feed_url on entries(feed_url)
       ''')
@@ -190,25 +202,26 @@ class Storage:
       logging.critical(f"Error init db: {e}")
       sys.exit(1)
 
-  async def archive_content(self, session, feed_url: str, content, base_url: str | None, user_data: dict):
+  async def archive_content(self, session, feed_url: str, reference: str, content, base_url: str | None, user_data: dict):
     if content.get("type") != "text/plain":
-      content["value"] = await self.archiver.archive_html(session, feed_url, content.get("value"), base_url, user_data)
+      content["value"] = await self.archiver.archive_html(session, feed_url, reference, content.get("value"), base_url, user_data)
     return content
 
-  async def archive_contents(self, session, feed_url: str, contents, base_url: str | None, user_data: dict):
+  async def archive_contents(self, session, feed_url: str, reference: str, contents, base_url: str | None, user_data: dict):
     await async_map(
-      lambda c: self.archive_content(session, feed_url, c, base_url, user_data),
+      lambda c: self.archive_content(session, feed_url, reference, c, base_url, user_data),
       contents,
       user_data.get("archive_sequential", False)
     )
     return contents
 
-  async def archive_enclosures(self, session, feed_url: str, enclosures, base_url: str | None, user_data: dict):
+  async def archive_enclosures(self, session, feed_url: str, reference: str, enclosures, base_url: str | None, user_data: dict):
     async def archive_enclosure(enclosure):
-      resource_url = await self.archiver.archive_resource(session, feed_url, enclosure.get("href"), base_url, user_data)
+      resource_url, record = await self.archiver.archive_resource(session, feed_url, reference, enclosure.get("href"), base_url, user_data)
       # only update url when archiving succeeds
       if resource_url:
         enclosure["href"] = resource_url
+
     await async_map(archive_enclosure, enclosures, user_data.get("archive_sequential", False))
     return enclosures
 
@@ -254,12 +267,14 @@ class Storage:
 
         self.db.execute(
           f'''
-          INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(url) DO UPDATE SET
               {update_feed_field("link")},
               {update_feed_field("author")},
               {update_feed_field("title")},
               {update_feed_field("subtitle")},
+              {update_feed_field("categories")},
+              {update_feed_field("generator")},
               {update_feed_field("logo")},
               {update_feed_field("published_at")},
               {update_feed_field("updated_at")},
@@ -273,6 +288,8 @@ class Storage:
             f.feed.get("author"),
             f.feed.get("title"),
             f.feed.get("subtitle"),
+            f.feed.get("tags"),
+            f.feed.get("generator"),
             f.feed.get("logo"),
             datetime_to_iso(parse_datetime(f.feed.get("published_parsed"))),
             datetime_to_iso(parse_datetime(f.feed.get("updated_parsed"))),
@@ -327,7 +344,7 @@ class Storage:
             if summary and (summary_hash != e_server_data.get("summary_hash")
                             or force_archive):
               logging.info(f'Archiving summary of entry {e_title}...')
-              summary = await self.archive_content(session, url, summary, base_url, f_user_data)
+              summary = await self.archive_content(session, url, e_id, summary, base_url, f_user_data)
               e_server_data["summary_hash"] = summary_hash
             else:
               # don't update
@@ -335,14 +352,14 @@ class Storage:
             if contents and (contents_hash != e_server_data.get("contents_hash")
                              or force_archive):
               logging.info(f'Archiving contents of entry {e_title}...')
-              contents = await self.archive_contents(session, url, contents, base_url, f_user_data)
+              contents = await self.archive_contents(session, url, e_id, contents, base_url, f_user_data)
               e_server_data["contents_hash"] = contents_hash
             else:
               contents = None
             if enclosures and (enclosures_hash != e_server_data.get("enclosures_hash")
                              or force_archive):
               logging.info(f'Archiving enclosures of entry {e_title}...')
-              enclosures = await self.archive_enclosures(session, url, enclosures, base_url, f_user_data)
+              enclosures = await self.archive_enclosures(session, url, e_id, enclosures, base_url, f_user_data)
               e_server_data["enclosures_hash"] = enclosures_hash
             else:
               enclosures = None
@@ -354,6 +371,7 @@ class Storage:
                 {update_entry_field("link")},
                 {update_entry_field("author")},
                 {update_entry_field("title")},
+                {update_entry_field("categories")},
                 {update_entry_field("summary")},
                 {update_entry_field("contents")},
                 {update_entry_field("enclosures")},
@@ -368,6 +386,7 @@ class Storage:
               e.get("link"),
               e.get("author"),
               e.get("title"),
+              e.get("tags"),
               pack_data(summary),
               pack_data(contents),
               pack_data(enclosures),
