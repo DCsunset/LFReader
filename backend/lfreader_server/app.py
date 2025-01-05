@@ -64,6 +64,7 @@ async def taskRunner(task):
     await task()
   except Exception as e:
     logging.error(f"Error occurred: {str(e)}")
+    traceback.print_exc()
   finally:
     state.status.loading = False
 
@@ -162,7 +163,7 @@ async def http_exception_handler(request, exc):
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    return PlainTextResponse(str(exc), status_code=400)
+  return PlainTextResponse(str(exc), status_code=400)
 
 @app.exception_handler(sqlite3.DatabaseError)
 async def db_exception(request, err: sqlite3.DatabaseError):

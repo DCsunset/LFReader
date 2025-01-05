@@ -217,7 +217,7 @@ class Storage:
 
   async def archive_enclosures(self, session, feed_url: str, reference: str, enclosures, base_url: str | None, user_data: dict):
     async def archive_enclosure(enclosure):
-      resource_url, record = await self.archiver.archive_resource(session, feed_url, reference, enclosure.get("href"), base_url, user_data)
+      resource_url = await self.archiver.archive_resource(session, feed_url, reference, enclosure.get("href"), base_url, user_data)
       # only update url when archiving succeeds
       if resource_url:
         enclosure["href"] = resource_url
@@ -267,7 +267,7 @@ class Storage:
 
         self.db.execute(
           f'''
-          INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(url) DO UPDATE SET
               {update_feed_field("link")},
               {update_feed_field("author")},
@@ -288,7 +288,7 @@ class Storage:
             f.feed.get("author"),
             f.feed.get("title"),
             f.feed.get("subtitle"),
-            f.feed.get("tags"),
+            pack_data(f.feed.get("tags")),
             f.feed.get("generator"),
             f.feed.get("logo"),
             datetime_to_iso(parse_datetime(f.feed.get("published_parsed"))),
@@ -366,7 +366,7 @@ class Storage:
 
           self.db.execute(
             f'''
-            INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO entries VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
               ON CONFLICT(feed_url, id) DO UPDATE SET
                 {update_entry_field("link")},
                 {update_entry_field("author")},
@@ -386,7 +386,7 @@ class Storage:
               e.get("link"),
               e.get("author"),
               e.get("title"),
-              e.get("tags"),
+              pack_data(e.get("tags")),
               pack_data(summary),
               pack_data(contents),
               pack_data(enclosures),
@@ -480,13 +480,13 @@ class Storage:
             enclosures = e["enclosures"]
             if summary:
               logging.info(f'Archiving summary of entry {e_id}...')
-              summary = await self.archive_content(session, url, summary, base_url, f_user_data)
+              summary = await self.archive_content(session, url, e_id, summary, base_url, f_user_data)
             if contents:
               logging.info(f'Archiving contents of entry {e_id}...')
-              contents = await self.archive_contents(session, url, contents, base_url, f_user_data)
+              contents = await self.archive_contents(session, url, e_id, contents, base_url, f_user_data)
             if enclosures:
               logging.info(f'Archiving enclosures of entry {e_id}...')
-              enclosures = await self.archive_enclosures(session, url, enclosures, base_url, f_user_data)
+              enclosures = await self.archive_enclosures(session, url, e_id, enclosures, base_url, f_user_data)
 
             self.db.execute(
               f'''
