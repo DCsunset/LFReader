@@ -175,49 +175,58 @@ class Storage:
         )
       ''')
       self.db.execute('''
-        -- Resources shared within the same feed
+        -- Record references to resources
         CREATE TABLE IF NOT EXISTS resources (
           feed_url TEXT NOT NULL,
-          reference TEXT NOT NULL,  -- could be entry_id or '@' to denote feed itself
+          entry_id TEXT NOT NULL,  -- could be entry_id or emptry string '' to denote feed itself (shouldn't be null as it's used as primary key)
           url TEXT NOT NULL,  -- original resource url (or archived url for backward compatibility)
 
-          PRIMARY KEY (feed_url, reference, url),
+          PRIMARY KEY (feed_url, entry_id, url),
           FOREIGN KEY (feed_url) REFERENCES feeds(url)
             ON UPDATE CASCADE
         )
       ''')
+
+      # indexes for entries table
       self.db.execute('''
-        -- Indexes for fast lookup by feed_url
-        CREATE INDEX IF NOT EXISTS entries_by_feed_url on entries(feed_url)
+        CREATE INDEX IF NOT EXISTS entries_by_feed_url ON entries(feed_url)
       ''')
       self.db.execute('''
-        -- Indexes for accessing entries by published_at efficiently
-        CREATE INDEX IF NOT EXISTS entries_by_published_at on entries(published_at)
+        CREATE INDEX IF NOT EXISTS entries_by_published_at ON entries(published_at)
       ''')
       self.db.execute('''
-        -- Indexes for accessing entries by updated_at efficiently
-        CREATE INDEX IF NOT EXISTS entries_by_updated_at on entries(updated_at)
+        CREATE INDEX IF NOT EXISTS entries_by_updated_at ON entries(updated_at)
+      ''')
+      # indexes for resources table
+      self.db.execute('''
+        CREATE INDEX IF NOT EXISTS resources_by_feed_url ON resources(feed_url)
+      ''')
+      self.db.execute('''
+        CREATE INDEX IF NOT EXISTS resources_by_entry_id ON resources(feed_url, entry_id)
+      ''')
+      self.db.execute('''
+        CREATE INDEX IF NOT EXISTS resources_by_url ON resources(url)
       ''')
     except Exception as e:
       logging.critical(f"Error init db: {e}")
       sys.exit(1)
 
-  async def archive_content(self, session, feed_url: str, reference: str, content, base_url: str | None, user_data: dict):
+  async def archive_content(self, session, feed_url: str, entry_id: str, content, base_url: str | None, user_data: dict):
     if content.get("type") != "text/plain":
-      content["value"] = await self.archiver.archive_html(session, feed_url, reference, content.get("value"), base_url, user_data)
+      content["value"] = await self.archiver.archive_html(session, feed_url, entry_id, content.get("value"), base_url, user_data)
     return content
 
-  async def archive_contents(self, session, feed_url: str, reference: str, contents, base_url: str | None, user_data: dict):
+  async def archive_contents(self, session, feed_url: str, entry_id: str, contents, base_url: str | None, user_data: dict):
     await async_map(
-      lambda c: self.archive_content(session, feed_url, reference, c, base_url, user_data),
+      lambda c: self.archive_content(session, feed_url, entry_id, c, base_url, user_data),
       contents,
       user_data.get("archive_sequential", False)
     )
     return contents
 
-  async def archive_enclosures(self, session, feed_url: str, reference: str, enclosures, base_url: str | None, user_data: dict):
+  async def archive_enclosures(self, session, feed_url: str, entry_id: str, enclosures, base_url: str | None, user_data: dict):
     async def archive_enclosure(enclosure):
-      resource_url = await self.archiver.archive_resource(session, feed_url, reference, enclosure.get("href"), base_url, user_data)
+      resource_url = await self.archiver.archive_resource(session, feed_url, entry_id, enclosure.get("href"), base_url, user_data)
       # only update url when archiving succeeds
       if resource_url:
         enclosure["href"] = resource_url

@@ -25,24 +25,12 @@ from pathlib import Path
 import shutil
 import asyncio
 from yarl import URL
-from base64 import urlsafe_b64encode, urlsafe_b64decode
 from functools import partial
 import os
 import re
 
 from .config import ArchiverConfig
 from .utils import async_map, sql_update_field
-
-"""
-Use Base64 (url safe) to encode feed url
-"""
-def encode_feed_url(feed_url: str) -> str:
-  return urlsafe_b64encode(feed_url.encode()).decode().rstrip("=")
-
-def decode_feed_url(encoded: str) -> str:
-  # extra padding of 4 is fine
-  padding = (4 - len(encoded) % 4) * "="
-  return urlsafe_b64decode(encoded + padding).decode()
 
 class Archiver:
   def __init__(self, db, config: ArchiverConfig):
@@ -53,10 +41,10 @@ class Archiver:
   Archive all resources in the html content
   and replace the URLs
   """
-  async def archive_html(self, session, feed_url: str, reference: str, content: str, base_url: str | None, user_data: dict):
+  async def archive_html(self, session, feed_url: str, entry_id: str, content: str, base_url: str | None, user_data: dict):
     soup = BeautifulSoup(content, "html.parser")
     async def update_tag(attr, tag):
-      resource_url = await self.archive_resource(session, feed_url, reference, tag.get(attr), base_url, user_data)
+      resource_url = await self.archive_resource(session, feed_url, entry_id, tag.get(attr), base_url, user_data)
       # only update url when archiving succeeds
       if resource_url:
         tag[attr] = resource_url
@@ -73,25 +61,16 @@ class Archiver:
       )
     return str(soup)
 
-  async def archive_resource(self, session, feed_url: str, reference: str, src: str, base_url: str | None, user_data: dict):
-    # store in feed-specific dir
-    encoded_feed_url = encode_feed_url(feed_url)
-    feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
-    feed_path.mkdir(parents=True, exist_ok=True)
-
-    resource_base_url = f"{self.cfg.base_url}/{encoded_feed_url}"
+  async def archive_resource(self, session, feed_url: str, entry_id: str, src: str, base_url: str | None, user_data: dict):
+    resource_dir = Path(self.cfg.base_dir)
     # check if url is already archived
-    if src.startswith(resource_base_url):
+    if src.startswith(self.cfg.base_url):
       filename = Path(src).name
       # start with 64 hex digit
       if re.match("[0-9a-f]{64}", filename):
-        if feed_path.joinpath(filename).exists():
+        if resource_dir.joinpath(filename).exists():
           # already archived
           return None
-        # search for file started with it for backward compatibility
-        for f in feed_path.iterdir():
-          if f.name.startswith(filename):
-            return f"{resource_base_url}/{f.name}"
         logging.warn(f"URL archived but resource not found: {src}")
         return None
 
@@ -104,11 +83,11 @@ class Archiver:
     digest = blake2s(url.encode()).hexdigest()
     filename = f"{digest}_{Path(base_path).name}"
 
-    resource_path = feed_path.joinpath(filename)
-    resource_url = f"{resource_base_url}/{filename}"
+    resource_path = resource_dir.joinpath(filename)
+    resource_url = f"{self.cfg.base_url}/{filename}"
 
     # Check digest first for backward compatibility
-    old_resource_path = feed_path.joinpath(digest)
+    old_resource_path = resource_dir.joinpath(digest)
     if old_resource_path.exists():
       os.rename(old_resource_path, resource_path)
 
@@ -137,7 +116,7 @@ class Archiver:
           ''',
           (
             feed_url,
-            reference,
+            entry_id,
             url
           )
         )
@@ -165,10 +144,11 @@ class Archiver:
     return None
 
   def delete_archives(self, feed_urls: list[str]):
-    # TODO: clean up resources table
-    for feed_url in feed_urls:
-      encoded_feed_url = encode_feed_url(feed_url)
-      feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
-      if feed_path.exists():
-        shutil.rmtree(str(feed_path))
+    # TODO: clean up resources using table table
+    # for feed_url in feed_urls:
+    #   encoded_feed_url = encode_feed_url(feed_url)
+    #   feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
+    #   if feed_path.exists():
+    #     shutil.rmtree(str(feed_path))
+    pass
 
