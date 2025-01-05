@@ -172,7 +172,13 @@ export default function FeedDialog() {
             <>
               <Item title="Description">
                 <div className="max-w-80 opacity-75">
-                  {feed.value.subtitle}
+                  {feed.value?.subtitle}
+                </div>
+              </Item>
+
+              <Item title="Generator">
+                <div className="max-w-80 opacity-75">
+                  {feed.value?.generator}
                 </div>
               </Item>
 

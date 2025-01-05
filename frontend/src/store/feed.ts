@@ -30,10 +30,12 @@ export type FeedUserData = {
 export type Feed = {
   url: string,
   link?: string,
-  icon?: string,
+  author?: string,
   title?: string,
   subtitle?: string,
-  author?: string,
+  categories: string[],
+  generator?: string,
+  logo?: string,
   updated_at?: string,
   user_data: FeedUserData
 }
@@ -63,13 +65,14 @@ export type Entry = {
   author?: string,
   link?: string,
   title?: string,
+  categories: string[],
   updated_at?: string,
   published_at?: string,
   user_data: any,
   server_data: EntryServerData,
   summary?: Content,
-  contents?: Content[],
-  enclosures?: Enclosure[],
+  contents: Content[],
+  enclosures: Enclosure[],
 };
 
 export function toFeedId(feed: Feed) {

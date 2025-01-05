@@ -114,10 +114,10 @@ function FeedGroup({ tag, onClick }: {
                   </IconButton>
                 </Box>
               }
-              {feed.icon &&
+              {feed.logo &&
                 <Box
                   component="img"
-                  src={feed.icon}
+                  src={feed.logo}
                   sx={{
                     width: 20,
                     height: 20,
