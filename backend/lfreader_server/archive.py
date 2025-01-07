@@ -1,5 +1,5 @@
 # LFReader
-# Copyright (C) 2022-2024  DCsunset
+# Copyright (C) 2022-2025  DCsunset
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -26,7 +26,6 @@ import shutil
 import asyncio
 from yarl import URL
 from functools import partial
-import os
 import re
 
 from .config import ArchiverConfig
@@ -36,6 +35,13 @@ class Archiver:
   def __init__(self, db, config: ArchiverConfig):
     self.db = db
     self.cfg = config
+
+  def filename_from_url(self, url: str):
+    name = Path(url).name
+    if url.startswith(self.cfg.base_url) and re.match("[0-9a-f]{64}", name):
+      return name
+    digest = blake2s(url.encode()).hexdigest()
+    return  f"{digest}_{name}"
 
   """
   Archive all resources in the html content
@@ -80,16 +86,10 @@ class Archiver:
     if user_base_url:
       # remove prefix to always prepend the full user base url
       url = urljoin(user_base_url, base_path.removeprefix("/"))
-    digest = blake2s(url.encode()).hexdigest()
-    filename = f"{digest}_{Path(base_path).name}"
 
+    filename = self.filename_from_url(url)
     resource_path = resource_dir.joinpath(filename)
     resource_url = f"{self.cfg.base_url}/{filename}"
-
-    # Check digest first for backward compatibility
-    old_resource_path = resource_dir.joinpath(digest)
-    if old_resource_path.exists():
-      os.rename(old_resource_path, resource_path)
 
     # already cached
     if resource_path.exists():
@@ -143,12 +143,33 @@ class Archiver:
     # TODO
     return None
 
-  def delete_archives(self, feed_urls: list[str]):
-    # TODO: clean up resources using table table
-    # for feed_url in feed_urls:
-    #   encoded_feed_url = encode_feed_url(feed_url)
-    #   feed_path = Path(self.cfg.base_dir).joinpath(encoded_feed_url)
-    #   if feed_path.exists():
-    #     shutil.rmtree(str(feed_path))
-    pass
+  # Delete resources (need to commit after calling this function)
+  def delete_resources(self, feed_url: str, entry_id: str | None = None):
+    cur = self.db.cursor()
+    query_condition = "feed_url = ?"
+    args = [feed_url]
+    if entry_id is not None:
+      query += "AND entry_id = ?"
+      args.append(entry_id)
+
+    # keep track of deleted resources
+    resources = list(map(
+      lambda r: r["url"],
+      cur.execute(f"SELECT DISTINCT url FROM resources WHERE {query_condition}", args)
+    ))
+
+    cur.execute(f"DELETE FROM resources WHERE {query_condition}", args)
+
+    resource_dir = Path(self.cfg.base_dir)
+    for url in resources:
+      # short-circuit when it exists
+      r = cur.execute(
+        "SELECT EXISTS (SELECT 1 FROM resources WHERE url = ?) AS 'ok'",
+        (url,)
+      ).fetchone()
+      # delete resource if no reference
+      if r['ok'] == 0:
+        resource_path = resource_dir.joinpath(self.filename_from_url(url))
+        logging.debug(f"Deleting resource {resource_path}...")
+        resource_path.unlink(missing_ok=True)
 
