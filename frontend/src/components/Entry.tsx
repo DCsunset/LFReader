@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,10 +14,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { computed, signal } from "@preact/signals";
+import { computed, signal, useSignalEffect } from "@preact/signals";
 import { createRef } from "preact";
 import { appState, computedState, lookupEntry, lookupFeed  } from "../store/state";
-import { Enclosure, Feed, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
+import { textCategories, Enclosure, Feed, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
 import Icon from "@mdi/react";
 import renderMathInElement from "katex/contrib/auto-render";
 import hljs from "highlight.js";
@@ -27,61 +27,79 @@ import { anchorNoStyle } from "../utils/styles";
 import { handleExternalLink } from "../store/actions";
 import { displayDate } from "../utils/date";
 import MediaPlayer from "./MediaPlayer";
-import { useEffect } from "preact/hooks";
-import { Box, Collapse, Divider, List, ListItem, Typography } from "@mui/material";
-import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiRss } from "@mdi/js";
+import { Box, Chip, Collapse, Divider, List, ListItem, Typography } from "@mui/material";
+import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiRss, mdiTag } from "@mdi/js";
 
 hljs.configure({
   // prevent logging the errors in console
   ignoreUnescapedHTML: true
 });
 
+const entry = computedState.selectedEntry;
+const title = computed(() => getEntryTitle(entry.value));
+const date = computed(() => {
+  const e = entry.value;
+  return displayDate(e?.published_at ?? e?.updated_at ?? e?.server_data?.added_at);
+})
+const author = computed(() => entry.value?.author || feed.value?.author);
+const categories = computed(() => textCategories(entry.value?.categories));
+const feed = computed(() => lookupFeed(entry.value?.feed_url));
+const feedTitle = computed(() => getFeedTitle(feed.value));
+
 const showEnclosures = signal(true);
 const currentContents = computed(() => {
-  const entry = computedState.selectedEntry.value;
-  let contents = entry?.contents || [];
+  const e = entry.value;
+  let contents = e?.contents || [];
   if (contents.length === 0) {
-    contents = entry?.summary ? [entry?.summary] : [];
+    contents = e?.summary ? [e?.summary] : [];
   }
   return contents;
 });
 const currentEntryId = computed(() => {
-  const e = computedState.selectedEntry.value;
+  const e = entry.value;
   return e && toEntryId(e);
 })
 const entryRef = createRef<HTMLElement>();
 
 
-function EnclosureView({ feed, enclosure }: {
-  feed?: Feed,
+function EnclosureView({ enclosure }: {
   enclosure: Enclosure
 }) {
   if (enclosure.type.startsWith("image/")) {
     return <img src={enclosure.href} />;
   }
   else if (enclosure.type.startsWith("audio/")) {
-    return <MediaPlayer audio src={enclosure.href} rate={feed?.user_data.playback_rate} />;
+    return <MediaPlayer audio src={enclosure.href} rate={feed.value?.user_data.playback_rate} />;
   }
   else if (enclosure.type.startsWith("video/")) {
-    return <MediaPlayer src={enclosure.href} rate={feed?.user_data.playback_rate} />;
+    return <MediaPlayer src={enclosure.href} rate={feed.value?.user_data.playback_rate} />;
   }
   else {
     return <a href={enclosure.href}>{enclosure.href}</a>;
   }
 }
 
-export default function Entry() {
-  const entry = computedState.selectedEntry.value;
-  const feed = lookupFeed(entry?.feed_url);
-  const author = entry?.author || feed?.author;
+function HeaderItem({ icon, children }: {
+  icon: string,
+  children: any
+}) {
+  return (
+    <div className="inline-flex mb-2 mr-1 items-center">
+      <Icon path={icon} size={1} />
+      <span className="ml-1 mr-2">
+        {children}
+      </span>
+    </div>
+  );
+}
 
+export default function Entry() {
   // this hook runs every time entry changes
   // must use useEffect instead of signal effect because it needs the page to load first
-  useEffect(() => {
+  useSignalEffect(() => {
     const element = entryRef.current;
-
-    // element will only be null if entry is not defined
-    if (element) {
+    // Subscribe to entry.value
+    if (entry.value && element) {
       // render math formula
       renderMathInElement(element, {
         throwOnError: false
@@ -117,11 +135,11 @@ export default function Entry() {
         }
       });
     }
-  }, [entry]);
+  });
 
   return (
     <>
-      {entry &&
+      {entry.value &&
         <Box
           id="lfreader-entry"
           ref={entryRef}
@@ -142,43 +160,47 @@ export default function Entry() {
               fontWeight: 600
             }}
           >
-            {getEntryTitle(entry)}
+            <span>{title}</span>
           </Typography>
           <Divider sx={{ mb: 1 }} />
           <Typography variant="info" sx={{ display: "flex", my: 1, flexWrap: "wrap" }}>
-            <Box sx={{ display: "inline-flex", mb: 1 }}>
-              <Icon path={mdiCalendarMonth} size={1} />
-              <Box sx={{ ml: 0.5, mr: 1.5 }}>
-                {displayDate(entry.published_at ?? entry.updated_at ?? entry.server_data.added_at)}
-              </Box>
-            </Box>
+            <HeaderItem icon={mdiCalendarMonth}>
+              {date}
+            </HeaderItem>
 
-            <Box sx={{ display: "inline-flex", mb: 1 }}>
-              <Icon path={mdiRss} size={1} />
-              <Box sx={{ ml: 0.5, mr: 1.5 }}>
-                {/* Don't add onClick here as it's added in the hook already */}
-                <a
-                  href={feed?.link}
-                  target="_blank"
-                  style={anchorNoStyle}
-                >
-                  {getFeedTitle(feed)}
-                </a>
-              </Box>
-            </Box>
+            <HeaderItem icon={mdiRss}>
+              {/* Don't add onClick here as it's added in the hook already */}
+              <a
+                href={feed.value?.link}
+                target="_blank"
+                style={anchorNoStyle}
+              >
+                {feedTitle}
+              </a>
+            </HeaderItem>
 
-            {author &&
-              <>
-                <Box sx={{ display: "inline-flex", mb: 1 }}>
-                  <Icon path={mdiAccount} size={1} />
-                  <Box sx={{ ml: 0.5, mr: 1.5 }}>
-                    {author}
-                  </Box>
-                </Box>
-              </>
-            }
+            {author.value &&
+              <HeaderItem icon={mdiAccount}>
+                {author}
+              </HeaderItem>}
+
+            {categories.value.length > 0 &&
+              <HeaderItem icon={mdiTag}>
+                <span className="opacity-80">
+                  {categories.value.map(c => (
+                    <Chip
+                      className="ma-0.8"
+                      size="small"
+                      key={c}
+                      label={c}
+                    />
+                  ))}
+                </span>
+              </HeaderItem>}
+
           </Typography>
-          {entry.enclosures && entry.enclosures.length > 0 &&
+
+          {(entry.value?.enclosures?.length ?? 0) > 0 &&
             <>
               <Typography variant="info" sx={{ display: "flex" }} onClick={() => showEnclosures.value = !showEnclosures.value}>
                 <Icon
@@ -191,15 +213,15 @@ export default function Entry() {
                 />
                 <Icon path={mdiAttachment} size={0.9} />
                 <Box sx={{ ml: 0.5, mr: 1.5 }}>
-                  Enclosures: {entry.enclosures.length} file(s)
+                  Enclosures: {entry.value.enclosures.length} file(s)
                 </Box>
               </Typography>
 
               <Collapse in={showEnclosures.value}>
                 <List>
-                  {entry.enclosures.map(e => (
-                    <ListItem key={e.href} dense className="overflow-x-scroll overflow-y-hidden">
-                      <EnclosureView feed={feed} enclosure={e} />
+                  {entry.value.enclosures.map(en => (
+                    <ListItem key={en.href} dense className="overflow-x-scroll overflow-y-hidden">
+                      <EnclosureView enclosure={en} />
                     </ListItem>
                   ))}
                 </List>

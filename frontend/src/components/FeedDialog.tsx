@@ -19,6 +19,7 @@ import {
   Box,
   Button,
   Checkbox,
+  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -30,7 +31,7 @@ import {
   Typography
 } from "@mui/material";
 import { batch, computed, effect, signal } from "@preact/signals";
-import { FeedUserData, getFeedTitle } from "../store/feed";
+import { textCategories, FeedUserData, getFeedTitle } from "../store/feed";
 import { dispatchFeedAction, handleExternalLink } from "../store/actions";
 import Icon from "@mdi/react";
 import { mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
@@ -53,6 +54,8 @@ const loading = appState.status.loading;
 
 const { open, feed } = appState.feedDialog;
 const existing = computed(() => Boolean(lookupFeed(feed.value?.url)));
+const title = computed(() => getFeedTitle(feed.value));
+const categories = computed(() => textCategories(feed.value?.categories));
 
 const close = () => {
   open.value = false;
@@ -118,7 +121,7 @@ async function handleFetch() {
 function handleDelete() {
   batch(() => {
     appState.confirmation.open.value = true;
-    appState.confirmation.content.value = <>Confirm deletion of feed <em>{getFeedTitle(feed.value)}</em>?</>;
+    appState.confirmation.content.value = <>Confirm deletion of feed <em>{title}</em>?</>;
     appState.confirmation.onConfirm = async () => {
       if (feed.value) {
         deleteInProgress.value = true;
@@ -147,7 +150,7 @@ export default function FeedDialog() {
       fullWidth
     >
       <DialogTitle>
-        Feed Settings for <em>{getFeedTitle(feed.value)}</em>
+        Feed Settings for <em>{title}</em>
       </DialogTitle>
       <DialogContent>
         <Stack spacing={1}>
@@ -176,7 +179,7 @@ export default function FeedDialog() {
                 target="_blank"
                 onClick={handleExternalLink}
               >
-                {feed.value?.title || "(No Title)"}
+                {title}
               </a>
             </Item>
           }
@@ -189,11 +192,21 @@ export default function FeedDialog() {
                 </div>
               </Item>
 
-              <Item title="Generator">
-                <div className="max-w-80 opacity-75">
-                  {feed.value?.generator}
-                </div>
-              </Item>
+              {categories.value.length > 0 &&
+                <Item title="Categories">
+                  <div className="max-w-80 opacity-80">
+                    {categories.value.map(c => (
+                      <Chip className="ma-0.8" size="small" key={c} label={c} />
+                    ))}
+                  </div>
+                </Item>}
+
+              {feed.value?.generator &&
+                <Item title="Generator">
+                  <div className="max-w-80 opacity-75">
+                    {feed.value?.generator}
+                  </div>
+                </Item>}
 
               <Item title="Operations">
                 <LoadingButton
@@ -239,7 +252,7 @@ export default function FeedDialog() {
             <TextField
               variant="standard"
               value={alias.value}
-              placeholder={feed.value?.title || "(No Title)"}
+              placeholder={title.value}
               onChange={(event: any) => {
                 alias.value = event.target.value;
               }}

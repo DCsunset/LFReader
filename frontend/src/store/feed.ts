@@ -16,6 +16,12 @@
 
 import { Base64 } from "js-base64";
 
+export type Category = {
+  term: string | null,
+  scheme: string | null,
+  label: string | null,
+};
+
 export type FeedUserData = {
   alias?: string,
   base_url?: string,
@@ -33,7 +39,7 @@ export type Feed = {
   author?: string,
   title?: string,
   subtitle?: string,
-  categories?: string[],
+  categories?: Category[],
   generator?: string,
   logo?: string,
   updated_at?: string,
@@ -65,7 +71,7 @@ export type Entry = {
   author?: string,
   link?: string,
   title?: string,
-  categories: string[],
+  categories?: Category[],
   updated_at?: string,
   published_at?: string,
   user_data: any,
@@ -134,4 +140,9 @@ export function filterEntries(entries: Entry[], { feeds, titleRegex }: {
       // filter by entryTitle
       && (titleRegex?.test(getEntryTitle(v)) ?? true)
   );
+}
+
+// Get categories in text (de-duplicated)
+export function textCategories(categories?: Category[]) {
+  return [...new Set(categories?.map(c => c.term || c.label))];
 }
