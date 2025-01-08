@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -29,12 +29,16 @@ import {
   Typography,
 } from "@mui/material";
 import { appState } from "../store/state";
-import { archiveFeeds } from "../store/actions";
+import { dispatchFeedAction } from "../store/actions";
 import { batch, Signal, signal } from "@preact/signals";
 import { LoadingButton } from "@mui/lab";
 import Icon from "@mdi/react";
 import { mdiContentSave } from "@mdi/js";
 import Item from "./SettingsItem";
+
+async function archiveFeeds() {
+  await dispatchFeedAction({ action: "archive" })
+}
 
 const validNumber = (value: string, min: number, max: number, int: boolean) => {
   if (value.length === 0) {

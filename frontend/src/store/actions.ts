@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -113,31 +113,6 @@ async function getData() {
   return true;
 }
 
-export async function fetchData(feeds?: Feed[]) {
-  const resp = await fetchApi("/", {
-    method: "POST",
-    body: JSON.stringify({
-      feeds,
-      archive: appState.settings.value.archive,
-      force_archive: appState.settings.value.forceArchive,
-      // ignore error when updating all feeds
-      ignore_error: !feeds
-    })
-  });
-  if (resp === undefined) {
-    return undefined;
-  }
-
-  // wait until server finish loading
-  await waitForLoading();
-
-  const ok = await getData();
-  if (ok) {
-    notify("success", "Updated feeds successfully")
-  }
-  return ok;
-}
-
 export async function loadData() {
   const ok = await getData();
   if (ok) {
@@ -167,30 +142,6 @@ export async function loadEntryContents(entries: Entry[]) {
     ...entryContents.entries(),
     ...contents.map(e => [toEntryId(e), e] as [string, Entry])
   ]);
-}
-
-export async function updateFeed(feed: Feed, userData: FeedUserData) {
-  // needs double encoding to include slash in url and decode it once at the server
-  const resp =  await fetchApi("/feeds", {
-    method: "PUT",
-    body: JSON.stringify({
-      url: feed.url,
-      user_data: userData
-    })
-  });
-  if (resp === undefined) {
-    return false;
-  }
-
-  // update feeds locally for performance
-  appState.data.feeds.value = appState.data.feeds.value.map(f => (
-    f.url === feed.url ? {
-      ...f,
-      user_data: userData
-    } : f
-  ));
-  notify("success", "Updated feed successfully");
-  return true;
 }
 
 function encodeQueryItem(item?: string) {
@@ -230,45 +181,66 @@ export function parseRawQueryParams(params: any): QueryParams {
   };
 }
 
-/// Delete feed
-export async function deleteFeed(url: string) {
-  const query = new URLSearchParams({
-    feed_urls: url
-  });
-  const resp = await fetchApi(`/?${query}`, { method: "DELETE" });
-  if (resp === undefined) {
-    return false;
-  }
 
-  // Fast deletion in frontend
-  const data = appState.data;
-  batch(() => {
-    data.feeds.value = data.feeds.value.filter(f => f.url !== url);
-    data.entries.value = data.entries.value.filter(e => e.feed_url !== url);
-    notify("success", "Feed deleted successfully");
-  });
-  return true;
+/// Feed Action API
+
+export type FeedInfo = {
+  url: string,
+  user_data: FeedUserData
 }
 
-/// Archive entries in database
-export async function archiveFeeds(urls?: string[]) {
-  const resp =  await fetchApi("/", {
-    method: "PATCH",
-    body: JSON.stringify({
-      operation: "archive",
-      feed_urls: urls
-    })
+type FetchFeedsArgs = {
+  action: "fetch",
+  // specific feed URLs
+  feeds?: FeedInfo[],
+  // whether to archive resources
+  archive?: boolean,
+  // whether to force archiving even if content doesn't change
+  force_archive?: boolean,
+  ignore_error?: boolean
+}
+
+type ArchiveFeedsArgs = {
+  action: "archive",
+  feed_urls?: string[]
+}
+
+type CleanFeedsArgs = {
+  action: "clean",
+  feed_urls: string[]
+}
+
+type DeleteFeedsArgs = {
+  action: "delete",
+  feed_urls: string[]
+}
+
+type UpdateFeedsArgs = {
+  action: "update",
+  feeds: FeedInfo[]
+}
+
+type FeedActionArgs = FetchFeedsArgs | ArchiveFeedsArgs | CleanFeedsArgs | DeleteFeedsArgs | UpdateFeedsArgs;
+
+const asyncActions = new Set([ "fetch", "archive" ]);
+
+export async function dispatchFeedAction(args: FeedActionArgs) {
+  const resp =  await fetchApi("/feeds", {
+    method: "POST",
+    body: JSON.stringify(args)
   });
   if (resp === undefined) {
     return false;
   }
 
   // wait until server finish loading
-  await waitForLoading();
+  if (asyncActions.has(args.action)) {
+    await waitForLoading();
+  }
 
   const ok = await getData();
   if (ok) {
-    notify("success", "Database archived successfully");
+    notify("success", `Action ${args.action} finished successfully`);
   }
   return ok;
 }

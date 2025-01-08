@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,7 +17,7 @@
 import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
 import { Entry, Feed, FeedUserData, filterEntries, filterFeeds } from "./feed";
-import { loadData, loadEntryContents } from "./actions";
+import { FeedInfo, loadData, loadEntryContents } from "./actions";
 import { Base64 } from "js-base64";
 
 
@@ -86,7 +86,7 @@ export type FeedDialogState = {
   open: Signal<boolean>,
   feed: Signal<Feed|undefined>,
   // It always changes with feed, so no need to use signal
-  onSave?: (feed: Feed, data: FeedUserData) => Promise<boolean>
+  onSave?: (feed: FeedInfo) => Promise<boolean>
 };
 
 // global app state

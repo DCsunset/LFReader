@@ -1,5 +1,5 @@
 # LFReader
-# Copyright (C) 2022-2024  DCsunset
+# Copyright (C) 2022-2025  DCsunset
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -25,7 +25,7 @@ from fastapi.openapi.docs import (
 import logging
 import os
 import sys
-from pydantic import ValidationError
+from pydantic import ValidationError, Field
 import sqlite3
 import aiohttp
 from typing import Annotated
@@ -37,7 +37,7 @@ import asyncio
 
 from .storage import Storage
 from .config import Config
-from .models import AppState, AppStatus, UpdateFeedArgs, QueryEntriesArgs, FetchArgs, ArchiveArgs
+from .models import AppState, AppStatus, QueryEntriesArgs, FetchFeedsArgs, ArchiveFeedsArgs, CleanFeedsArgs, DeleteFeedsArgs, UpdateFeedsArgs
 
 
 try:
@@ -109,15 +109,6 @@ async def get_feeds_api() -> list[dict]:
 
 
 """
-Update feed user_data
-"""
-@app.put("/feeds")
-async def update_feed_api(args: UpdateFeedArgs):
-  storage.update_feed(args.url, args.user_data)
-  return {}
-
-
-"""
 Query entries from local database
 """
 @app.post("/entries/query")
@@ -126,32 +117,28 @@ async def query_entries_api(args: QueryEntriesArgs) -> list[dict]:
 
 
 """
-Fetch feeds and their entries from origin (can be new feeds)
+Feed Action API
 """
-@app.post("/")
-async def fetch_api(args: FetchArgs):
-  runLoadingTask(lambda: storage.fetch_feeds(args.feeds, args.archive, args.force_archive, args.ignore_error))
-  return {}
-
-"""
-Delete feeds and their entries
-"""
-@app.delete("/")
-async def delete_api(feed_urls: Annotated[list[str], Query()]):
-  storage.delete_feeds(feed_urls)
-  return {}
-
-
-"""
-Update (re-archive) feeds and entries in db
-"""
-@app.patch("/")
-async def archive_api(args: ArchiveArgs):
-  match args.operation:
+@app.post("/feeds")
+async def feed_action_api(
+  args: FetchFeedsArgs | ArchiveFeedsArgs | CleanFeedsArgs | DeleteFeedsArgs | UpdateFeedsArgs
+):
+  match args.action:
+    case "fetch":
+      # Fetch feeds and their entries from origin (can be new feeds)
+      runLoadingTask(lambda: storage.fetch_feeds(args.feeds, args.archive, args.force_archive, args.ignore_error))
     case "archive":
       runLoadingTask(lambda: storage.archive_feeds(args.feed_urls))
+    case "delete":
+      if args.feed_urls is None:
+        raise HTTPException(status_code=400, detail=f"Invalid delete action: feed_urls not specified")
+      storage.delete_feeds(args.feed_urls)
+    case "clean":
+      storage.clean_feeds(args.feed_urls)
+    case "update":
+      storage.update_feeds(args.feeds)
     case _:
-      raise HTTPException(status_code=400, detail=f"Invalid operation: {args.operation}")
+      raise HTTPException(status_code=400, detail=f"Invalid action: {args.action}")
   return {}
 
 ## Error handlers

@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -16,15 +16,15 @@
 
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, List, ListItem, ListItemText, TextField } from "@mui/material"
 import { Signal, signal, batch } from "@preact/signals";
-import { fetchData } from "../store/actions";
+import { FeedInfo, dispatchFeedAction } from "../store/actions";
 import Icon from "@mdi/react";
 import { mdiClose, mdiLeadPencil, mdiPlus } from "@mdi/js";
-import { Feed, FeedUserData } from "../store/feed";
+import { Feed } from "../store/feed";
 import { appState } from "../store/state";
 import { preventEventDefault } from "../utils/dom";
 
 // added feeds
-const feeds = signal<Feed[]>([]);
+const feeds = signal<FeedInfo[]>([]);
 
 // current unadded feed url
 const feedUrl = signal("");
@@ -70,18 +70,18 @@ function add() {
     return;
   }
   batch(() => {
-    feeds.value = feeds.value.concat({
-      url,
-      user_data: {}
-    });
+    feeds.value = [
+      ...feeds.value,
+      { url, user_data: {} }
+    ];
     feedUrl.value = "";
   })
 }
 
-async function update(feed: Feed, data: FeedUserData) {
+async function updateFeed(feed: FeedInfo) {
   feeds.value = feeds.value.map(f => {
     if (f.url === feed.url) {
-      f.user_data = data;
+      f.user_data = feed.user_data;
     }
     return f;
   })
@@ -102,7 +102,12 @@ export default function NewFeedsDialog({ open }: {
   };
 
   async function submit() {
-    const success = await fetchData(feeds.value);
+    const { archive, forceArchive } = appState.settings.value;
+    const success = await dispatchFeedAction({
+      action: "fetch",
+      archive,
+      force_archive: forceArchive,
+    });
     if (success) {
       close();
     }
@@ -150,7 +155,7 @@ export default function NewFeedsDialog({ open }: {
                     const { feedDialog } = appState;
                     feedDialog.open.value = true;
                     feedDialog.feed.value = f;
-                    feedDialog.onSave = update;
+                    feedDialog.onSave = updateFeed;
                   });
                 }}
               >

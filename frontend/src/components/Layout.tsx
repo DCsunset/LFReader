@@ -24,7 +24,7 @@ import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherN
 import { computed, signal, useComputed, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
-import { loadData, fetchData, handleExternalLink } from "../store/actions";
+import { loadData, dispatchFeedAction, handleExternalLink } from "../store/actions";
 import FeedList from "./FeedList";
 import EntryList from "./EntryList";
 import NewFeedsDialog from "./NewFeedsDialog";
@@ -51,6 +51,17 @@ const selectedFeed = computedState.selectedFeed;
 const selectedEntry = computedState.selectedEntry;
 const selectedEntryFeed = computedState.selectedEntryFeed;
 
+async function fetchFeeds() {
+  const { archive, forceArchive } = appState.settings.value;
+  await dispatchFeedAction({
+    action: "fetch",
+    archive,
+    force_archive: forceArchive,
+    // ignore error when updating all feeds
+    ignore_error: true
+  })
+}
+
 const entryRef = createRef<HTMLElement>();
 const scrollButton = signal(false);
 const scrollToTop = () => {
@@ -65,35 +76,43 @@ function onEntryScroll(e: Event) {
   }
 }
 
+// Time of touch start
+let touchStartTime: number | null = null;
 // X position of touch start
 let touchStartX: number | null = null;
 
 // Handle swipe event
 function onTouchStart(e: TouchEvent) {
+  touchStartTime = performance.now();
   touchStartX = e.changedTouches[0].clientX;
 }
 function onTouchEnd(e: TouchEvent) {
   if (touchStartX != null) {
-    const distance = e.changedTouches[0].clientX - touchStartX;
-    if (distance > 50) {
-      // left-to-right swiping
-      if (entryList.value) {
-        feedList.value = true;
+    const elapsed = performance.now() - touchStartTime!;
+    // swipe only when elapsed time is short (ms)
+    if (elapsed < 400) {
+      const distance = e.changedTouches[0].clientX - touchStartX;
+      if (distance > 50) {
+        // left-to-right swiping
+        if (entryList.value) {
+          feedList.value = true;
+        }
+        else {
+          entryList.value = true;
+        }
       }
-      else {
-        entryList.value = true;
-      }
-    }
-    else if (distance < -50) {
-      // right-to-left swiping
-      if (feedList.value) {
-        feedList.value = false;
-      }
-      else {
-        entryList.value = false;
+      else if (distance < -50) {
+        // right-to-left swiping
+        if (feedList.value) {
+          feedList.value = false;
+        }
+        else {
+          entryList.value = false;
+        }
       }
     }
     touchStartX = null;
+    touchStartTime = null;
   }
 }
 
@@ -295,7 +314,7 @@ export default function Layout() {
             size="small"
             color="inherit"
             title="Fetch feeds from origin"
-            onClick={() => fetchData()}
+            onClick={fetchFeeds}
             disabled={loading.value}
           >
             {loading.value

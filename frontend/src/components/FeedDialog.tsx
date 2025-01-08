@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -31,7 +31,7 @@ import {
 } from "@mui/material";
 import { batch, computed, effect, signal } from "@preact/signals";
 import { FeedUserData, getFeedTitle } from "../store/feed";
-import { archiveFeeds, deleteFeed, fetchData, handleExternalLink } from "../store/actions";
+import { dispatchFeedAction, handleExternalLink } from "../store/actions";
 import Icon from "@mdi/react";
 import { mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
@@ -86,8 +86,12 @@ const save = async () => {
     archive_sequential: archiveSequential.value || undefined,
     archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined
   };
-  // Must load onSave here to keep it up ot date
-  const ok = await appState.feedDialog.onSave?.(feed.value!, userData);
+  const f = feed.value!;
+  // Must load onSave here to keep it up to date
+  const ok = await appState.feedDialog.onSave?.({
+    url: f.url,
+    user_data: userData
+  });
   if (ok) {
     close();
   }
@@ -95,13 +99,19 @@ const save = async () => {
 
 async function handleArchive() {
   if (feed.value) {
-    await archiveFeeds([feed.value.url]);
+    await dispatchFeedAction({
+      action: "archive",
+      feed_urls: [feed.value.url]
+    });
   }
 }
 
 async function handleFetch() {
   if (feed.value) {
-    await fetchData([feed.value]);
+    await dispatchFeedAction({
+      action: "fetch",
+      feeds: [feed.value]
+    });
   }
 }
 
@@ -112,7 +122,10 @@ function handleDelete() {
     appState.confirmation.onConfirm = async () => {
       if (feed.value) {
         deleteInProgress.value = true;
-        await deleteFeed(feed.value.url);
+        await dispatchFeedAction({
+          action: "delete",
+          feed_urls: [feed.value.url]
+        });
         batch(() => {
           close();
           deleteInProgress.value = false;

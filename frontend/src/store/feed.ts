@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -33,7 +33,7 @@ export type Feed = {
   author?: string,
   title?: string,
   subtitle?: string,
-  categories: string[],
+  categories?: string[],
   generator?: string,
   logo?: string,
   updated_at?: string,

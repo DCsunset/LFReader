@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,7 +17,7 @@
 import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
 import { computedState, appState } from "../store/state";
 import { filterFeeds, getFeedTitle, tagTitle, toFeedId } from "../store/feed";
-import { updateFeed, updateQueryParams } from "../store/actions";
+import { dispatchFeedAction, FeedInfo, updateQueryParams } from "../store/actions";
 import { batch, computed, useComputed } from "@preact/signals";
 import { mdiChevronRight, mdiLeadPencil } from "@mdi/js";
 import Icon from '@mdi/react';
@@ -27,6 +27,13 @@ const editing = appState.ui.editingFeeds;
 const feedGroupStates = appState.ui.feedGroupStates;
 const allEntries = appState.data.entries;
 const queryParams = appState.queryParams;
+
+async function updateFeed(feed: FeedInfo) {
+  return await dispatchFeedAction({
+    action: "update",
+    feeds: [feed]
+  })
+}
 
 const tagId = (tag?: string) => tag ?? "_all";
 

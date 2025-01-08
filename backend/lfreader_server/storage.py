@@ -1,5 +1,5 @@
 # LFReader
-# Copyright (C) 2022-2024  DCsunset
+# Copyright (C) 2022-2025  DCsunset
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -34,7 +34,7 @@ from fastapi import HTTPException
 from .archive import Archiver
 from .config import Config
 from .utils import async_map, sql_update_field
-from .models import QueryEntry
+from .models import QueryEntry, FeedInfo
 
 async def parse_feed(session: aiohttp.ClientSession, ignore_error: bool, feed: dict):
   try:
@@ -239,10 +239,10 @@ class Storage:
   Fetch feeds.
   If feeds is None, fetch all feeds
   """
-  async def fetch_feeds(self, feeds: list, archive: bool, force_archive: bool, ignore_error: bool):
+  async def fetch_feeds(self, feeds: list[FeedInfo], archive: bool, force_archive: bool, ignore_error: bool):
     # must disable requoting to prevent invalid char in url
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout, requote_redirect_url=False) as session:
-      feeds = feeds or self.get_feeds_metadata()
+      feeds = feeds or self.get_feeds(columns=["url", "user_data"])
       feeds = await asyncio.gather(*map(partial(parse_feed, session, ignore_error), feeds))
       now = datetime.now().astimezone().isoformat()
       update_feed_field = partial(sql_update_field, "feeds")
@@ -408,15 +408,29 @@ class Storage:
       # insert will create a tx. Must commit to save data
       self.db.commit()
 
-  def get_feeds_metadata(self) -> list[str]:
-    # result is a dict after dict_row_factory
-    return self.db.execute("SELECT url, user_data FROM feeds").fetchall()
+  def get_feeds_cursor(
+    self,
+    feed_urls: list[str] | None = None,
+    columns: list[str] | None = None
+  ) -> sqlite3.Cursor:
+    cols = ", ".join(columns) if columns else "*"
+    query = f"SELECT {cols} FROM feeds"
+    args = []
+    if feed_urls is not None:
+      # use placeholder to prevent SQL injection
+      placeholders = ", ".join(repeat("?", len(feed_urls)))
+      query += f" WHERE url IN ({placeholders})"
+      args.extend(feed_urls)
+    return self.db.execute(query, args)
 
-  def get_feeds(self) -> list[dict[str, Any]]:
-    # result is a dict after dict_row_factory
-    return self.db.execute("SELECT * FROM feeds").fetchall()
+  def get_feeds(
+    self,
+    feed_urls: list[str] | None = None,
+    columns: list[str] | None = None
+  ) -> list[dict[str, Any]]:
+    return self.get_feeds_cursor(feed_urls, columns).fetchall()
 
-  def get_entries(
+  def get_entries_cursor(
     self,
     feed_urls: list[str] | None = None,
     entries: list[QueryEntry] | None = None,
@@ -446,13 +460,25 @@ class Storage:
     query += " ORDER BY COALESCE(published_at, updated_at) DESC LIMIT ? OFFSET ?"
     args.extend((limit, offset))
 
-    return self.db.execute(query, args).fetchall()
+    return self.db.execute(query, args)
 
-  def update_feed(self, feed_url: str, user_data: dict):
-    self.db.execute(
-      "UPDATE feeds SET user_data = ? WHERE url = ?",
-      (pack_data(user_data), feed_url)
-    )
+  def get_entries(
+    self,
+    feed_urls: list[str] | None = None,
+    entries: list[QueryEntry] | None = None,
+    offset: int = -1,
+    limit: int = -1,
+    columns: list[str] | None = None
+  ) -> list[dict]:
+    return self.get_entries_cursor(feed_urls, entries, offset, limit, columns).fetchall()
+
+  def update_feeds(self, feeds: list[FeedInfo]):
+    cur = self.db.cursor()
+    for f in feeds:
+      cur.execute(
+        "UPDATE feeds SET user_data = ? WHERE url = ?",
+        (pack_data(f.user_data), f.url)
+      )
     self.db.commit()
 
   def delete_feeds(self, feed_urls: list[str]):
@@ -468,9 +494,31 @@ class Storage:
     # delete will create a tx. Must commit to save data
     self.db.commit()
 
+  # clean old entries before after_date
+  def clean_feeds(self, feed_urls: list[str] | None):
+    feeds = self.get_feeds_cursor(feed_urls=feed_urls, columns=["url", "user_data"])
+    for f in feeds:
+      f_url = f["url"]
+      after_date_raw = f["user_data"].get("after_date")
+      after_date = None
+      if not after_date_raw:
+        logging.info(f"Skip cleaning feed {f_url}: after_data not set")
+        continue
+      try:
+        after_date = datetime.fromisoformat(after_date_raw).astimezone()
+      except:
+        raise HTTPException(status_code=400, detail=f"Invalid after_date for feed {f_url}: {after_date_raw}")
+
+      for e in self.get_entries_cursor([f["url"]]):
+        e_id = e["id"]
+        if (e_published and e_published < after_date) or (e_updated and e_updated < after_date):
+          self.archiver.delete_resources(f_url, e_id)
+          self.db.execute("DELETE FROM entries WHERE feed_url = ? AND id = ?", (f_url, e_id))
+    self.db.commit()
+
   # archive feeds in database
   async def archive_feeds(self, feed_urls: Iterable[str] | None = None):
-    urls = feed_urls or map(lambda v: v["url"], self.get_feeds_metadata())
+    urls = feed_urls or map(lambda v: v["url"], self.get_feeds(columns=["url"]))
 
     # must disable requoting to prevent invalid char in url
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout, requote_redirect_url=False) as session:
