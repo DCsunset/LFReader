@@ -16,9 +16,17 @@ LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python 
 
 ## Screenshots
 
+Light mode:
+
 ![light](docs/screenshots/light.png)
 
+Dark mode:
+
 ![dark](docs/screenshots/dark.png)
+
+Config options:
+
+![config](docs/screenshots/config.png)
 
 ## Installation
 
@@ -167,6 +175,16 @@ pip install .
 
 
 ## Migration
+
+### v3.0.0
+
+Steps to migrate database from v2.0.0+ to v3.0.0:
+1. Make a backup of both the old database and archive directory
+2. Change `base_url`, `base_dir`, and `archive_options` to match your old settings and put the old archive directory at the specified location
+3. Run `python scripts/migrate_v3.0.0.py <old_db> <new_db>` to create the new db and update the archive directory
+4. Remove unnecessary subdirectories n archive directory. The new archives directory should only contain files
+5. Test the migrated db and archive directory with v3.0.0
+
 
 ### v2.0.0
 
