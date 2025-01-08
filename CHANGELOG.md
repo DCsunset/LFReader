@@ -2,6 +2,34 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.0.0](https://github.com/DCsunset/LFReader/compare/v2.10.2...v3.0.0) (2025-01-08)
+
+
+### ⚠ BREAKING CHANGES
+
+* refactor api endpoints
+* **backend:** use flat structure for resources
+* **backend:** add resources table and update schema
+
+### Features
+
+* **backend:** add resources table and update schema ([1bc11ce](https://github.com/DCsunset/LFReader/commit/1bc11ceefa153891357875ef248faf0a32e6666f))
+* **backend:** implement resource deletion ([70eff48](https://github.com/DCsunset/LFReader/commit/70eff482c8f06c59b17e0c47ef3dd3b8013a86e5))
+* **backend:** use flat structure for resources ([3feb44c](https://github.com/DCsunset/LFReader/commit/3feb44c9657532956bfdea8794bdf84dd1ae33b6))
+* **frontend:** refactor code and add category info ([a3c436c](https://github.com/DCsunset/LFReader/commit/a3c436c31935b18cf032791689fac33c6723da93))
+* **frontend:** update schema and add generator info ([983b8e2](https://github.com/DCsunset/LFReader/commit/983b8e29f8fddcc971c9c44fd257b694f4c6b1c2))
+
+
+### Bug Fixes
+
+* **backend:** fix a few bugs ([90628dd](https://github.com/DCsunset/LFReader/commit/90628dd17edabb0afa211b543a3018c1e1a0618a))
+
+
+### Misc
+
+* refactor api endpoints ([80dc6e8](https://github.com/DCsunset/LFReader/commit/80dc6e8f555020a384a0d95649f2b18d28f89dab))
+* update screenshots and add migration note ([2616990](https://github.com/DCsunset/LFReader/commit/26169908e683884f018f4f51e2273f52e15e9367))
+
 ## [2.10.2](https://github.com/DCsunset/LFReader/compare/v2.10.1...v2.10.2) (2025-01-02)
 
 
