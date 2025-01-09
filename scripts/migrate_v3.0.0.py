@@ -183,15 +183,13 @@ for f in old_db.execute("SELECT * FROM feeds"):
 # change this if needed
 base_url = "/archives"
 base_dir = "archives"
+# NOTE: attr_filters not supported for simplicity
 archive_options = [
   {
     "attr": "src"
   },
   {
-    "attr": "href",
-    "attr_filters": {
-      "href": "\\.(zip|jpg|jpeg|png|webp|mp3)$"
-    }
+    "attr": "href"
   }
 ]
 
@@ -207,6 +205,12 @@ def add_resource(db, feed_url, entry_id, url):
     )
   )
 
+def get_new_name(old_name):
+  ext = Path(old_name).suffix
+  if len(ext) > 8:
+    ext = ""
+  return f"{old_name[:64]}{ext}"
+
 def check_enclosure(db, feed_url, entry_id, enclosure):
   encoded_feed_url = encode_feed_url(feed_url)
   feed_path = Path(base_dir).joinpath(encoded_feed_url)
@@ -217,6 +221,7 @@ def check_enclosure(db, feed_url, entry_id, enclosure):
   # check if url is archived
   if src.startswith(resource_base_url):
     filename = Path(src).name
+    new_name = get_new_name(filename)
     # start with 64 hex digit
     if re.match("[0-9a-f]{64}", filename):
       # search for file started with it for backward compatibility
@@ -225,10 +230,9 @@ def check_enclosure(db, feed_url, entry_id, enclosure):
       for f in sorted(feed_path.iterdir(), key=lambda p: len(p.name), reverse=True):
         if f.name.startswith(filename):
           # flatten layout
-          new_name = base_path.joinpath(f.name)
-          f.rename(new_name)
+          f.rename(base_path.joinpath(new_name))
           # update enclosure url
-          url = f"{base_url}/{f.name}"
+          url = f"{base_url}/{new_name}"
           enclosure["href"] = url
           add_resource(db, feed_url, entry_id, url)
           found = True
@@ -236,9 +240,9 @@ def check_enclosure(db, feed_url, entry_id, enclosure):
       if not found:
         # the resource may have been renamed already
         for f in base_path.iterdir():
-          if f.name.startswith(filename):
+          if f.name.startswith(new_name):
             # update enclosure url
-            url = f"{base_url}/{f.name}"
+            url = f"{base_url}/{new_name}"
             enclosure["href"] = url
             add_resource(db, feed_url, entry_id, url)
             found = True
@@ -259,14 +263,15 @@ def check_content(db, feed_url, entry_id, content):
   soup = BeautifulSoup(content["value"], "html.parser")
   for opt in archive_options:
     attr = opt["attr"]
-    attrs = opt.get("attr_filters", {})
-    if attr not in attrs:
-      attrs[attr] = True
+    attrs = {}
+    attrs[attr] = True
+
     for tag in soup.find_all(opt.get("tag_filter"), attrs=attrs):
       src = tag.get(attr)
       # check if url is archived
       if src.startswith(resource_base_url):
         filename = Path(src).name
+        new_name = get_new_name(filename)
         # start with 64 hex digit
         if re.match("[0-9a-f]{64}", filename):
           found = False
@@ -274,10 +279,9 @@ def check_content(db, feed_url, entry_id, content):
           for f in sorted(feed_path.iterdir(), key=lambda p: len(p.name), reverse=True):
             if f.name.startswith(filename):
               # flatten layout
-              new_name = base_path.joinpath(f.name)
-              f.rename(new_name)
+              f.rename(base_path.joinpath(new_name))
+              url = f"{base_url}/{new_name}"
               # update tag url
-              url = f"{base_url}/{f.name}"
               tag[attr] = url
               add_resource(db, feed_url, entry_id, url)
               found = True
@@ -285,9 +289,9 @@ def check_content(db, feed_url, entry_id, content):
           if not found:
             # the resource may have been renamed already
             for f in base_path.iterdir():
-              if f.name.startswith(filename):
+              if f.name.startswith(new_name):
                 # update enclosure url
-                url = f"{base_url}/{f.name}"
+                url = f"{base_url}/{new_name}"
                 tag[attr] = url
                 add_resource(db, feed_url, entry_id, url)
                 found = True
