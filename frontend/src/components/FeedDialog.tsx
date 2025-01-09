@@ -186,11 +186,12 @@ export default function FeedDialog() {
 
           {existing.value &&
             <>
-              <Item title="Description">
-                <div className="max-w-80 opacity-75">
-                  {feed.value?.subtitle}
-                </div>
-              </Item>
+              {feed.value?.subtitle &&
+                <Item title="Description">
+                  <div className="max-w-80 opacity-75">
+                    {feed.value?.subtitle}
+                  </div>
+                </Item>}
 
               {categories.value.length > 0 &&
                 <Item title="Categories">
