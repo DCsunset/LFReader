@@ -2,6 +2,28 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.1.0](https://github.com/DCsunset/LFReader/compare/v3.0.0...v3.1.0) (2025-01-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **backend:** fix resource naming to avoid long filenames
+
+### Features
+
+* **backend:** support archiving logo ([1245d79](https://github.com/DCsunset/LFReader/commit/1245d79885f6cc92afdf378afd97a94b41ec6ef4))
+
+
+### Bug Fixes
+
+* **backend:** fix resource naming to avoid long filenames ([f4cd5bd](https://github.com/DCsunset/LFReader/commit/f4cd5bd0eb090094a3689291f9368ddde7bae870))
+* **scripts:** fix migration scripts ([ffbc5e6](https://github.com/DCsunset/LFReader/commit/ffbc5e6700ee17ce2fbde9c900d3ca2ebd68195b))
+
+
+### Misc
+
+* update README ([4989f3d](https://github.com/DCsunset/LFReader/commit/4989f3d518c34c006305de1bd4cc8f42203239b1))
+
 ## [3.0.0](https://github.com/DCsunset/LFReader/compare/v2.10.2...v3.0.0) (2025-01-08)
 
 
