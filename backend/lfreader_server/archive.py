@@ -159,7 +159,7 @@ class Archiver:
     query_condition = "feed_url = ?"
     args = [feed_url]
     if entry_id is not None:
-      query += "AND entry_id = ?"
+      query_condition += "AND entry_id = ?"
       args.append(entry_id)
 
     # keep track of deleted resources
@@ -180,6 +180,6 @@ class Archiver:
       # delete resource if no reference
       if r['ok'] == 0:
         resource_path = resource_dir.joinpath(self.filename_from_url(url))
-        logging.debug(f"Deleting resource {resource_path}...")
+        logging.info(f"Deleting resource {resource_path}...")
         resource_path.unlink(missing_ok=True)
 

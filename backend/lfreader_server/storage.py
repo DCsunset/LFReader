@@ -514,9 +514,13 @@ class Storage:
       except:
         raise HTTPException(status_code=400, detail=f"Invalid after_date for feed {f_url}: {after_date_raw}")
 
+      logging.info(f"Cleaning feed {f_url}...")
       for e in self.get_entries_cursor([f["url"]]):
         e_id = e["id"]
+        e_published = e["published_at"] and datetime.fromisoformat(e["published_at"])
+        e_updated = e["updated_at"] and datetime.fromisoformat(e["updated_at"])
         if (e_published and e_published < after_date) or (e_updated and e_updated < after_date):
+          logging.info(f"Removing old entry {e["title"] or e_id}...")
           self.archiver.delete_resources(f_url, e_id)
           self.db.execute("DELETE FROM entries WHERE feed_url = ? AND id = ?", (f_url, e_id))
       self.db.commit()
