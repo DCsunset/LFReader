@@ -274,6 +274,10 @@ class Storage:
         if "added_at" not in f_server_data:
           f_server_data["added_at"] = now
 
+        logo = f.feed.get("logo")
+        if archive and logo:
+          logo = (await self.archiver.archive_resource(session, feed_url, "@", logo, f.feed.get("link", url), f_user_data)) or logo
+
         self.db.execute(
           f'''
           INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -299,7 +303,7 @@ class Storage:
             f.feed.get("subtitle"),
             pack_data(f.feed.get("tags")),
             f.feed.get("generator"),
-            f.feed.get("logo"),
+            logo,
             datetime_to_iso(parse_datetime(f.feed.get("published_parsed"))),
             datetime_to_iso(parse_datetime(f.feed.get("updated_parsed"))),
             pack_data(f_server_data),

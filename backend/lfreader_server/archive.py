@@ -104,7 +104,7 @@ class Archiver:
     if archive_blacklist and re.match(archive_blacklist, url):
       return None
 
-    logging.debug(f'Archiving resources in html {url}...')
+    logging.debug(f'Archiving resource at {url}...')
     for i in range(self.cfg.retry_attempts):
       try:
         # disable quoting to prevent invalid char in url
@@ -140,11 +140,6 @@ class Archiver:
         else:
           logging.warn(f"Failed to fetch resource from {url} ({user_base_url}, {base_url}, {src}): All retries failed.")
 
-    return None
-
-  # archive logo from website
-  async def archive_logo(self, session, feed_url: str, url: str):
-    # TODO
     return None
 
   # Delete resources (need to commit after calling this function)
