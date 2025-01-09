@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.2.0](https://github.com/DCsunset/LFReader/compare/v3.1.2...v3.2.0) (2025-01-09)
+
+
+### Features
+
+* **frontend:** support cleaning feeds ([284775c](https://github.com/DCsunset/LFReader/commit/284775c92d4e6a7d68d94c84a183df67df044d78))
+
+
+### Bug Fixes
+
+* **backend:** fix clean_feeds ([fce5fd3](https://github.com/DCsunset/LFReader/commit/fce5fd3a016bf881de54bc882bd0fe2ce3c0e5fa))
+* **frontend:** show description only if not empty ([0b8cfe5](https://github.com/DCsunset/LFReader/commit/0b8cfe595a0dca29648e6a1211b24c1ef80223f3))
+
+
+### Misc
+
+* **backend:** improve logging info ([83062b9](https://github.com/DCsunset/LFReader/commit/83062b95996c6f823eec21de17adfea6efb38169))
+
 ## [3.1.2](https://github.com/DCsunset/LFReader/compare/v3.1.1...v3.1.2) (2025-01-09)
 
 
