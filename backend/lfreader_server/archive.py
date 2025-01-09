@@ -97,6 +97,17 @@ class Archiver:
 
     # already cached
     if resource_path.exists():
+      # add to resources table in case it was not added to db due to failure
+      self.db.execute(
+        f'''
+        INSERT OR IGNORE INTO resources VALUES (?, ?, ?)
+        ''',
+        (
+          feed_url,
+          entry_id,
+          url
+        )
+      )
       return resource_url
 
     # skip blacklisted url (regex)
