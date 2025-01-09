@@ -276,7 +276,7 @@ class Storage:
 
         logo = f.feed.get("logo")
         if archive and logo:
-          logo = (await self.archiver.archive_resource(session, feed_url, "@", logo, f.feed.get("link", url), f_user_data)) or logo
+          logo = (await self.archiver.archive_resource(session, url, "@", logo, f.feed.get("link", url), f_user_data)) or logo
 
         self.db.execute(
           f'''
