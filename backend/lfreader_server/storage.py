@@ -36,6 +36,12 @@ from .config import Config
 from .utils import async_map, sql_update_field
 from .models import QueryEntry, FeedInfo
 
+# for logging
+def entry_title(e):
+  return e.get("title") or e.get("id")
+def feed_title(f):
+  return f.get("title") or f.get("url")
+
 async def parse_feed(session: aiohttp.ClientSession, ignore_error: bool, feed: dict):
   try:
     # disable requoting to prevent invalid char in url
@@ -242,7 +248,7 @@ class Storage:
   async def fetch_feeds(self, feeds: list[FeedInfo], archive: bool, force_archive: bool, ignore_error: bool):
     # must disable requoting to prevent invalid char in url
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout, requote_redirect_url=False) as session:
-      feeds = feeds or self.get_feeds(columns=["url", "user_data"])
+      feeds = feeds or self.get_feeds(columns=["url", "title", "user_data"])
       feeds = await asyncio.gather(*map(partial(parse_feed, session, ignore_error), feeds))
       now = datetime.now().astimezone().isoformat()
       update_feed_field = partial(sql_update_field, "feeds")
@@ -260,7 +266,7 @@ class Storage:
           msg = f"Error parsing feed {url}: {err_msg}"
           logging.warning(msg)
 
-        logging.info(f"Processing feed {url}...")
+        logging.info(f"Processing feed {feed_title(f) or url}...")
 
         # unpacked already when converting to row dict
         f_data = self.db.execute(
@@ -501,26 +507,26 @@ class Storage:
 
   # clean old entries before after_date
   def clean_feeds(self, feed_urls: list[str] | None):
-    feeds = self.get_feeds_cursor(feed_urls=feed_urls, columns=["url", "user_data"])
+    feeds = self.get_feeds_cursor(feed_urls=feed_urls, columns=["url", "title", "user_data"])
     for f in feeds:
       f_url = f["url"]
       after_date_raw = f["user_data"].get("after_date")
       after_date = None
       if not after_date_raw:
-        logging.info(f"Skip cleaning feed {f_url}: after_data not set")
+        logging.info(f"Skip cleaning feed {feed_title(f)}: after_data not set")
         continue
       try:
         after_date = datetime.fromisoformat(after_date_raw).astimezone()
       except:
-        raise HTTPException(status_code=400, detail=f"Invalid after_date for feed {f_url}: {after_date_raw}")
+        raise HTTPException(status_code=400, detail=f"Invalid after_date for feed: {feed_title(f)}: {after_date_raw}")
 
-      logging.info(f"Cleaning feed {f_url}...")
+      logging.info(f"Cleaning feed: {feed_title(f)}...")
       for e in self.get_entries_cursor([f["url"]]):
         e_id = e["id"]
         e_published = e["published_at"] and datetime.fromisoformat(e["published_at"])
         e_updated = e["updated_at"] and datetime.fromisoformat(e["updated_at"])
         if (e_published and e_published < after_date) or (e_updated and e_updated < after_date):
-          logging.info(f"Removing old entry {e["title"] or e_id}...")
+          logging.info(f"Removing old entry: {entry_title(e)}...")
           self.archiver.delete_resources(f_url, e_id)
           self.db.execute("DELETE FROM entries WHERE feed_url = ? AND id = ?", (f_url, e_id))
       self.db.commit()
@@ -538,7 +544,7 @@ class Storage:
         ):
           f_user_data = f["user_data"] or {}
           for e in self.db.execute(
-            "SELECT id, link, summary, contents, enclosures FROM entries WHERE feed_url = ?",
+            "SELECT id, title, link, summary, contents, enclosures FROM entries WHERE feed_url = ?",
             (url,)
           ):
             base_url = e["link"]
@@ -547,13 +553,13 @@ class Storage:
             contents = e["contents"]
             enclosures = e["enclosures"]
             if summary:
-              logging.info(f'Archiving summary of entry {e_id}...')
+              logging.info(f'Archiving summary of entry {entry_title(e)}...')
               summary = await self.archive_content(session, url, e_id, summary, base_url, f_user_data)
             if contents:
-              logging.info(f'Archiving contents of entry {e_id}...')
+              logging.info(f'Archiving contents of entry {entry_title(e)}...')
               contents = await self.archive_contents(session, url, e_id, contents, base_url, f_user_data)
             if enclosures:
-              logging.info(f'Archiving enclosures of entry {e_id}...')
+              logging.info(f'Archiving enclosures of entry {entry_title(e)}...')
               enclosures = await self.archive_enclosures(session, url, e_id, enclosures, base_url, f_user_data)
 
             self.db.execute(
