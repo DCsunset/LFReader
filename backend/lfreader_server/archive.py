@@ -40,8 +40,12 @@ class Archiver:
     name = Path(url).name
     if url.startswith(self.cfg.base_url) and re.match("[0-9a-f]{64}", name):
       return name
+    # only keep short extension as filename might be too long for os
+    ext = Path(name).suffix
+    if len(ext) > 8:
+      ext = ""
     digest = blake2s(url.encode()).hexdigest()
-    return  f"{digest}_{name}"
+    return  f"{digest}{ext}"
 
   """
   Archive all resources in the html content
