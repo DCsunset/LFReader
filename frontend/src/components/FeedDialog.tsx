@@ -34,7 +34,7 @@ import { batch, computed, effect, signal } from "@preact/signals";
 import { textCategories, FeedUserData, getFeedTitle } from "../store/feed";
 import { dispatchFeedAction, handleExternalLink } from "../store/actions";
 import Icon from "@mdi/react";
-import { mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
+import { mdiBroom, mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
 import { LoadingButton } from "@mui/lab";
 import { appState, computedState, lookupFeed } from "../store/state";
 import Item from "./SettingsItem";
@@ -49,7 +49,6 @@ const archiveBlacklist = signal("");
 const archiveSequential = signal(false);
 const archiveInterval = signal("");
 const archiveIntervalError = signal(false);
-const deleteInProgress = signal(false);
 const loading = appState.status.loading;
 
 const { open, feed } = appState.feedDialog;
@@ -124,19 +123,32 @@ function handleDelete() {
     appState.confirmation.content.value = <>Confirm deletion of feed <em>{title}</em>?</>;
     appState.confirmation.onConfirm = async () => {
       if (feed.value) {
-        deleteInProgress.value = true;
         await dispatchFeedAction({
           action: "delete",
           feed_urls: [feed.value.url]
         });
-        batch(() => {
-          close();
-          deleteInProgress.value = false;
-        });
+        close();
       }
     };
   });
 }
+
+function handleClean() {
+  batch(() => {
+    appState.confirmation.open.value = true;
+    appState.confirmation.content.value = <>Confirm to remove entries before <strong>{feed.value?.user_data.after_date}</strong> for <em>{title}</em>?</>;
+    appState.confirmation.onConfirm = async () => {
+      if (feed.value) {
+        await dispatchFeedAction({
+          action: "clean",
+          feed_urls: [feed.value.url]
+        });
+        close();
+      }
+    };
+  });
+}
+
 
 // Reset local states when feed changes
 effect(reset);
@@ -229,7 +241,18 @@ export default function FeedDialog() {
                   <Box sx={{ mt: 0.2 }}>Fetch</Box>
                 </LoadingButton>
                 <LoadingButton
-                  loading={deleteInProgress.value}
+                  title="Remove entries before _AfterDate_"
+                  disabled={!feed.value?.user_data.after_date}
+                  loading={loading.value}
+                  loadingPosition="start"
+                  color="secondary"
+                  onClick={handleClean}
+                  startIcon={<Icon path={mdiBroom} size={1} />}
+                >
+                  <Box sx={{ mt: 0.2 }}>Clean</Box>
+                </LoadingButton>
+                <LoadingButton
+                  loading={loading.value}
                   loadingPosition="start"
                   color="error"
                   onClick={handleDelete}
@@ -300,7 +323,7 @@ export default function FeedDialog() {
 
           <Item
             title="After Date"
-            subtitle="only fetch entries after a date (ISO format)"
+            subtitle={<>only fetch entries after a date (ISO format) <br /> used by <strong>Clean</strong> to remove old entries</>}
           >
             <TextField
               variant="standard"

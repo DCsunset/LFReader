@@ -33,11 +33,15 @@ import { dispatchFeedAction } from "../store/actions";
 import { batch, Signal, signal } from "@preact/signals";
 import { LoadingButton } from "@mui/lab";
 import Icon from "@mdi/react";
-import { mdiContentSave } from "@mdi/js";
+import { mdiBroom, mdiContentSave } from "@mdi/js";
 import Item from "./SettingsItem";
 
 async function archiveFeeds() {
-  await dispatchFeedAction({ action: "archive" })
+  await dispatchFeedAction({ action: "archive" });
+}
+
+async function cleanFeeds() {
+  await dispatchFeedAction({ action: "clean" });
 }
 
 const validNumber = (value: string, min: number, max: number, int: boolean) => {
@@ -47,6 +51,8 @@ const validNumber = (value: string, min: number, max: number, int: boolean) => {
   const num = int ? parseInt(value) : parseFloat(value);
   return num >= min && num <= max;
 };
+
+const loading = appState.status.loading;
 
 // local states
 const pageSizeError = signal(false);
@@ -183,12 +189,22 @@ export default function SettingsDialog({ open }: {
 
           <Item title="Database Operations">
             <LoadingButton
-              loading={appState.status.loading.value}
+              title="Archive all feeds"
+              loading={loading.value}
               loadingPosition="start"
               color="primary" onClick={archiveFeeds}
               startIcon={<Icon path={mdiContentSave} size={1} />}
             >
               <Box sx={{ mt: 0.2 }}>Archive</Box>
+            </LoadingButton>
+            <LoadingButton
+              title="Remove old entries for all feeds"
+              loading={loading.value}
+              loadingPosition="start"
+              color="secondary" onClick={cleanFeeds}
+              startIcon={<Icon path={mdiBroom} size={1} />}
+            >
+              <Box sx={{ mt: 0.2 }}>Clean</Box>
             </LoadingButton>
           </Item>
         </Stack>

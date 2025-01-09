@@ -57,14 +57,12 @@ export function notify(color: AlertColor, text: string) {
 }
 
 async function waitForLoading() {
-  appState.status.loading.value = true;
   const maxBackoff = 10000;
   let backoff = 500;
   while (true) {
     await new Promise(r => setTimeout(r, backoff));
     const status = await fetchApi("/status");
     if (!status?.loading) {
-      appState.status.loading.value = false;
       break;
     }
     backoff = Math.min(maxBackoff, backoff * 2);
@@ -207,7 +205,7 @@ type ArchiveFeedsArgs = {
 
 type CleanFeedsArgs = {
   action: "clean",
-  feed_urls: string[]
+  feed_urls?: string[]
 }
 
 type DeleteFeedsArgs = {
@@ -225,6 +223,8 @@ type FeedActionArgs = FetchFeedsArgs | ArchiveFeedsArgs | CleanFeedsArgs | Delet
 const asyncActions = new Set([ "fetch", "archive" ]);
 
 export async function dispatchFeedAction(args: FeedActionArgs) {
+  appState.status.loading.value = true;
+
   const resp =  await fetchApi("/feeds", {
     method: "POST",
     body: JSON.stringify(args)
@@ -242,6 +242,8 @@ export async function dispatchFeedAction(args: FeedActionArgs) {
   if (ok) {
     notify("success", `Action ${args.action} finished successfully`);
   }
+
+  appState.status.loading.value = false;
   return ok;
 }
 
