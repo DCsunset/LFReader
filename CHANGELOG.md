@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.1.1](https://github.com/DCsunset/LFReader/compare/v3.1.0...v3.1.1) (2025-01-09)
+
+
+### Bug Fixes
+
+* **backend:** fix feed url variable ([7fd0232](https://github.com/DCsunset/LFReader/commit/7fd02321d5072d0e7ed380b6070dba6373cdb771))
+
 ## [3.1.0](https://github.com/DCsunset/LFReader/compare/v3.0.0...v3.1.0) (2025-01-09)
 
 
