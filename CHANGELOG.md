@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.1.2](https://github.com/DCsunset/LFReader/compare/v3.1.1...v3.1.2) (2025-01-09)
+
+
+### Bug Fixes
+
+* **backend:** commit tx for every feed for better fault tolerance ([54843b4](https://github.com/DCsunset/LFReader/commit/54843b49e522260a1ba63e27babfd33ed6fb1694))
+* **backend:** try adding resource to db even if it is found ([dd5211c](https://github.com/DCsunset/LFReader/commit/dd5211c425a240585b882472d23ac02db4d480cc))
+
 ## [3.1.1](https://github.com/DCsunset/LFReader/compare/v3.1.0...v3.1.1) (2025-01-09)
 
 
