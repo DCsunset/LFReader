@@ -409,8 +409,9 @@ class Storage:
               None
             )
           )
-      # insert will create a tx. Must commit to save data
-      self.db.commit()
+        # insert will create a tx. Must commit to save data
+        # Commit tx for every feed
+        self.db.commit()
 
   def get_feeds_cursor(
     self,
@@ -518,7 +519,7 @@ class Storage:
         if (e_published and e_published < after_date) or (e_updated and e_updated < after_date):
           self.archiver.delete_resources(f_url, e_id)
           self.db.execute("DELETE FROM entries WHERE feed_url = ? AND id = ?", (f_url, e_id))
-    self.db.commit()
+      self.db.commit()
 
   # archive feeds in database
   async def archive_feeds(self, feed_urls: Iterable[str] | None = None):
@@ -565,4 +566,4 @@ class Storage:
                 e_id
               )
             )
-      self.db.commit()
+        self.db.commit()
