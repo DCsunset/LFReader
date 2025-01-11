@@ -3,11 +3,14 @@
 [![Docker Image Version](https://img.shields.io/docker/v/dcsunset/lfreader?label=docker)](https://hub.docker.com/r/dcsunset/lfreader)
 [![GitHub License](https://img.shields.io/github/license/DCsunset/LFReader)](https://github.com/DCsunset/LFReader)
 
-
 LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python and Preact/React.
+
+> [!NOTE]
+> This app is still in its early stage. Breaking changes may occur from time to time.
 
 ## Features
 
+- PWA (Progressive Web App) support: provide better loading experience and can be installed to a device
 - Support for various feed formats: RSS, Atom, CDF, and JSON feeds
 - Local-first: Feeds and entries are stored in a sqlite3 database so that you can read local feeds even without Internet access. Futhermore, it supports archiving resources like images in the entries.
 - Dark mode support: Users can choose between light and dark modes
