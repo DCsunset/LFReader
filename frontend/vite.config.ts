@@ -22,9 +22,9 @@ export default defineConfig({
     preact(),
     UnoCSS(),
     VitePWA({
-      devOptions: {
-        // enabled: true
-      },
+      // devOptions: {
+      //   enabled: true
+      // },
       includeAssets: ['*.ico', '*.png', '*.svg'],
       manifest: {
         name: 'LFReader',
@@ -56,6 +56,10 @@ export default defineConfig({
             purpose: 'maskable'
           }
         ]
+      },
+      workbox: {
+        // make it able to pass request to backend
+        navigateFallbackDenylist: [/^\/api\//]
       }
     })
   ],
