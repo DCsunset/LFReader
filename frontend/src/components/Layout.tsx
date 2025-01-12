@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2024  DCsunset
+// Copyright (C) 2022-2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -78,40 +78,44 @@ function onEntryScroll(e: Event) {
 
 // Time of touch start
 let touchStartTime: number | null = null;
-// X position of touch start
-let touchStartX: number | null = null;
+// Position of touch start
+let touchStart: Touch | null = null;
+const touchThreshold = 60;
 
 // Handle swipe event
 function onTouchStart(e: TouchEvent) {
   touchStartTime = performance.now();
-  touchStartX = e.changedTouches[0].clientX;
+  touchStart = e.changedTouches[0];
 }
 function onTouchEnd(e: TouchEvent) {
-  if (touchStartX != null) {
+  if (touchStart != null) {
     const elapsed = performance.now() - touchStartTime!;
     // swipe only when elapsed time is short (ms)
     if (elapsed < 400) {
-      const distance = e.changedTouches[0].clientX - touchStartX;
-      if (distance > 50) {
-        // left-to-right swiping
-        if (entryList.value) {
-          feedList.value = true;
+      const distanceX = e.changedTouches[0].clientX - touchStart.clientX;
+      const distanceY = e.changedTouches[0].clientY - touchStart.clientY;
+      if (Math.abs(distanceY) < Math.abs(distanceX) * 2/3) {
+        if (distanceX > touchThreshold) {
+          // left-to-right swiping
+          if (entryList.value) {
+            feedList.value = true;
+          }
+          else {
+            entryList.value = true;
+          }
         }
-        else {
-          entryList.value = true;
-        }
-      }
-      else if (distance < -50) {
-        // right-to-left swiping
-        if (feedList.value) {
-          feedList.value = false;
-        }
-        else {
-          entryList.value = false;
+        else if (distanceX < -touchThreshold) {
+          // right-to-left swiping
+          if (feedList.value) {
+            feedList.value = false;
+          }
+          else {
+            entryList.value = false;
+          }
         }
       }
     }
-    touchStartX = null;
+    touchStart = null;
     touchStartTime = null;
   }
 }
