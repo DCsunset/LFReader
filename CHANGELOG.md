@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.3.1](https://github.com/DCsunset/LFReader/compare/v3.3.0...v3.3.1) (2025-01-17)
+
+
+### Bug Fixes
+
+* **backend:** fix pyproject package ([6ecef54](https://github.com/DCsunset/LFReader/commit/6ecef542ef82f30b91deb1d1d01604bb688fcb55))
+
+
+### Misc
+
+* **backend:** remove executable permission of lookup script ([eefdf3b](https://github.com/DCsunset/LFReader/commit/eefdf3b8f5fe5baf8dde5368b3d6911c730d6df6))
+
 ## [3.3.0](https://github.com/DCsunset/LFReader/compare/v3.2.0...v3.3.0) (2025-01-17)
 
 
