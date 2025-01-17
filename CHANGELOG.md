@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.3.0](https://github.com/DCsunset/LFReader/compare/v3.2.0...v3.3.0) (2025-01-17)
+
+
+### Features
+
+* **backend:** add cli package for lfreader_lookup ([846dd2a](https://github.com/DCsunset/LFReader/commit/846dd2a9b9a420a78456a2c42a5128c06e839f2f))
+
+
+### Bug Fixes
+
+* **frontend:** add api to pwa workbox fallback deny list ([d06a1f0](https://github.com/DCsunset/LFReader/commit/d06a1f018404ae80246f84ee337ae689b58f8917))
+* **frontend:** fix adding new feeds ([bc18757](https://github.com/DCsunset/LFReader/commit/bc18757425f8d04aaafba25a51aa18b256c18e94))
+* **frontend:** fix entry rendering ([94c90af](https://github.com/DCsunset/LFReader/commit/94c90af0d60f9e0a6349b9f88e63306c79a21a92))
+* **frontend:** only trigger touch event when x distance is larger ([9c0b9fe](https://github.com/DCsunset/LFReader/commit/9c0b9fee0abe9103bbb038d60e4ffd0b0d7be2f9))
+
+
+### Misc
+
+* update readme ([3b7f7a4](https://github.com/DCsunset/LFReader/commit/3b7f7a4d08fb263bb39c14b578b31333ef8c551b))
+
 ## [3.2.0](https://github.com/DCsunset/LFReader/compare/v3.1.2...v3.2.0) (2025-01-09)
 
 
