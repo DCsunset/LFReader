@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { computed, signal, useSignalEffect } from "@preact/signals";
+import { computed, signal } from "@preact/signals";
 import { createRef } from "preact";
 import { appState, computedState, lookupEntry, lookupFeed  } from "../store/state";
 import { textCategories, Enclosure, Feed, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
@@ -29,6 +29,7 @@ import { displayDate } from "../utils/date";
 import MediaPlayer from "./MediaPlayer";
 import { Box, Chip, Collapse, Divider, List, ListItem, Typography } from "@mui/material";
 import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiRss, mdiTag } from "@mdi/js";
+import { useEffect } from "preact/hooks";
 
 hljs.configure({
   // prevent logging the errors in console
@@ -96,7 +97,7 @@ function HeaderItem({ icon, children }: {
 export default function Entry() {
   // this hook runs every time entry changes
   // must use useEffect instead of signal effect because it needs the page to load first
-  useSignalEffect(() => {
+  useEffect(() => {
     const element = entryRef.current;
     // Subscribe to entry.value
     if (entry.value && element) {
