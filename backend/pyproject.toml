@@ -1,5 +1,5 @@
 [project]
-name = "lfreader-server"
+name = "lfreader-backend"
 version = "0.0.0"
 dependencies = [
   "aiohttp",
@@ -8,6 +8,9 @@ dependencies = [
   "fastapi",
   "uvicorn[standard]",
 ]
+
+[tool.setuptools]
+packages = ["lfreader_server", "lfreader_lookup"]
 
 [project.scripts]
 lfreader-server = "lfreader_server.app:main"
