@@ -51,7 +51,6 @@
         };
         apps = {
           # dev server
-          # note: reload doesn't work for some reason
           backend-dev = createFlakeApp "backend-dev" ''
             cd backend
             uvicorn lfreader_server.app:app --reload --port 3000 --log-level debug --timeout-graceful-shutdown 5

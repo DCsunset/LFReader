@@ -7,6 +7,7 @@ LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python 
 
 > [!NOTE]
 > This app is still in its early stage. Breaking changes may occur from time to time.
+> Check migration notes before updating.
 
 ## Features
 
@@ -31,7 +32,8 @@ Config options:
 
 ![config](docs/screenshots/config.png)
 
-## Installation
+
+## Usage
 
 ### Using docker/podman
 
@@ -91,7 +93,6 @@ Simply import the flake and import the module `modules.lfreader` and add the fol
 ```
 
 
-
 ### From source code
 
 First, clone this repo.
@@ -120,6 +121,12 @@ uvicorn lfreader_server.app:app --host 0.0.0.0 --port 3000
 Finally, use your favorite web server to serve the frontend files (`frontend/dist`)
 and set up the reverse proxy to pass routes prefixed by `/api` to backend.
 If archiving is enabled (default), make sure the archives directory is served at `/archives`.
+
+
+### Others
+
+This repo also provide a backend CLI tool `lfreader_lookup` to look up an archived resource file in a database.
+
 
 
 ## Configuration

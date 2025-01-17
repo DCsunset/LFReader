@@ -11,4 +11,5 @@ dependencies = [
 
 [project.scripts]
 lfreader-server = "lfreader_server.app:main"
+lfreader-lookup = "lfreader_lookup.app:main"
 
