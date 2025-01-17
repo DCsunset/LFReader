@@ -106,6 +106,7 @@ export default function NewFeedsDialog({ open }: {
     const success = await dispatchFeedAction({
       action: "fetch",
       archive,
+      feeds: feeds.value,
       force_archive: forceArchive,
     });
     if (success) {
