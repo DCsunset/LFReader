@@ -155,7 +155,6 @@ export default function Layout() {
       }),
       // width and margin needed when persistent drawer is shown
       width: {
-        xs: "100%",  // keep it full width to make sure the scroll bar at the same position
         sm: `calc(100% - ${entryListWidth})`
       },
       ml: {
