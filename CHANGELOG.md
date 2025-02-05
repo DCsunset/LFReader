@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.3.2](https://github.com/DCsunset/LFReader/compare/v3.3.1...v3.3.2) (2025-02-05)
+
+
+### Bug Fixes
+
+* **frontend:** fix scrolling and use double-click for scroll-to-top ([6f3c54b](https://github.com/DCsunset/LFReader/commit/6f3c54b15166c60ea37b6da59e032ae98d6b8166))
+* **frontend:** fix svg max width ([708b4ea](https://github.com/DCsunset/LFReader/commit/708b4eae7a867c408db8524157b517c8cf3ca570))
+
+
+### Misc
+
+* **frontend:** add tips to about dialog ([42ef683](https://github.com/DCsunset/LFReader/commit/42ef6830b573e5f86270800d68d232c57cf8409f))
+
 ## [3.3.1](https://github.com/DCsunset/LFReader/compare/v3.3.0...v3.3.1) (2025-01-17)
 
 
