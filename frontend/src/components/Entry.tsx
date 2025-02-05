@@ -161,7 +161,12 @@ export default function Entry() {
               fontWeight: 600
             }}
           >
-            <span>{title}</span>
+            <a
+              href={entry.value.link}
+              style={anchorNoStyle}
+            >
+              {title}
+            </a>
           </Typography>
           <Divider sx={{ mb: 1 }} />
           <Typography variant="info" sx={{ display: "flex", my: 1, flexWrap: "wrap" }}>
@@ -173,7 +178,6 @@ export default function Entry() {
               {/* Don't add onClick here as it's added in the hook already */}
               <a
                 href={feed.value?.link}
-                target="_blank"
                 style={anchorNoStyle}
               >
                 {feedTitle}

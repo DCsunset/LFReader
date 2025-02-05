@@ -16,12 +16,12 @@
 
 import { createRef } from "preact";
 import { computedState, appState } from "../store/state";
-import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, Zoom, Fab, CircularProgress } from "@mui/material";
+import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, CircularProgress } from "@mui/material";
 import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
-import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiArrowCollapseUp, mdiLeadPencil, mdiCodeTags, mdiInformationOutline, mdiClose } from '@mdi/js';
-import { computed, signal, useComputed, useSignalEffect } from "@preact/signals";
+import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiLeadPencil, mdiCodeTags, mdiInformationOutline, mdiClose } from '@mdi/js';
+import { computed, effect, signal, useComputed, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { loadData, dispatchFeedAction, handleExternalLink } from "../store/actions";
@@ -63,18 +63,16 @@ async function fetchFeeds() {
 }
 
 const entryRef = createRef<HTMLElement>();
-const scrollButton = signal(false);
 const scrollToTop = () => {
   entryRef.current?.scrollTo({ top: 0, behavior: "smooth" });
 };
-// Show scroll button when scrollTop is greater than a value
-function onEntryScroll(e: Event) {
-  const el = e.target as HTMLElement;
-  const visible = el.scrollTop > 200;
-  if (scrollButton.value != visible) {
-    scrollButton.value = visible;
+effect(() => {
+  if (selectedEntry.value) {
+    // Scroll to top on entry change
+    // (without smooth as it won't work when it is not shown)
+    entryRef.current?.scrollTo({ top: 0 });
   }
-}
+});
 
 // Time of touch start
 let touchStartTime: number | null = null;
@@ -155,9 +153,9 @@ export default function Layout() {
         easing: theme.transitions.easing.easeOut,
         duration: theme.transitions.duration.enteringScreen
       }),
-      // width and margin needed when  persisten drawer is shown
+      // width and margin needed when persistent drawer is shown
       width: {
-        xs: 0,
+        xs: "100%",  // keep it full width to make sure the scroll bar at the same position
         sm: `calc(100% - ${entryListWidth})`
       },
       ml: {
@@ -223,28 +221,22 @@ export default function Layout() {
               size={1}
             />
           </IconButton>
-          <Typography variant="h6" noWrap flexGrow={1} ml={1.5}>
+
+          <Typography
+            variant="h6"
+            noWrap
+            flexGrow={1}
+            ml={1.5}
+            className="select-none"
+            onDblclick={scrollToTop}
+          >
             {selectedEntry.value ?
               <>
-                <a
-                  href={selectedEntryFeed.value?.link}
-                  target="_blank"
-                  style={anchorNoStyle}
-                  onClick={handleExternalLink}
-                >
-                  {getFeedTitle(selectedEntryFeed.value)}
-                </a>
-                <Box sx={{display: "inline", mx: "0.75rem" }}>
+                {getFeedTitle(selectedEntryFeed.value)}
+                <span className="mx-3">
                   |
-                </Box>
-                <a
-                  href={selectedEntry.value.link}
-                  target="_blank"
-                  style={anchorNoStyle}
-                  onClick={handleExternalLink}
-                >
-                  {getEntryTitle(selectedEntry.value)}
-                </a>
+                </span>
+                {getEntryTitle(selectedEntry.value)}
               </> :
               <a
                 href={selectedFeed.value?.link}
@@ -434,14 +426,12 @@ export default function Layout() {
               if (smallDevice) {
                 entryList.value = false;
               }
-              scrollToTop();
             }} />
           </Box>
         </Slide>
 
         <Box
           ref={entryRef}
-          onScroll={onEntryScroll}
           sx={{
             py: 4,
             px: {
@@ -456,18 +446,6 @@ export default function Layout() {
           }}>
           <Entry />
         </Box>
-
-        {/* Scroll-to-top button */}
-        <Zoom in={scrollButton.value}>
-          <Fab
-            size="small"
-            title="Scroll to top"
-            className="!fixed bottom-5 right-5"
-            onClick={scrollToTop}
-          >
-            <Icon path={mdiArrowCollapseUp} size={0.9} />
-          </Fab>
-        </Zoom>
       </Box>
     </>
   );
