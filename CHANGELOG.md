@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [3.3.3](https://github.com/DCsunset/LFReader/compare/v3.3.2...v3.3.3) (2025-02-05)
+
+
+### Bug Fixes
+
+* **frontend:** fix overflowing entry when hidden ([1d59e4f](https://github.com/DCsunset/LFReader/commit/1d59e4faaf9728e807fbfc8e00ec4697af82fe38))
+* **frontend:** scroll to entry list top on page change ([d9ee323](https://github.com/DCsunset/LFReader/commit/d9ee323a6e5af7193540e58a370c3d6c774dfc21))
+
 ## [3.3.2](https://github.com/DCsunset/LFReader/compare/v3.3.1...v3.3.2) (2025-02-05)
 
 
