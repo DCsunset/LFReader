@@ -146,7 +146,7 @@ export default function Entry() {
           ref={entryRef}
           sx={{
             // prevent images and videos from overflowing
-            "& img, & video": {
+            "& img, & video, & svg": {
               maxWidth: "100%",
               // overwrite existing fixed width and height
               width: "auto",
