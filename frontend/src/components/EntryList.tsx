@@ -23,6 +23,7 @@ import { displayDateDiff } from "../utils/date";
 import { mdiArrowLeft, mdiClose, mdiMagnify } from "@mdi/js";
 import Icon from "@mdi/react";
 import { preventEventDefault } from "../utils/dom";
+import { createRef } from "preact";
 
 const selectedEntry = computedState.selectedEntry;
 const selectedEntryId = computed(() => {
@@ -39,6 +40,7 @@ const numPages = computed(() => (
 const searching = signal(false);
 const entryTitleFilter = signal("");
 const toolbar = computed(() => !searching.value);
+const entryListRef = createRef();
 
 function cancelSearch() {
   updateQueryParams({ entryTitleFilter: undefined });
@@ -67,6 +69,11 @@ effect(() => {
     entryTitleFilter.value = filter;
     searching.value = Boolean(filter);
   });
+});
+
+computedState.currentPage.subscribe(() => {
+  // scroll to top on update
+  entryListRef.current?.scrollTo({ top: 0 });
 });
 
 function EntryList({ onClick }: {
@@ -129,7 +136,7 @@ function EntryList({ onClick }: {
         </Stack>
       }
       <Divider />
-      <List disablePadding sx={{ overflow: "auto", flexGrow: 1 }}>
+      <List ref={entryListRef} disablePadding sx={{ overflow: "auto", flexGrow: 1 }}>
         {computedState.displayedEntries.value.map(e => {
           const entryId = toEntryId(e);
           const feedTitle = getFeedTitle(lookupFeed(e.feed_url));
