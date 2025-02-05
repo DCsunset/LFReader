@@ -37,7 +37,7 @@ function Item({ title, children }: {
     <Stack direction="row" className="w-full">
       <span className="font-medium opacity-90 flex items-center">{title}</span>
       <span className="grow min-w-6" />
-      <span className="text-right">{children}</span>
+      <span>{children}</span>
     </Stack>
   );
 }
@@ -75,6 +75,12 @@ function AboutDialog({ open }: {
             >
               <Icon path={mdiOpenInNew} size={1} />
             </IconButton>
+          </Item>
+          <Item title="Tips">
+            <ul className="m-0">
+              <li>Double click on title bar to scroll to top</li>
+              <li>Swipe on mobile device to open/close list</li>
+            </ul>
           </Item>
         </Stack>
 			</DialogContent>

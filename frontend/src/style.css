@@ -21,6 +21,10 @@ body {
   overflow-wrap: break-word;
 }
 
+ul, ol {
+  margin: 0
+}
+
 code.hljs {
   color: #dddddd;
 }
