@@ -55,22 +55,27 @@ const validNumber = (value: string, min: number, max: number, int: boolean) => {
 const loading = appState.status.loading;
 
 // local states
-const pageSizeError = signal(false);
-const currentRate = signal("");
-const pageSize = signal(appState.settings.value.pageSize.toString());
-const allRates = signal(appState.settings.value.playbackRates ?? []);
-const archive = signal(appState.settings.value.archive);
-const forceArchive = signal(appState.settings.value.forceArchive);
-const confirmOnExternalLink = signal(appState.settings.value.confirmOnExternalLink);
+const currentRate = signal("")
+const pageSize = signal(appState.settings.value.pageSize.toString())
+const pageSizeError = signal(false)
+const allRates = signal(appState.settings.value.playbackRates ?? [])
+const archive = signal(appState.settings.value.archive)
+const forceArchive = signal(appState.settings.value.forceArchive)
+const confirmOnExternalLink = signal(appState.settings.value.confirmOnExternalLink)
+const reloadInterval = signal(appState.settings.value.reloadInterval.toString())
+const reloadIntervalError = signal(false)
 
 // reset local states
 const reset = () => {
   batch(() => {
-    pageSize.value = appState.settings.value.pageSize.toString();
-    allRates.value = appState.settings.value.playbackRates ?? [];
-    archive.value = appState.settings.value.archive;
-    forceArchive.value = appState.settings.value.forceArchive;
-    confirmOnExternalLink.value = appState.settings.value.confirmOnExternalLink;
+    pageSize.value = appState.settings.value.pageSize.toString()
+    pageSizeError.value = false
+    allRates.value = appState.settings.value.playbackRates ?? []
+    archive.value = appState.settings.value.archive
+    forceArchive.value = appState.settings.value.forceArchive
+    confirmOnExternalLink.value = appState.settings.value.confirmOnExternalLink
+    reloadInterval.value = appState.settings.value.reloadInterval.toString()
+    reloadIntervalError.value = false
   });
 };
 
@@ -82,7 +87,7 @@ export default function SettingsDialog({ open }: {
     reset();
   };
   const save = () => {
-    if (!pageSizeError.value) {
+    if (!pageSizeError.value && !reloadIntervalError.value) {
       batch(() => {
         appState.settings.value = {
           ...appState.settings.value,
@@ -91,6 +96,7 @@ export default function SettingsDialog({ open }: {
           archive: archive.value,
           forceArchive: forceArchive.value,
           confirmOnExternalLink: confirmOnExternalLink.value,
+          reloadInterval: parseInt(reloadInterval.value),
         };
         open.value = false;
       });
@@ -177,6 +183,23 @@ export default function SettingsDialog({ open }: {
             <Checkbox
               checked={confirmOnExternalLink.value}
               onChange={(e: any) => confirmOnExternalLink.value = e.target.checked}
+            />
+          </Item>
+
+          <Item
+            title="Reload from server periodically"
+            subtitle="in seconds (0 means disabled)"
+          >
+            <TextField
+              variant="standard"
+              sx={{ maxWidth: "45px" }}
+              error={reloadIntervalError.value}
+              value={reloadInterval.value}
+              onChange={(event: any) => {
+                const value = event.target.value;
+                reloadIntervalError.value = !validNumber(value, 0, Number.MAX_SAFE_INTEGER, true);
+                reloadInterval.value = value;
+              }}
             />
           </Item>
 

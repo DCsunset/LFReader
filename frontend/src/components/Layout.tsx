@@ -400,7 +400,7 @@ export default function Layout() {
       <ConfirmationDialog />
       <SnackbarProvider
         anchorOrigin={{ horizontal: "center", vertical: "bottom" }}
-        autoHideDuration={4000}
+        autoHideDuration={3000}
         preventDuplicate
         action={key => (
           <IconButton size="small" onClick={() => closeSnackbar(key)}>

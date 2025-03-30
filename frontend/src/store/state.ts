@@ -39,6 +39,7 @@ export type Settings = {
   forceArchive: boolean,
   confirmOnExternalLink: boolean,
   playbackRates?: string[],
+  reloadInterval: number,
 };
 
 export type QueryParams = {
@@ -97,6 +98,7 @@ export const appState = {
     archive: true,
     forceArchive: false,
     confirmOnExternalLink: false,
+    reloadInterval: 0,
 	})),
   ui: {
     editingFeeds: signal(false),
@@ -264,4 +266,13 @@ effect(() => {
 
 // Load data on mount
 loadData();
+
+// Long polling for keep client cache up to date
+effect(() => {
+  let interval = appState.settings.value.reloadInterval
+  if (interval > 0) {
+    let id = setInterval(loadData, interval * 1000)
+    return () => clearInterval(id)
+  }
+})
 
