@@ -67,6 +67,7 @@ async def taskRunner(task):
     traceback.print_exc()
   finally:
     state.status.loading = False
+    state.update()
 
 def runLoadingTask(task):
   if state.status.loading:
@@ -96,7 +97,7 @@ async def swagger_ui_redirect():
 Get status of server
 """
 @app.get("/status")
-async def get_feeds_api() -> AppStatus:
+async def get_status_api() -> AppStatus:
   return state.status
 
 
@@ -133,10 +134,13 @@ async def feed_action_api(
       if args.feed_urls is None:
         raise HTTPException(status_code=400, detail=f"Invalid delete action: feed_urls not specified")
       storage.delete_feeds(args.feed_urls)
+      state.update()
     case "clean":
       storage.clean_feeds(args.feed_urls)
+      state.update()
     case "update":
       storage.update_feeds(args.feeds)
+      state.update()
     case _:
       raise HTTPException(status_code=400, detail=f"Invalid action: {args.action}")
   return {}

@@ -187,7 +187,7 @@ export default function SettingsDialog({ open }: {
           </Item>
 
           <Item
-            title="Reload from server periodically"
+            title="Check update from server periodically"
             subtitle="in seconds (0 means disabled)"
           >
             <TextField

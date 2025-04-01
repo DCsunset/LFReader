@@ -17,7 +17,7 @@
 import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
 import { Entry, Feed, FeedUserData, filterEntries, filterFeeds } from "./feed";
-import { FeedInfo, loadData, loadEntryContents } from "./actions";
+import { checkUpdate, FeedInfo, loadData, loadEntryContents } from "./actions";
 import { Base64 } from "js-base64";
 
 
@@ -271,7 +271,7 @@ loadData();
 effect(() => {
   let interval = appState.settings.value.reloadInterval
   if (interval > 0) {
-    let id = setInterval(loadData, interval * 1000)
+    let id = setInterval(checkUpdate, interval * 1000)
     return () => clearInterval(id)
   }
 })

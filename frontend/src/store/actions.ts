@@ -18,7 +18,7 @@ import { route } from "preact-router";
 import { QueryParams, appState } from "./state";
 import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
-import { Entry, Feed, FeedUserData, toEntryId } from "./feed";
+import { Entry, FeedUserData, toEntryId } from "./feed";
 import { Base64 } from "js-base64";
 
 export async function fetchApi(url: string, options?: any) {
@@ -56,14 +56,45 @@ export function notify(color: AlertColor, text: string) {
   appState.notification.value = { color, text };
 }
 
+type ServerStatus = {
+  loading: boolean,
+  updated: string,
+};
+
+let lastUpdated: string|null = null
+let updating = false;
+export async function checkUpdate() {
+  // Only allow one ongoing update
+  if (updating) {
+    return true
+  }
+  updating = true
+  const status: ServerStatus = await fetchApi("/status")
+  let ok = true
+  if (lastUpdated !== status.updated) {
+    ok = await getData()
+    if (ok) {
+      lastUpdated = status.updated
+    }
+  }
+  if (appState.status.loading.value !== status.loading) {
+    appState.status.loading.value = status.loading
+  }
+  updating = false
+  return ok
+}
+
 async function waitForLoading() {
-  const maxBackoff = 10000;
-  let backoff = 500;
+  const maxBackoff = 10000
+  let backoff = 500
   while (true) {
-    await new Promise(r => setTimeout(r, backoff));
-    const status = await fetchApi("/status");
-    if (!status?.loading) {
-      break;
+    await new Promise(r => setTimeout(r, backoff))
+    const ok = await checkUpdate()
+    if (!ok) {
+      return false
+    }
+    if (!appState.status.loading) {
+      return true
     }
     backoff = Math.min(maxBackoff, backoff * 2);
   }
@@ -116,6 +147,7 @@ export async function loadData() {
   if (ok) {
     notify("success", "Loaded feeds successfully")
   }
+  return ok;
 }
 
 export async function loadEntryContents(entries: Entry[]) {
@@ -223,27 +255,27 @@ type FeedActionArgs = FetchFeedsArgs | ArchiveFeedsArgs | CleanFeedsArgs | Delet
 const asyncActions = new Set([ "fetch", "archive" ]);
 
 export async function dispatchFeedAction(args: FeedActionArgs) {
-  appState.status.loading.value = true;
-
+  appState.status.loading.value = true
   const resp =  await fetchApi("/feeds", {
     method: "POST",
     body: JSON.stringify(args)
-  });
+  })
   if (resp === undefined) {
-    return false;
+    appState.status.loading.value = false
+    return false
   }
 
-  // wait until server finish loading
+  let ok
   if (asyncActions.has(args.action)) {
-    await waitForLoading();
+    ok = await waitForLoading()
+  }
+  else {
+    ok = await getData();
   }
 
-  const ok = await getData();
   if (ok) {
-    notify("success", `Action ${args.action} finished successfully`);
+    notify("success", `Action ${args.action} finished successfully`)
   }
-
-  appState.status.loading.value = false;
-  return ok;
+  return ok
 }
 

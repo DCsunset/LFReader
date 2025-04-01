@@ -16,17 +16,24 @@
 
 from pydantic import BaseModel, ValidationError
 from typing import Literal
+from datetime import datetime
 
 ### App State
 
 class AppStatus(BaseModel):
   loading: bool
+  # last updated time (ISO format)
+  updated: str
 
 # App state
 class AppState:
   status: AppStatus
   def __init__(self):
-    self.status = AppStatus(loading=False)
+    self.status = AppStatus(loading=False, updated=datetime.now().astimezone().isoformat())
+
+  # update timestamp
+  def update(self):
+    self.status.updated = datetime.now().astimezone().isoformat()
 
 
 ### Query entries API
