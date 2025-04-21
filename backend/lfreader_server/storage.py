@@ -30,6 +30,7 @@ import aiohttp
 from yarl import URL
 from hashlib import blake2s
 from fastapi import HTTPException
+from urllib.request import urljoin
 
 from .archive import Archiver
 from .config import Config
@@ -352,7 +353,7 @@ class Storage:
 
 
           # base url for feed resources
-          base_url = e.get("link", f.feed.get("link", url))
+          base_url = urljoin(f.feed.get("link", url), e.get("link"))
           summary = e.get("summary_detail")
           contents = e.get("content")
           enclosures = e.get("enclosures")
@@ -547,7 +548,7 @@ class Storage:
             "SELECT id, title, link, summary, contents, enclosures FROM entries WHERE feed_url = ?",
             (url,)
           ):
-            base_url = e["link"]
+            base_url = urljoin(url, e["link"])
             e_id = e["id"]
             summary = e["summary"]
             contents = e["contents"]
