@@ -1,6 +1,6 @@
 /*
 LFReader
-Copyright (C) 2023-2024  DCsunset
+Copyright (C) 2023-2025  DCsunset
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Affero General Public License as published by
@@ -21,8 +21,24 @@ body {
   overflow-wrap: break-word;
 }
 
+#lfreader-entry {
+  a {
+    /* Only applied to entry anchor to break long link and prevent breaking layout */
+    white-space: pre-wrap;
+  }
+  tt {
+    /* Force breaking words in verbatim block */
+    word-break: break-word;
+  }
+}
+
 ul, ol {
   margin: 0
+}
+
+pre {
+  /* do not break code lines */
+  overflow-x: auto;
 }
 
 code.hljs {
