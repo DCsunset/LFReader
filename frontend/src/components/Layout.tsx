@@ -85,9 +85,12 @@ function onTouchStart(e: TouchEvent) {
 }
 function onTouchEnd(e: TouchEvent) {
   if (touchStart != null) {
-    const elapsed = performance.now() - touchStartTime!;
-    // swipe only when elapsed time is short (ms)
-    if (elapsed < 400) {
+    const elapsed = performance.now() - touchStartTime!
+    const elem = e.target as Element
+    const scrollable = elem.scrollWidth > elem.clientWidth
+
+    // swipe only when elapsed time is short (ms) and target is not scrollable
+    if (elapsed < 400 && !scrollable) {
       const distanceX = e.changedTouches[0].clientX - touchStart.clientX;
       const distanceY = e.changedTouches[0].clientY - touchStart.clientY;
       if (Math.abs(distanceY) < Math.abs(distanceX) * 2/3) {
