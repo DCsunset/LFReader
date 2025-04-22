@@ -540,7 +540,7 @@ class Storage:
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout, requote_redirect_url=False) as session:
       for url in urls:
         for f in self.db.execute(
-          "SELECT user_data FROM feeds WHERE url = ?",
+          "SELECT link, user_data FROM feeds WHERE url = ?",
           (url,)
         ):
           f_user_data = f["user_data"] or {}
@@ -548,7 +548,7 @@ class Storage:
             "SELECT id, title, link, summary, contents, enclosures FROM entries WHERE feed_url = ?",
             (url,)
           ):
-            base_url = urljoin(url, e["link"])
+            base_url = urljoin(f["link"] or url, e["link"])
             e_id = e["id"]
             summary = e["summary"]
             contents = e["contents"]
