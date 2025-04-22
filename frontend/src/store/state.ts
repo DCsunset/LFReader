@@ -16,7 +16,7 @@
 
 import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
-import { Entry, Feed, FeedUserData, filterEntries, filterFeeds } from "./feed";
+import { Entry, Feed, filterEntries, filterFeeds, toEntryId } from "./feed";
 import { checkUpdate, FeedInfo, loadData, loadEntryContents } from "./actions";
 import { Base64 } from "js-base64";
 
@@ -189,6 +189,11 @@ const selectedEntry = computed(() => {
   return fromEntryId(entry_id);
 });
 
+const selectedEntryId = computed(() => {
+  const e = selectedEntry.value;
+  return e && toEntryId(e);
+});
+
 // Feed of selected entry
 const selectedEntryFeed = computed(() => {
   const entry = selectedEntry.value;
@@ -236,6 +241,7 @@ export const computedState = {
   selectedFeed,
   selectedEntry,
   selectedEntryFeed,
+  selectedEntryId,
   filterFeeds,
   filteredEntries,
   displayedEntries,

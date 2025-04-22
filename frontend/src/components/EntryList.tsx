@@ -16,7 +16,7 @@
 
 import { Box, Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField } from "@mui/material";
 import { computedState, lookupFeed, appState } from "../store/state";
-import { getFeedTitle, toEntryId } from "../store/feed";
+import { Entry, getFeedTitle, toEntryId } from "../store/feed";
 import { updateQueryParams } from "../store/actions";
 import { batch, computed, effect, signal } from "@preact/signals";
 import { displayDateDiff } from "../utils/date";
@@ -24,12 +24,6 @@ import { mdiArrowLeft, mdiClose, mdiMagnify } from "@mdi/js";
 import Icon from "@mdi/react";
 import { preventEventDefault } from "../utils/dom";
 import { createRef } from "preact";
-
-const selectedEntry = computedState.selectedEntry;
-const selectedEntryId = computed(() => {
-  const e = selectedEntry.value;
-  return e && toEntryId(e);
-});
 
 const numPages = computed(() => (
   Math.ceil(
@@ -77,7 +71,7 @@ computedState.currentPage.subscribe(() => {
 });
 
 function EntryList({ onClick }: {
-  onClick: () => any
+  onClick: (eId: string) => any
 }) {
 	return (
     <Stack direction="column" sx={{ height: "100%" }}>
@@ -145,7 +139,7 @@ function EntryList({ onClick }: {
             <ListItemButton
               key={entryId}
               onClick={() => {
-                onClick();
+                onClick(entryId);
                 updateQueryParams({ entry: entryId });
               }}
               sx={{
@@ -154,7 +148,7 @@ function EntryList({ onClick }: {
                 display: "block",
                 py: 1.5
               }}
-              selected={selectedEntryId.value === entryId}
+              selected={computedState.selectedEntryId.value === entryId}
             >
               <div className="text-sm inline-flex item center mb-1 opacity-80 font-medium w-full">
                 {/* TODO: Used for unread entries

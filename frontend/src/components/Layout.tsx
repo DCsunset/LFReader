@@ -47,9 +47,7 @@ const editing = appState.ui.editingFeeds;
 const loading = appState.status.loading;
 const loadDataInProgress = signal(false);
 
-const selectedFeed = computedState.selectedFeed;
-const selectedEntry = computedState.selectedEntry;
-const selectedEntryFeed = computedState.selectedEntryFeed;
+const { selectedFeed, selectedEntry, selectedEntryId, selectedEntryFeed } = computedState;
 
 async function fetchFeeds() {
   const { archive, forceArchive } = appState.settings.value;
@@ -197,10 +195,15 @@ export default function Layout() {
     };
   }, []);
 
-  // Show feedList on large screen on startup
   useEffect(() => {
-    feedList.value = !smallDevice;
+    // Show feedList on large screen on startup
+    feedList.value = !smallDevice
   }, [smallDevice])
+
+  useSignalEffect(() => {
+    // Hide entry list on entry open for small screen
+    entryList.value = !selectedEntry.value
+  })
 
   return (
     <>
@@ -421,8 +424,9 @@ export default function Layout() {
             height: `calc(100vh - ${toolbarHeight})`,
             borderRight: `1px solid ${theme.palette.divider}`
           }}>
-            <EntryList onClick={() => {
-              if (smallDevice) {
+            <EntryList onClick={eId => {
+              // List will be hidden on entry change as well on small screen
+              if (smallDevice && selectedEntryId.value === eId) {
                 entryList.value = false;
               }
             }} />
