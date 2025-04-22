@@ -101,6 +101,7 @@ export const appState = {
     reloadInterval: 0,
 	})),
   ui: {
+    smallDevice: signal(false),
     editingFeeds: signal(false),
     // state of each feed group by tag
     feedGroupStates: signal(loadState("ui.feedGroupStates", {} as { [tag: string]: boolean })),

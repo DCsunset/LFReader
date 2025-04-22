@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { computed } from "@preact/signals";
-import { createTheme, CssBaseline, ThemeProvider } from "@mui/material";
+import { createTheme, CssBaseline, ThemeProvider, useMediaQuery, useTheme } from "@mui/material";
 import { Route, Router } from "preact-router";
 import { useEffect } from "preact/hooks";
 import Layout from './components/Layout';
@@ -25,13 +25,21 @@ import { parseRawQueryParams } from "./store/actions";
 
 // update query paramters (from preact-router)
 function Page(props: { matches: any }) {
+  const theme = useTheme()
+  const smallDevice = useMediaQuery(theme.breakpoints.down("sm"))
+
+  // Convert hook to signal
   useEffect(() => {
-    appState.queryParams.value = parseRawQueryParams(props.matches);
-  }, [props.matches]);
+    appState.ui.smallDevice.value = smallDevice
+  }, [smallDevice])
+
+  useEffect(() => {
+    appState.queryParams.value = parseRawQueryParams(props.matches)
+  }, [props.matches])
 
   return (
     <Layout />
-  );
+  )
 }
 
 // Types for custom typography

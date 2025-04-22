@@ -16,7 +16,7 @@
 
 import { createRef } from "preact";
 import { computedState, appState } from "../store/state";
-import { AppBar, Box, Toolbar, Typography, IconButton, useMediaQuery, Drawer, Stack, SxProps, useTheme, Slide, CircularProgress } from "@mui/material";
+import { AppBar, Box, Toolbar, Typography, IconButton, Drawer, Stack, SxProps, useTheme, Slide, CircularProgress } from "@mui/material";
 import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
@@ -43,11 +43,23 @@ const dark = computed(() => appState.settings.value.dark);
 const settingsDialog = signal(false);
 const feedsDialog = signal(false);
 const aboutDialog = signal(false);
-const editing = appState.ui.editingFeeds;
+const { editingFeeds, smallDevice } = appState.ui;
 const loading = appState.status.loading;
 const loadDataInProgress = signal(false);
 
 const { selectedFeed, selectedEntry, selectedEntryId, selectedEntryFeed } = computedState;
+
+effect(() => {
+  // Hide feed list by default for small devices
+  feedList.value = !smallDevice.value
+})
+
+effect(() => {
+  // Hide entry list on entry open for small screen
+  if (smallDevice.value) {
+    entryList.value = !selectedEntry.value
+  }
+})
 
 async function fetchFeeds() {
   const { archive, forceArchive } = appState.settings.value;
@@ -120,8 +132,7 @@ function onTouchEnd(e: TouchEvent) {
 }
 
 export default function Layout() {
-  const theme = useTheme();
-  const smallDevice = useMediaQuery(theme.breakpoints.down("sm"));
+  const theme = useTheme()
 
   // Responsive style for showing list peer
   const feedListPeerStyle = useComputed<SxProps>(() => ({
@@ -198,16 +209,6 @@ export default function Layout() {
     };
   }, []);
 
-  useEffect(() => {
-    // Show feedList on large screen on startup
-    feedList.value = !smallDevice
-  }, [smallDevice])
-
-  useSignalEffect(() => {
-    // Hide entry list on entry open for small screen
-    entryList.value = !selectedEntry.value
-  })
-
   return (
     <>
       {/* Disable backgroundImage to avoid color change in dark theme */}
@@ -268,7 +269,7 @@ export default function Layout() {
       </AppBar>
 
       <Drawer
-        variant={smallDevice ? "temporary" : "persistent"}
+        variant={smallDevice.value ? "temporary" : "persistent"}
         anchor="left"
         // Change width of paper component inside drawer
         PaperProps={{
@@ -336,9 +337,9 @@ export default function Layout() {
           </IconButton>
           <IconButton
             size="small"
-            color={editing.value ? "primary" : "inherit"}
+            color={editingFeeds.value ? "primary" : "inherit"}
             title="Edit feeds"
-            onClick={() => editing.value = !editing.value}
+            onClick={() => editingFeeds.value = !editingFeeds.value}
           >
             <Icon
               path={mdiLeadPencil}
@@ -353,7 +354,7 @@ export default function Layout() {
           overflow: "auto"
         }}>
           <FeedList onClick={() => {
-            if (smallDevice) {
+            if (smallDevice.value) {
               feedList.value = false;
             }
             entryList.value = true;
@@ -429,7 +430,7 @@ export default function Layout() {
           }}>
             <EntryList onClick={eId => {
               // List will be hidden on entry change as well on small screen
-              if (smallDevice && selectedEntryId.value === eId) {
+              if (smallDevice.value && selectedEntryId.value === eId) {
                 entryList.value = false;
               }
             }} />
