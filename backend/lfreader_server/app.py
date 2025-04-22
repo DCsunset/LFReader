@@ -37,7 +37,7 @@ import asyncio
 
 from .storage import Storage
 from .config import Config
-from .models import AppState, AppStatus, QueryEntriesArgs, FetchFeedsArgs, ArchiveFeedsArgs, CleanFeedsArgs, DeleteFeedsArgs, UpdateFeedsArgs
+from .models import AppState, AppStatus, QueryEntriesArgs, FetchFeedsArgs, ArchiveFeedsArgs, CleanFeedsArgs, DeleteFeedsArgs, UpdateFeedsArgs, UpdateEntriesArgs
 
 
 try:
@@ -142,8 +142,27 @@ async def feed_action_api(
       storage.update_feeds(args.feeds)
       state.update()
     case _:
-      raise HTTPException(status_code=400, detail=f"Invalid action: {args.action}")
+      raise HTTPException(status_code=400, detail=f"Invalid feed action: {args.action}")
   return {}
+
+
+"""
+Entry Action API
+"""
+@app.post("/entries")
+async def entry_action_api(
+  args: UpdateEntriesArgs
+):
+  match args.action:
+    case "update":
+      storage.update_entries(args.entries)
+      state.update()
+    case _:
+      raise HTTPException(status_code=400, detail=f"Invalid entry action: {args.action}")
+  return {}
+
+
+
 
 ## Error handlers
 

@@ -14,16 +14,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField } from "@mui/material";
-import { computedState, lookupFeed, appState } from "../store/state";
+import { Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField } from "@mui/material";
+import { computedState, lookupFeed, appState, fromEntryId } from "../store/state";
 import { Entry, getFeedTitle, toEntryId } from "../store/feed";
-import { updateQueryParams } from "../store/actions";
+import { dispatchEntryAction, EntryInfo, updateQueryParams } from "../store/actions";
 import { batch, computed, effect, signal } from "@preact/signals";
 import { displayDateDiff } from "../utils/date";
-import { mdiArrowLeft, mdiClose, mdiMagnify } from "@mdi/js";
+import { mdiArrowLeft, mdiCheckboxMultipleOutline, mdiCheckboxOutline, mdiCircle, mdiClose, mdiEmailOpenOutline, mdiEmailOutline, mdiFormatListChecks, mdiMagnify } from "@mdi/js";
 import Icon from "@mdi/react";
 import { preventEventDefault } from "../utils/dom";
 import { createRef } from "preact";
+import * as immutable from "immutable";
 
 const numPages = computed(() => (
   Math.ceil(
@@ -31,10 +32,19 @@ const numPages = computed(() => (
   )
 ))
 
-const searching = signal(false);
-const entryTitleFilter = signal("");
-const toolbar = computed(() => !searching.value);
-const entryListRef = createRef();
+async function updateEntries(entries: EntryInfo[]) {
+  return await dispatchEntryAction({
+    action: "update",
+    entries,
+  })
+}
+
+const searchMode = signal(false)
+const entryTitleFilter = signal("")
+const selectMode = signal(false)
+const selectedItems = signal(immutable.Set<string>())
+const toolbar = computed(() => !searchMode.value && !selectMode.value)
+const entryListRef = createRef()
 
 function cancelSearch() {
   updateQueryParams({ entryTitleFilter: undefined });
@@ -61,14 +71,86 @@ effect(() => {
   const filter = appState.queryParams.value.entryTitleFilter || "";
   batch(() => {
     entryTitleFilter.value = filter;
-    searching.value = Boolean(filter);
+    searchMode.value = Boolean(filter);
   });
 });
+
+function cancelSelect() {
+  batch(() => {
+    selectMode.value = false
+    selectedItems.value = immutable.Set()
+  })
+}
+
+function handleSelect(entryId: string) {
+  const selected = selectedItems.value
+  if (selected.has(entryId)) {
+    selectedItems.value = selectedItems.value.delete(entryId)
+  } else {
+    selectedItems.value = selectedItems.value.add(entryId)
+  }
+}
+
+function handleSelectPage() {
+  selectedItems.value = selectedItems.value.union(
+    computedState.displayedEntries.value.map(toEntryId)
+  )
+}
+
+function handleSelectAll() {
+  selectedItems.value = selectedItems.value.union(
+    computedState.filteredEntries.value.map(toEntryId)
+  )
+}
 
 computedState.currentPage.subscribe(() => {
   // scroll to top on update
   entryListRef.current?.scrollTo({ top: 0 });
 });
+
+function isSelected(entryId: string) {
+  if (selectMode.value) {
+    return selectedItems.value.has(entryId)
+  } else {
+    return computedState.selectedEntryId.value === entryId
+  }
+}
+
+function handleMarkEntries(selected: immutable.Set<string>, read: boolean) {
+  const updateEntry = (e: Entry) => {
+    if (selected.has(toEntryId(e))) {
+      return {
+        ...e,
+        user_data: {
+          ...e.user_data,
+          read,
+        },
+      }
+    } else {
+      return e
+    }
+  }
+
+  // update user_data locally for responsiveness
+  batch(() => {
+    appState.data.entries.value = appState.data.entries.value.map(updateEntry);
+    appState.data.entryContents.value = appState.data.entryContents.value.map(updateEntry);
+  })
+
+  updateEntries(
+    selected.toJS()
+      .map(fromEntryId)
+      .map(e => e && ({
+        feed_url: e.feed_url,
+        entry_id: e.id,
+        user_data: {
+          ...e.user_data,
+          read,
+        },
+      } as EntryInfo))
+      .filter(e => e !== undefined)
+  )
+}
 
 function EntryList({ onClick }: {
   onClick: (eId: string) => any
@@ -76,19 +158,29 @@ function EntryList({ onClick }: {
 	return (
     <Stack direction="column" sx={{ height: "100%" }}>
       {toolbar.value &&
-        <Stack direction="row" sx={{ px: 0.8 }}>
+        <div className="flex py-1 px-2">
           <IconButton
+            size="small"
             color="inherit"
-            title="Search entries"
-            onClick={() => searching.value = true}
+            title="Select"
+            onClick={() => selectMode.value = true}
+          >
+            <Icon path={mdiFormatListChecks} size={1} />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="inherit"
+            title="Search"
+            onClick={() => searchMode.value = true}
           >
             <Icon path={mdiMagnify} size={1} />
           </IconButton>
-        </Stack>
+        </div>
       }
-      {searching.value &&
-        <Stack direction="row" sx={{ px: 0.8, alignItems: "center" }}>
+      {searchMode.value &&
+        <div className="flex py-1 px-2">
           <IconButton
+            size="small"
             color="inherit"
             title="Cancel"
             onClick={cancelSearch}
@@ -121,15 +213,80 @@ function EntryList({ onClick }: {
             }}
           />
           <IconButton
+            size="small"
             color="inherit"
             title="Search entries by title"
             onClick={handleSearch}
           >
             <Icon path={mdiMagnify} size={1} />
           </IconButton>
-        </Stack>
+        </div>
       }
+      {selectMode.value &&
+        <div className="py-1 px-2">
+          <div className="flex">
+            <IconButton
+              size="small"
+              color="inherit"
+              title="Cancel"
+              onClick={cancelSelect}
+            >
+              <Icon path={mdiArrowLeft} size={1} />
+            </IconButton>
+            <span className="pl-2 inline-flex grow items-center font-bold">
+              {selectedItems.value.size} selected
+            </span>
+            <IconButton
+              size="small"
+              color="inherit"
+              title="Clear selection"
+              onClick={() => selectedItems.value = immutable.Set()}
+            >
+              <Icon path={mdiClose} size={1} />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="inherit"
+              title="Select this page"
+              onClick={handleSelectPage}
+            >
+              <Icon path={mdiCheckboxOutline} size={1} />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="inherit"
+              title="Select all"
+              onClick={handleSelectAll}
+            >
+              <Icon path={mdiCheckboxMultipleOutline} size={1} />
+            </IconButton>
+          </div>
+
+          <div className="flex flex-row-reverse">
+            <IconButton
+              size="small"
+              color="inherit"
+              title="Mark as unread"
+              onClick={() => handleMarkEntries(selectedItems.value, false)}
+              disabled={selectedItems.value.size === 0}
+            >
+              <Icon path={mdiEmailOpenOutline} size={1} />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="inherit"
+              title="Mark as read"
+              onClick={() => handleMarkEntries(selectedItems.value, true)}
+              disabled={selectedItems.value.size === 0}
+            >
+              <Icon path={mdiEmailOutline} size={1} />
+            </IconButton>
+          </div>
+        </div>
+      }
+
       <Divider />
+
       <List ref={entryListRef} disablePadding sx={{ overflow: "auto", flexGrow: 1 }}>
         {computedState.displayedEntries.value.map(e => {
           const entryId = toEntryId(e);
@@ -139,8 +296,15 @@ function EntryList({ onClick }: {
             <ListItemButton
               key={entryId}
               onClick={() => {
-                onClick(entryId);
-                updateQueryParams({ entry: entryId });
+                if (selectMode.value) {
+                  handleSelect(entryId)
+                } else {
+                  if (!e.user_data.read) {
+                    handleMarkEntries(immutable.Set([entryId]), true)
+                  }
+                  onClick(entryId)
+                  updateQueryParams({ entry: entryId })
+                }
               }}
               sx={{
                 flexDirection: "column",
@@ -148,26 +312,19 @@ function EntryList({ onClick }: {
                 display: "block",
                 py: 1.5
               }}
-              selected={computedState.selectedEntryId.value === entryId}
+              selected={isSelected(entryId)}
             >
-              <div className="text-sm inline-flex item center mb-1 opacity-80 font-medium w-full">
-                {/* TODO: Used for unread entries
-                <Box sx={{ mr: 1 }}>
-                  <Icon path={mdiCircle} size={0.4} />
-                </Box>
-                  */}
-                <Box sx={{
-                  flexGrow: 1,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  mr: 1
-                }}>
+              <div className="text-sm flex mb-1 font-medium w-full">
+                {!e.user_data.read &&
+                  <span className="mr-2 opacity-95" title="Unread">
+                    <Icon path={mdiCircle} size={0.4} />
+                  </span>}
+                <span className="inline-flex grow whitespace-nowrap overflow-hidden text-ellipsis opacity-80">
                   {feedTitle}
-                </Box>
-                <Box>
+                </span>
+                <span className="opacity-80">
                   {displayDateDiff(e.published_at ?? e.updated_at ?? e.server_data.added_at)}
-                </Box>
+                </span>
               </div>
               <div>{e.title || "(No Title)"}</div>
             </ListItemButton>

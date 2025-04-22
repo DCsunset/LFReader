@@ -16,8 +16,8 @@
 
 import { computed, signal } from "@preact/signals";
 import { createRef } from "preact";
-import { appState, computedState, lookupEntry, lookupFeed  } from "../store/state";
-import { textCategories, Enclosure, Feed, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
+import { appState, computedState, lookupEntryUrl, lookupFeed } from "../store/state";
+import { textCategories, Enclosure, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
 import Icon from "@mdi/react";
 import renderMathInElement from "katex/contrib/auto-render";
 import hljs from "highlight.js";
@@ -118,7 +118,7 @@ export default function Entry() {
       element.querySelectorAll("a").forEach((el: HTMLElement) => {
         try {
           const url = new URL(el.getAttribute("href") || "");
-          const e = lookupEntry(url.origin);
+          const e = lookupEntryUrl(url.origin);
           if (e) {
             // replace external link with internal link
             el.setAttribute("href", `/?${new URLSearchParams({

@@ -88,3 +88,20 @@ class UpdateFeedsArgs(BaseModel):
   action: Literal["update"]
   feeds: list[FeedInfo]
 
+
+### Entry Action API (tagged union)
+
+class EntryInfo(BaseModel):
+  feed_url: str
+  entry_id: str
+  user_data: dict
+
+  # allow using subscript to access
+  def __getitem__(self, item):
+    return getattr(self, item)
+
+
+class UpdateEntriesArgs(BaseModel):
+  action: Literal["update"]
+  entries: list[EntryInfo]
+

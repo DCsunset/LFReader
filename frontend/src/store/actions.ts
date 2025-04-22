@@ -18,8 +18,9 @@ import { route } from "preact-router";
 import { QueryParams, appState } from "./state";
 import { batch } from "@preact/signals";
 import { AlertColor } from "@mui/material";
-import { Entry, FeedUserData, toEntryId } from "./feed";
+import { Entry, EntryUserData, FeedUserData, toEntryId } from "./feed";
 import { Base64 } from "js-base64";
+import * as immutable from "immutable"
 
 export async function fetchApi(url: string, options?: any) {
   try {
@@ -134,10 +135,10 @@ async function getData() {
   }
 
   batch(() => {
-    appState.data.feeds.value = feeds;
-    appState.data.entries.value = entries;
+    appState.data.feeds.value = feeds
+    appState.data.entries.value = entries
     // clear cached entry contents
-    appState.data.entryContents.value = new Map();
+    appState.data.entryContents.value = immutable.Map()
   })
   return true;
 }
@@ -168,7 +169,7 @@ export async function loadEntryContents(entries: Entry[]) {
     return;
   }
 
-  appState.data.entryContents.value = new Map([
+  appState.data.entryContents.value = immutable.Map([
     ...entryContents.entries(),
     ...contents.map(e => [toEntryId(e), e] as [string, Entry])
   ]);
@@ -252,7 +253,7 @@ type UpdateFeedsArgs = {
 
 type FeedActionArgs = FetchFeedsArgs | ArchiveFeedsArgs | CleanFeedsArgs | DeleteFeedsArgs | UpdateFeedsArgs;
 
-const asyncActions = new Set([ "fetch", "archive" ]);
+const asyncFeedActions = new Set([ "fetch", "archive" ]);
 
 export async function dispatchFeedAction(args: FeedActionArgs) {
   appState.status.loading.value = true
@@ -266,16 +267,49 @@ export async function dispatchFeedAction(args: FeedActionArgs) {
   }
 
   let ok
-  if (asyncActions.has(args.action)) {
+  if (asyncFeedActions.has(args.action)) {
     ok = await waitForLoading()
   }
   else {
+    appState.status.loading.value = false
     ok = await getData();
   }
 
   if (ok) {
-    notify("success", `Action ${args.action} finished successfully`)
+    notify("success", `Feed action ${args.action} finished successfully`)
   }
   return ok
 }
+
+
+/// Entry Action API
+
+export type EntryInfo = {
+  feed_url: string,
+  entry_id: string,
+  user_data: EntryUserData,
+}
+
+type UpdateEntriesArgs = {
+  action: "update",
+  entries: EntryInfo[],
+}
+
+type EntryActionArgs = UpdateEntriesArgs
+
+export async function dispatchEntryAction(args: EntryActionArgs) {
+  const resp =  await fetchApi("/entries", {
+    method: "POST",
+    body: JSON.stringify(args)
+  })
+  if (resp === undefined) {
+    return false
+  }
+
+  // No need for notification on success
+  // Updates can be done locally without re-fetching data
+  return true
+}
+
+
 

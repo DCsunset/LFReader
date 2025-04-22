@@ -60,6 +60,10 @@ export type Enclosure = {
   length: number,
 };
 
+export type EntryUserData = {
+  read?: boolean,
+}
+
 export type EntryServerData = {
   fetched_at: string,
   added_at: string,
@@ -74,7 +78,7 @@ export type Entry = {
   categories?: Category[],
   updated_at?: string,
   published_at?: string,
-  user_data: any,
+  user_data: EntryUserData,
   server_data: EntryServerData,
   summary?: Content,
   contents: Content[],

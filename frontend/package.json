@@ -18,6 +18,7 @@
 		"@preact/signals": "^2.0.4",
 		"@types/katex": "^0.16.7",
 		"highlight.js": "^11.11.1",
+		"immutable": "^5.1.1",
 		"js-base64": "^3.7.7",
 		"katex": "^0.16.22",
 		"luxon": "^3.6.1",

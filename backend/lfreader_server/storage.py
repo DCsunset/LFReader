@@ -35,7 +35,7 @@ from urllib.request import urljoin
 from .archive import Archiver
 from .config import Config
 from .utils import async_map, sql_update_field
-from .models import QueryEntry, FeedInfo
+from .models import QueryEntry, FeedInfo, EntryInfo
 
 # for logging
 def entry_title(e):
@@ -483,6 +483,15 @@ class Storage:
     columns: list[str] | None = None
   ) -> list[dict]:
     return self.get_entries_cursor(feed_urls, entries, offset, limit, columns).fetchall()
+
+  def update_entries(self, entries: list[EntryInfo]):
+    cur = self.db.cursor()
+    for e in entries:
+      cur.execute(
+        "UPDATE entries SET user_data = ? WHERE feed_url = ? AND id = ?",
+        (pack_data(e.user_data), e.feed_url, e.entry_id)
+      )
+    self.db.commit()
 
   def update_feeds(self, feeds: list[FeedInfo]):
     cur = self.db.cursor()

@@ -19,6 +19,7 @@ import { AlertColor } from "@mui/material/Alert";
 import { Entry, Feed, filterEntries, filterFeeds, toEntryId } from "./feed";
 import { checkUpdate, FeedInfo, loadData, loadEntryContents } from "./actions";
 import { Base64 } from "js-base64";
+import * as immutable from "immutable";
 
 
 // prefix for storage to avoid conflicts with other apps at same url
@@ -111,7 +112,7 @@ export const appState = {
     // Entries without content
     entries: signal([] as Entry[]),
     // Fetch content on demand and cache it
-    entryContents: signal(new Map<string, Entry>())
+    entryContents: signal(immutable.Map<string, Entry>())
   },
   status: {
     loading: signal(false)
@@ -137,9 +138,16 @@ const feedMap = computed(
     new Map<string, Feed>()
   )
 );
-const entryMap = computed(
+const entryUrlMap = computed(
   () => appState.data.entries.value.reduce(
     (acc, cur) => cur.link ? acc.set(cur.link, cur) : acc,
+    new Map<string, Entry>()
+  )
+);
+
+const entryIdMap = computed(
+  () => appState.data.entries.value.reduce(
+    (acc, cur) => cur.link ? acc.set(toEntryId(cur), cur) : acc,
     new Map<string, Entry>()
   )
 );
@@ -148,15 +156,13 @@ export function lookupFeed(url?: string) {
   return url ? feedMap.value.get(url) : undefined;
 }
 
-export function lookupEntry(url?: string) {
-  return url ? entryMap.value.get(url) : undefined;
+export function lookupEntryUrl(url?: string) {
+  return url ? entryUrlMap.value.get(url) : undefined;
 }
 
-export function fromEntryId(entry_id: string) {
-  const [feed_url, id] = JSON.parse(Base64.decode(entry_id));
-  const data = appState.data;
+export function fromEntryId(entryId: string) {
   // Check if content is cached first
-  return data.entryContents.value.get(entry_id) || data.entries.value.find(e => e.feed_url === feed_url && e.id === id);
+  return appState.data.entryContents.value.get(entryId) || entryIdMap.value.get(entryId);
 }
 
 export function fromFeedId(feed_id: string) {
