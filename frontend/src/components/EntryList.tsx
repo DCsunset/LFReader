@@ -84,7 +84,8 @@ effect(() => {
 function startSelect() {
   batch(() => {
     selectMode.value = true
-    selectedItems.value = immutable.Set([ selectedEntryId.value ])
+    const current = selectedEntryId.value
+    selectedItems.value = immutable.Set(current && [ current ])
   })
 }
 
