@@ -61,6 +61,21 @@
             cd backend
             uvicorn lfreader_server.app:app --host 0.0.0.0 --port 3000
           '';
+
+          release = {
+            type = "app";
+            program = pkgs.writeShellScriptBin "release" ''
+              set -e
+
+              ver=$(git cliff --bumped-version)
+
+              sed -i "s/version = \".*\"/version = \"$ver\"/" frontend/src/_version.ts
+              git cliff --bump -o CHANGELOG.md
+              git add -A
+              git commit -m "chore(release): $ver"
+              git tag "$ver"
+            '';
+          };
         };
       };
     };
