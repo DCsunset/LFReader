@@ -23,8 +23,8 @@ import { displayDateDiff } from "../utils/date";
 import { mdiArrowLeft, mdiCheckboxMultipleOutline, mdiCheckboxOutline, mdiCircle, mdiClose, mdiEmailOpenOutline, mdiEmailOutline, mdiFormatListChecks, mdiMagnify, mdiSortAlphabeticalAscending } from "@mdi/js";
 import Icon from "@mdi/react";
 import { preventEventDefault } from "../utils/dom";
-import { createRef } from "preact";
 import * as immutable from "immutable";
+import { forwardRef } from "preact/compat";
 
 const { entrySortBy, entrySortDesc } = appState.state
 const { previousEntry } = appState.data;
@@ -48,7 +48,6 @@ const entryTitleFilter = signal("")
 const selectMode = signal(false)
 const selectedItems = signal(immutable.Set<string>())
 const toolbar = computed(() => !searchMode.value && !selectMode.value)
-const entryListRef = createRef()
 
 const sortMenuAnchor = signal<HTMLElement|null>(null)
 
@@ -110,11 +109,6 @@ function handleSelectAll() {
   )
 }
 
-currentPage.subscribe(() => {
-  // scroll to top on update
-  entryListRef.current?.scrollTo({ top: 0 });
-});
-
 function isSelected(entryId: string) {
   if (selectMode.value) {
     return selectedItems.value.has(entryId)
@@ -159,9 +153,11 @@ function handleMarkEntries(selected: immutable.Set<string>, read: boolean) {
   )
 }
 
-function EntryList({ onClick }: {
-  onClick: (eId: string) => any
-}) {
+// allow passing ref inside the component
+const EntryList = forwardRef((
+  props: { onClick: (eId: string) => any },
+  ref
+) => {
 	return (
     <Stack direction="column" sx={{ height: "100%" }}>
       {toolbar.value &&
@@ -341,7 +337,7 @@ function EntryList({ onClick }: {
 
       <Divider />
 
-      <List ref={entryListRef} disablePadding sx={{ overflow: "auto", flexGrow: 1 }}>
+      <List ref={ref} disablePadding sx={{ overflow: "auto", flexGrow: 1 }}>
         {displayedEntries.value.map(e => {
           const entryId = toEntryId(e);
           const feedTitle = getFeedTitle(lookupFeed(e.feed_url));
@@ -359,7 +355,7 @@ function EntryList({ onClick }: {
                   }
 
                   previousEntry.value = entryId
-                  onClick(entryId)
+                  props.onClick(entryId)
                   updateQueryParams({ entry: entryId })
                 }
               }}
@@ -401,6 +397,6 @@ function EntryList({ onClick }: {
       />
     </Stack>
 	)
-}
+})
 
-export default EntryList;
+export default EntryList

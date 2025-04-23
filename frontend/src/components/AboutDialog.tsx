@@ -78,8 +78,8 @@ function AboutDialog({ open }: {
           </Item>
           <Item title="Tips">
             <ul className="m-0">
-              <li>Double click on title bar to scroll to top</li>
-              <li>Swipe on mobile device to open/close list</li>
+              <li>Double click on app bar to scroll to top</li>
+              <li>Swipe on mobile device to open/close lists</li>
             </ul>
           </Item>
         </Stack>

@@ -24,13 +24,12 @@ import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherN
 import { computed, effect, signal, useComputed, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
-import { loadData, dispatchFeedAction, handleExternalLink } from "../store/actions";
+import { loadData, dispatchFeedAction } from "../store/actions";
 import FeedList from "./FeedList";
 import EntryList from "./EntryList";
 import NewFeedsDialog from "./NewFeedsDialog";
 import Entry from "./Entry";
 import { getEntryTitle, getFeedTitle, tagTitle } from "../store/feed";
-import { anchorNoStyle } from "../utils/styles";
 import FeedDialog from "./FeedDialog";
 import AboutDialog from "./AboutDialog";
 
@@ -46,7 +45,7 @@ const aboutDialog = signal(false);
 const { loading, editingFeeds, smallDevice } = appState.ui;
 const loadDataInProgress = signal(false);
 
-const { selectedFeed, selectedEntry, selectedEntryId, selectedEntryFeed } = computedState;
+const { currentPage, selectedFeed, selectedEntry, selectedEntryId, selectedEntryFeed } = computedState;
 
 effect(() => {
   // Hide feed list by default for small devices
@@ -71,9 +70,20 @@ async function fetchFeeds() {
   })
 }
 
+const entryListRef = createRef<Element>();
+function scrollEntryList() {
+  entryListRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+};
+// scroll to top on page update
+currentPage.subscribe(() => {
+  // scroll to top on update
+  entryListRef.current?.scrollTo({ top: 0 });
+});
+
+
 const entryRef = createRef<HTMLElement>();
-const scrollToTop = () => {
-  entryRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+function scrollEntry() {
+  entryRef.current?.scrollTo({ top: 0, behavior: "smooth" })
 };
 effect(() => {
   if (selectedEntry.value) {
@@ -233,25 +243,19 @@ export default function Layout() {
             flexGrow={1}
             ml={1.5}
             className="select-none"
-            onDblclick={scrollToTop}
           >
-            {selectedEntry.value ?
-              <>
-                {getFeedTitle(selectedEntryFeed.value)}
-                <span className="mx-3">
-                  |
-                </span>
+            <>
+              <span onDblClick={scrollEntryList}>
+                {selectedEntry.value
+                  ? getFeedTitle(selectedEntryFeed.value)
+                  : getFeedTitle(selectedFeed.value, tagTitle(appState.queryParams.value.tag))
+                }
+              </span>
+              <span className="mx-3">|</span>
+              <span onDblClick={scrollEntry}>
                 {getEntryTitle(selectedEntry.value)}
-              </> :
-              <a
-                href={selectedFeed.value?.link}
-                target="_blank"
-                style={anchorNoStyle}
-                onClick={handleExternalLink}
-              >
-                {getFeedTitle(selectedFeed.value, tagTitle(appState.queryParams.value.tag))}
-              </a>
-            }
+              </span>
+            </>
           </Typography>
 
           <IconButton
@@ -427,7 +431,7 @@ export default function Layout() {
             height: `calc(100vh - ${toolbarHeight})`,
             borderRight: `1px solid ${theme.palette.divider}`
           }}>
-            <EntryList onClick={eId => {
+            <EntryList ref={entryListRef} onClick={eId => {
               // List will be hidden on entry change as well on small screen
               if (smallDevice.value && selectedEntryId.value === eId) {
                 entryList.value = false;
