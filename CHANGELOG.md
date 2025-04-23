@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [3.5.0] - 2025-04-23
+## [3.4.2] - 2025-04-23
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Fix title display
+
+## [3.4.1] - 2025-04-23
 
 ### 🚀 Features
 
@@ -18,6 +24,7 @@ All notable changes to this project will be documented in this file.
 ### ⚙️ Miscellaneous Tasks
 
 - Allow specifying version when releasing
+- *(release)* V3.4.1
 
 ## [3.4.0] - 2025-04-23
 
