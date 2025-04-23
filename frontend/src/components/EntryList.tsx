@@ -323,7 +323,7 @@ function EntryList({ onClick }: {
               onClick={() => handleMarkEntries(selectedItems.value, false)}
               disabled={selectedItems.value.size === 0}
             >
-              <Icon path={mdiEmailOpenOutline} size={1} />
+              <Icon path={mdiEmailOutline} size={1} />
             </IconButton>
             <IconButton
               size="small"
@@ -332,7 +332,7 @@ function EntryList({ onClick }: {
               onClick={() => handleMarkEntries(selectedItems.value, true)}
               disabled={selectedItems.value.size === 0}
             >
-              <Icon path={mdiEmailOutline} size={1} />
+              <Icon path={mdiEmailOpenOutline} size={1} />
             </IconButton>
           </div>
         </div>
