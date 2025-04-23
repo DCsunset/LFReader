@@ -28,10 +28,11 @@ import * as immutable from "immutable";
 
 const { entrySortBy, entrySortDesc } = appState.states
 const { previousEntry } = appState.data;
+const { currentPage, selectedEntryId, filteredEntries, displayedEntries } = computedState
 
 const numPages = computed(() => (
   Math.ceil(
-    computedState.filteredEntries.value.length / appState.settings.value.pageSize
+    filteredEntries.value.length / appState.settings.value.pageSize
   )
 ))
 
@@ -80,10 +81,10 @@ effect(() => {
   });
 });
 
-function cancelSelect() {
+function startSelect() {
   batch(() => {
-    selectMode.value = false
-    selectedItems.value = immutable.Set()
+    selectMode.value = true
+    selectedItems.value = immutable.Set([ selectedEntryId.value ])
   })
 }
 
@@ -98,17 +99,17 @@ function handleSelect(entryId: string) {
 
 function handleSelectPage() {
   selectedItems.value = selectedItems.value.union(
-    computedState.displayedEntries.value.map(toEntryId)
+    displayedEntries.value.map(toEntryId)
   )
 }
 
 function handleSelectAll() {
   selectedItems.value = selectedItems.value.union(
-    computedState.filteredEntries.value.map(toEntryId)
+    filteredEntries.value.map(toEntryId)
   )
 }
 
-computedState.currentPage.subscribe(() => {
+currentPage.subscribe(() => {
   // scroll to top on update
   entryListRef.current?.scrollTo({ top: 0 });
 });
@@ -117,7 +118,7 @@ function isSelected(entryId: string) {
   if (selectMode.value) {
     return selectedItems.value.has(entryId)
   } else {
-    return computedState.selectedEntryId.value === entryId
+    return selectedEntryId.value === entryId
   }
 }
 
@@ -168,7 +169,7 @@ function EntryList({ onClick }: {
             size="small"
             color="inherit"
             title="Select"
-            onClick={() => selectMode.value = true}
+            onClick={startSelect}
           >
             <Icon path={mdiFormatListChecks} size={1} />
           </IconButton>
@@ -281,7 +282,7 @@ function EntryList({ onClick }: {
               size="small"
               color="inherit"
               title="Cancel"
-              onClick={cancelSelect}
+              onClick={() => selectMode.value = false}
             >
               <Icon path={mdiArrowLeft} size={1} />
             </IconButton>
@@ -340,7 +341,7 @@ function EntryList({ onClick }: {
       <Divider />
 
       <List ref={entryListRef} disablePadding sx={{ overflow: "auto", flexGrow: 1 }}>
-        {computedState.displayedEntries.value.map(e => {
+        {displayedEntries.value.map(e => {
           const entryId = toEntryId(e);
           const feedTitle = getFeedTitle(lookupFeed(e.feed_url));
 
@@ -394,7 +395,7 @@ function EntryList({ onClick }: {
         }}
         count={numPages.value}
         siblingCount={0}
-        page={computedState.currentPage.value}
+        page={currentPage.value}
         onChange={(_, v) => updateQueryParams({ page: v.toString() })}
       />
     </Stack>
