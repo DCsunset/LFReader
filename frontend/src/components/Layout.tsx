@@ -251,10 +251,14 @@ export default function Layout() {
                   : getFeedTitle(selectedFeed.value, tagTitle(appState.queryParams.value.tag))
                 }
               </span>
-              <span className="mx-3">|</span>
-              <span onDblClick={scrollEntry}>
-                {getEntryTitle(selectedEntry.value)}
-              </span>
+              {selectedEntry.value &&
+                <>
+                  <span className="mx-3">|</span>
+                  <span onDblClick={scrollEntry}>
+                    {getEntryTitle(selectedEntry.value)}
+                  </span>
+                </>
+              }
             </>
           </Typography>
 
