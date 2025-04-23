@@ -28,7 +28,7 @@ import { handleExternalLink } from "../store/actions";
 import { displayDate } from "../utils/date";
 import MediaPlayer from "./MediaPlayer";
 import { Box, Chip, Collapse, Divider, List, ListItem, Typography } from "@mui/material";
-import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiRss, mdiTag } from "@mdi/js";
+import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiLink, mdiLinkVariant, mdiRss, mdiTag } from "@mdi/js";
 import { useEffect } from "preact/hooks";
 
 hljs.configure({
@@ -155,17 +155,18 @@ export default function Entry() {
         >
           <Typography
             variant="h5"
-            sx={{
-              mb: 1,
-              fontWeight: 600
-            }}
+            className="mb-2! items-center font-medium!"
           >
-            <a
-              href={entry.value.link}
-              style={anchorNoStyle}
-            >
+            <>
               {title}
-            </a>
+              <a
+                className="ml-2 align-middle opacity-60"
+                href={entry.value.link}
+                style={anchorNoStyle}
+              >
+                <Icon size={0.9} path={mdiLinkVariant} />
+              </a>
+            </>
           </Typography>
           <Divider sx={{ mb: 1 }} />
           <Typography variant="info" sx={{ display: "flex", my: 1, flexWrap: "wrap" }}>
