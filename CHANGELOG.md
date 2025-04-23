@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - 2025-04-23
+
+### 🚀 Features
+
+- *(frontend)* Allow scrolling entry list when dbl clicking app bar
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Fix read/unread icons
+- *(frontend)* Set sort desc to true by default
+- *(frontend)* Add current entry to selection only if it exists
+- *(frontend)* Update unread icon and position
+
+### ⚙️ Miscellaneous Tasks
+
+- Allow specifying version when releasing
+
 ## [3.4.0] - 2025-04-23
 
 ### 🚀 Features
@@ -30,6 +47,7 @@ All notable changes to this project will be documented in this file.
 - *(flake)* Update inputs
 - *(frontend)* Update packages
 - Switch to git-cliff to bump version
+- *(release)* V3.4.0
 
 ## [3.3.3] - 2025-02-05
 
