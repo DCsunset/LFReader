@@ -67,7 +67,7 @@
             program = pkgs.writeShellScriptBin "release" ''
               set -e
 
-              ver=$(git cliff --bumped-version)
+              ver=''${1:-$(git cliff --bumped-version)}
 
               sed -i "s/version = \".*\"/version = \"$ver\"/" frontend/src/_version.ts
               git cliff --bump -o CHANGELOG.md
