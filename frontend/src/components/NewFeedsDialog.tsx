@@ -91,7 +91,7 @@ async function updateFeed(feed: FeedInfo) {
 export default function NewFeedsDialog({ open }: {
   open: Signal<boolean>
 }) {
-  // reset local states
+  // reset local state
   const close = () => {
     batch(() => {
       open.value = false;

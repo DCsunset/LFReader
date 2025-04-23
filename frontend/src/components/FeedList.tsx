@@ -24,7 +24,7 @@ import Icon from '@mdi/react';
 
 const selectedFeed = computedState.selectedFeed;
 const editing = appState.ui.editingFeeds;
-const { feedGroup }= appState.states;
+const { feedGroup }= appState.state;
 const allEntries = appState.data.entries;
 const queryParams = appState.queryParams;
 

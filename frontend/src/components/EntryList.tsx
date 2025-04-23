@@ -26,7 +26,7 @@ import { preventEventDefault } from "../utils/dom";
 import { createRef } from "preact";
 import * as immutable from "immutable";
 
-const { entrySortBy, entrySortDesc } = appState.states
+const { entrySortBy, entrySortDesc } = appState.state
 const { previousEntry } = appState.data;
 const { currentPage, selectedEntryId, filteredEntries, displayedEntries } = computedState
 

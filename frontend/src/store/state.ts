@@ -102,11 +102,11 @@ export const appState = {
     confirmOnExternalLink: false,
     reloadInterval: 0,
 	})),
-  states: {
+  state: {
     // state of each feed group by tag
-    feedGroup: signal(loadState("states.feedGroup", {} as { [tag: string]: boolean })),
-    entrySortBy: signal(loadState("states.entrySortBy", "date" as "date"|"unread")),
-    entrySortDesc: signal(loadState("states.entrySortDesc", false)),
+    feedGroup: signal(loadState("state.feedGroup", {} as { [tag: string]: boolean })),
+    entrySortBy: signal(loadState("state.entrySortBy", "date" as "date"|"unread")),
+    entrySortDesc: signal(loadState("state.entrySortDesc", true)),
   },
   ui: {
     loading: signal(false),
@@ -240,8 +240,8 @@ const currentPage = computed(() => {
 const displayedEntries = computed(() => {
   const page = currentPage.value
   const pageSize = appState.settings.value.pageSize
-  const sortBy = appState.states.entrySortBy.value
-  const sortDesc = appState.states.entrySortDesc.value
+  const sortBy = appState.state.entrySortBy.value
+  const sortDesc = appState.state.entrySortDesc.value
 
   return filteredEntries.value
     .sort((l, r) => {
@@ -294,8 +294,8 @@ function saveState(path: string) {
 }
 
 saveState("settings")
-for (const state of Object.keys(appState.states)) {
-  saveState(`states.${state}`)
+for (const state of Object.keys(appState.state)) {
+  saveState(`state.${state}`)
 }
 
 // Fetch content on page change
