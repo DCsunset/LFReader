@@ -49,7 +49,7 @@ const archiveBlacklist = signal("");
 const archiveSequential = signal(false);
 const archiveInterval = signal("");
 const archiveIntervalError = signal(false);
-const loading = appState.status.loading;
+const { loading } = appState.ui;
 
 const { open, feed } = appState.feedDialog;
 const existing = computed(() => Boolean(lookupFeed(feed.value?.url)));

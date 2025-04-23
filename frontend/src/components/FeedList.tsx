@@ -24,7 +24,7 @@ import Icon from '@mdi/react';
 
 const selectedFeed = computedState.selectedFeed;
 const editing = appState.ui.editingFeeds;
-const feedGroupStates = appState.ui.feedGroupStates;
+const { feedGroup }= appState.states;
 const allEntries = appState.data.entries;
 const queryParams = appState.queryParams;
 
@@ -43,7 +43,7 @@ function FeedGroup({ tag, onClick }: {
   onClick: () => any
 }) {
   const feeds = useComputed(() => filterFeeds(appState.data.feeds.value, { tag }));
-  const visible = useComputed(() => feedGroupStates.value[tagId(tag)] ?? (tag !== "_none"));
+  const visible = useComputed(() => feedGroup.value[tagId(tag)] ?? (tag !== "_none"));
 
   return (
     <>
@@ -60,8 +60,8 @@ function FeedGroup({ tag, onClick }: {
             color="inherit"
             sx={{ p: 0.5 }}
             onClick={e => {
-              feedGroupStates.value = {
-                ...feedGroupStates.value,
+              feedGroup.value = {
+                ...feedGroup.value,
                 [tagId(tag)]: !visible.value
               },
               e.stopPropagation();

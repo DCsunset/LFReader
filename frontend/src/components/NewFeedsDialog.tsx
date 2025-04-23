@@ -27,9 +27,9 @@ import { preventEventDefault } from "../utils/dom";
 const feeds = signal<FeedInfo[]>([]);
 
 // current unadded feed url
-const feedUrl = signal("");
-const feedUrlError = signal("");
-const loading = appState.status.loading;
+const feedUrl = signal("")
+const feedUrlError = signal("")
+const { loading } = appState.ui
 
 function setFeedUrl(value: string) {
   batch(() => {

@@ -16,10 +16,11 @@
 
 import { computed, effect, Signal, signal } from "@preact/signals";
 import { AlertColor } from "@mui/material/Alert";
-import { Entry, Feed, filterEntries, filterFeeds, toEntryId } from "./feed";
+import { Entry, Feed, filterEntries, filterFeeds, getEntryDate, toEntryId } from "./feed";
 import { checkUpdate, FeedInfo, loadData, loadEntryContents } from "./actions";
 import { Base64 } from "js-base64";
 import * as immutable from "immutable";
+import { DateTime } from "luxon";
 
 
 // prefix for storage to avoid conflicts with other apps at same url
@@ -68,7 +69,7 @@ function merge(value: any, init: any) {
   }
 }
 
-function loadState(key: string, init: any) {
+function loadState<T>(key: string, init: T): T {
   try {
     const data = localStorage.getItem(appKey(key));
     return merge(
@@ -101,25 +102,29 @@ export const appState = {
     confirmOnExternalLink: false,
     reloadInterval: 0,
 	})),
+  states: {
+    // state of each feed group by tag
+    feedGroup: signal(loadState("states.feedGroup", {} as { [tag: string]: boolean })),
+    entrySortBy: signal(loadState("states.entrySortBy", "date" as "date"|"unread")),
+    entrySortDesc: signal(loadState("states.entrySortDesc", false)),
+  },
   ui: {
+    loading: signal(false),
     smallDevice: signal(false),
     editingFeeds: signal(false),
-    // state of each feed group by tag
-    feedGroupStates: signal(loadState("ui.feedGroupStates", {} as { [tag: string]: boolean })),
   },
   data: {
     feeds: signal([] as Feed[]),
     // Entries without content
     entries: signal([] as Entry[]),
     // Fetch content on demand and cache it
-    entryContents: signal(immutable.Map<string, Entry>())
-  },
-  status: {
-    loading: signal(false)
+    entryContents: signal(immutable.Map<string, Entry>()),
+    // Previous read entry (to mark as read later)
+    previousEntry: signal<string|null>(null),
   },
   // query parameters from url
   queryParams: signal<QueryParams>({}),
-  notification: signal<Notification | null>(null),
+  notification: signal<Notification|null>(null),
   confirmation: {
     open: signal(false),
     content: signal<Element|string>(""),
@@ -233,12 +238,35 @@ const currentPage = computed(() => {
 });
 
 const displayedEntries = computed(() => {
-  const page = currentPage.value;
-  const pageSize = appState.settings.value.pageSize;
-  return filteredEntries.value.slice(
-    (page - 1) * pageSize,
-    page * pageSize
-  );
+  const page = currentPage.value
+  const pageSize = appState.settings.value.pageSize
+  const sortBy = appState.states.entrySortBy.value
+  const sortDesc = appState.states.entrySortDesc.value
+
+  return filteredEntries.value
+    .sort((l, r) => {
+      let result
+      switch (sortBy) {
+        case "unread":
+          const lRead = l.user_data.read ? 0 : 1
+          const rRead = r.user_data.read ? 0 : 1
+          if (lRead !== rRead) {
+            result = lRead - rRead
+            break
+          }
+        case "date":
+        default:
+          const lDate = DateTime.fromISO(getEntryDate(l)!).toUnixInteger()
+          const rDate = DateTime.fromISO(getEntryDate(r)!).toUnixInteger()
+          result = lDate - rDate
+          break
+      }
+      return result * (sortDesc ? -1 : 1)
+    })
+    .slice(
+      (page - 1) * pageSize,
+      page * pageSize
+    )
 })
 
 export const computedState = {
@@ -265,8 +293,10 @@ function saveState(path: string) {
   });
 }
 
-saveState("settings");
-saveState("ui.feedGroupStates");
+saveState("settings")
+for (const state of Object.keys(appState.states)) {
+  saveState(`states.${state}`)
+}
 
 // Fetch content on page change
 effect(() => {

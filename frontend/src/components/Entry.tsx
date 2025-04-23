@@ -17,7 +17,7 @@
 import { computed, signal } from "@preact/signals";
 import { createRef } from "preact";
 import { appState, computedState, lookupEntryUrl, lookupFeed } from "../store/state";
-import { textCategories, Enclosure, getEntryTitle, getFeedTitle, toEntryId } from "../store/feed";
+import { textCategories, Enclosure, getEntryTitle, getFeedTitle, toEntryId, getEntryDate } from "../store/feed";
 import Icon from "@mdi/react";
 import renderMathInElement from "katex/contrib/auto-render";
 import hljs from "highlight.js";
@@ -39,8 +39,7 @@ hljs.configure({
 const entry = computedState.selectedEntry;
 const title = computed(() => getEntryTitle(entry.value));
 const date = computed(() => {
-  const e = entry.value;
-  return displayDate(e?.published_at ?? e?.updated_at ?? e?.server_data?.added_at);
+  return displayDate(getEntryDate(entry.value));
 })
 const author = computed(() => entry.value?.author || feed.value?.author);
 const categories = computed(() => textCategories(entry.value?.categories));

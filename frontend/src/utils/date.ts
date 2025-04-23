@@ -49,5 +49,5 @@ export function displayDateDiff(isoDate?: string) {
 		}
 	}
 
-	return "< 1m";
+	return "now";
 }

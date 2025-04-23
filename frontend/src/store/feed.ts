@@ -101,6 +101,10 @@ export function getFeedTitle(feed?: Feed, fallback: string = "(No Title)") {
   return feed?.user_data.alias || feed?.title || fallback;
 }
 
+export function getEntryDate(e?: Entry) {
+  return e?.published_at ?? e?.updated_at ?? e?.server_data.added_at
+}
+
 export function tagTitle(tag?: string) {
   switch (tag) {
   case undefined:

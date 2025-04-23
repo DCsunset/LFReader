@@ -78,8 +78,10 @@ export async function checkUpdate() {
       lastUpdated = status.updated
     }
   }
-  if (appState.status.loading.value !== status.loading) {
-    appState.status.loading.value = status.loading
+
+  const { loading } = appState.ui
+  if (loading.value !== status.loading) {
+    loading.value = status.loading
   }
   updating = false
   return ok
@@ -94,7 +96,7 @@ async function waitForLoading() {
     if (!ok) {
       return false
     }
-    if (!appState.status.loading) {
+    if (!appState.ui.loading) {
       return true
     }
     backoff = Math.min(maxBackoff, backoff * 2);
@@ -256,13 +258,15 @@ type FeedActionArgs = FetchFeedsArgs | ArchiveFeedsArgs | CleanFeedsArgs | Delet
 const asyncFeedActions = new Set([ "fetch", "archive" ]);
 
 export async function dispatchFeedAction(args: FeedActionArgs) {
-  appState.status.loading.value = true
+  const { loading } = appState.ui;
+
+  loading.value = true
   const resp =  await fetchApi("/feeds", {
     method: "POST",
     body: JSON.stringify(args)
   })
   if (resp === undefined) {
-    appState.status.loading.value = false
+    loading.value = false
     return false
   }
 
@@ -271,7 +275,7 @@ export async function dispatchFeedAction(args: FeedActionArgs) {
     ok = await waitForLoading()
   }
   else {
-    appState.status.loading.value = false
+    loading.value = false
     ok = await getData();
   }
 

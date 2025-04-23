@@ -14,17 +14,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Divider, IconButton, List, ListItemButton, Pagination, Stack, TextField } from "@mui/material";
+import { Checkbox, Divider, FormControl, FormControlLabel, IconButton, List, ListItemButton, Menu, Pagination, Radio, RadioGroup, Stack, TextField } from "@mui/material";
 import { computedState, lookupFeed, appState, fromEntryId } from "../store/state";
-import { Entry, getFeedTitle, toEntryId } from "../store/feed";
+import { Entry, getEntryDate, getFeedTitle, toEntryId } from "../store/feed";
 import { dispatchEntryAction, EntryInfo, updateQueryParams } from "../store/actions";
 import { batch, computed, effect, signal } from "@preact/signals";
 import { displayDateDiff } from "../utils/date";
-import { mdiArrowLeft, mdiCheckboxMultipleOutline, mdiCheckboxOutline, mdiCircle, mdiClose, mdiEmailOpenOutline, mdiEmailOutline, mdiFormatListChecks, mdiMagnify } from "@mdi/js";
+import { mdiArrowLeft, mdiCheckboxMultipleOutline, mdiCheckboxOutline, mdiCircle, mdiClose, mdiEmailOpenOutline, mdiEmailOutline, mdiFormatListChecks, mdiMagnify, mdiSortAlphabeticalAscending } from "@mdi/js";
 import Icon from "@mdi/react";
 import { preventEventDefault } from "../utils/dom";
 import { createRef } from "preact";
 import * as immutable from "immutable";
+
+const { entrySortBy, entrySortDesc } = appState.states
+const { previousEntry } = appState.data;
 
 const numPages = computed(() => (
   Math.ceil(
@@ -45,6 +48,8 @@ const selectMode = signal(false)
 const selectedItems = signal(immutable.Set<string>())
 const toolbar = computed(() => !searchMode.value && !selectMode.value)
 const entryListRef = createRef()
+
+const sortMenuAnchor = signal<HTMLElement|null>(null)
 
 function cancelSearch() {
   updateQueryParams({ entryTitleFilter: undefined });
@@ -170,6 +175,14 @@ function EntryList({ onClick }: {
           <IconButton
             size="small"
             color="inherit"
+            title="Sort"
+            onClick={e => sortMenuAnchor.value = e.currentTarget}
+          >
+            <Icon path={mdiSortAlphabeticalAscending} size={1} />
+          </IconButton>
+          <IconButton
+            size="small"
+            color="inherit"
             title="Search"
             onClick={() => searchMode.value = true}
           >
@@ -177,6 +190,45 @@ function EntryList({ onClick }: {
           </IconButton>
         </div>
       }
+      <Menu
+        open={Boolean(sortMenuAnchor.value)}
+        anchorEl={sortMenuAnchor.value}
+        onClose={() => sortMenuAnchor.value = null}
+      >
+        <FormControl size="small" className="mx-0">
+          <RadioGroup
+            className="px-3"
+            value={entrySortBy.value}
+            onChange={e => batch(() => {
+              entrySortBy.value = (e.target as any).value
+              sortMenuAnchor.value = null
+            })}
+          >
+            <FormControlLabel
+              value="date"
+              label="Date"
+              control={<Radio size="small" />}
+            />
+            <FormControlLabel
+              value="unread"
+              label="Unread"
+              control={<Radio size="small" />}
+            />
+          </RadioGroup>
+          <FormControlLabel
+            className="px-3"
+            label="Desc"
+            control={
+              <Checkbox
+                size="small"
+                checked={entrySortDesc.value}
+                onChange={e => entrySortDesc.value = (e.target as HTMLInputElement).checked}
+              />
+            }
+          />
+        </FormControl>
+      </Menu>
+
       {searchMode.value &&
         <div className="flex py-1 px-2">
           <IconButton
@@ -299,9 +351,12 @@ function EntryList({ onClick }: {
                 if (selectMode.value) {
                   handleSelect(entryId)
                 } else {
-                  if (!e.user_data.read) {
-                    handleMarkEntries(immutable.Set([entryId]), true)
+                  const prev = previousEntry.value
+                  if (prev && !fromEntryId(prev)?.user_data.read) {
+                    handleMarkEntries(immutable.Set([prev]), true)
                   }
+
+                  previousEntry.value = entryId
                   onClick(entryId)
                   updateQueryParams({ entry: entryId })
                 }
@@ -323,7 +378,7 @@ function EntryList({ onClick }: {
                   {feedTitle}
                 </span>
                 <span className="opacity-80">
-                  {displayDateDiff(e.published_at ?? e.updated_at ?? e.server_data.added_at)}
+                  {displayDateDiff(getEntryDate(e))}
                 </span>
               </div>
               <div>{e.title || "(No Title)"}</div>

@@ -43,8 +43,7 @@ const dark = computed(() => appState.settings.value.dark);
 const settingsDialog = signal(false);
 const feedsDialog = signal(false);
 const aboutDialog = signal(false);
-const { editingFeeds, smallDevice } = appState.ui;
-const loading = appState.status.loading;
+const { loading, editingFeeds, smallDevice } = appState.ui;
 const loadDataInProgress = signal(false);
 
 const { selectedFeed, selectedEntry, selectedEntryId, selectedEntryFeed } = computedState;

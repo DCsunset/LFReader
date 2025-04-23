@@ -52,7 +52,7 @@ const validNumber = (value: string, min: number, max: number, int: boolean) => {
   return num >= min && num <= max;
 };
 
-const loading = appState.status.loading;
+const { loading } = appState.ui;
 
 // local states
 const currentRate = signal("")
