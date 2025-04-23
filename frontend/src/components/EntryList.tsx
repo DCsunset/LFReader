@@ -20,7 +20,7 @@ import { Entry, getEntryDate, getFeedTitle, toEntryId } from "../store/feed";
 import { dispatchEntryAction, EntryInfo, updateQueryParams } from "../store/actions";
 import { batch, computed, effect, signal } from "@preact/signals";
 import { displayDateDiff } from "../utils/date";
-import { mdiArrowLeft, mdiCheckboxMultipleOutline, mdiCheckboxOutline, mdiCircle, mdiClose, mdiEmailOpenOutline, mdiEmailOutline, mdiFormatListChecks, mdiMagnify, mdiSortAlphabeticalAscending } from "@mdi/js";
+import { mdiArrowLeft, mdiCheckboxMultipleOutline, mdiCheckboxOutline, mdiCircle, mdiClose, mdiEmailAlertOutline, mdiEmailOpenOutline, mdiFormatListChecks, mdiMagnify, mdiSortAlphabeticalAscending } from "@mdi/js";
 import Icon from "@mdi/react";
 import { preventEventDefault } from "../utils/dom";
 import * as immutable from "immutable";
@@ -316,20 +316,20 @@ const EntryList = forwardRef((
             <IconButton
               size="small"
               color="inherit"
-              title="Mark as unread"
-              onClick={() => handleMarkEntries(selectedItems.value, false)}
-              disabled={selectedItems.value.size === 0}
-            >
-              <Icon path={mdiEmailOutline} size={1} />
-            </IconButton>
-            <IconButton
-              size="small"
-              color="inherit"
               title="Mark as read"
               onClick={() => handleMarkEntries(selectedItems.value, true)}
               disabled={selectedItems.value.size === 0}
             >
               <Icon path={mdiEmailOpenOutline} size={1} />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="inherit"
+              title="Mark as unread"
+              onClick={() => handleMarkEntries(selectedItems.value, false)}
+              disabled={selectedItems.value.size === 0}
+            >
+              <Icon path={mdiEmailAlertOutline} size={1} />
             </IconButton>
           </div>
         </div>
