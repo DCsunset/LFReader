@@ -2,11 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.5.0] - 2025-04-24
+
+### 🚀 Features
+
+- Support freezing feeds
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Improve scrolling on small device
+- *(frontend)* Fix feed list spacing
+
 ## [3.4.2] - 2025-04-23
 
 ### 🐛 Bug Fixes
 
 - *(frontend)* Fix title display
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V3.4.2
 
 ## [3.4.1] - 2025-04-23
 
