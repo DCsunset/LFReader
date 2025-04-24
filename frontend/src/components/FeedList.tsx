@@ -94,6 +94,7 @@ function FeedGroup({ tag, onClick }: {
           return (
             <ListItemButton
               key={feedId}
+              className="text-base"
               sx={{ p: 1, pl: editing.value ? 1.3 : 6 }}
               selected={selectedFeed.value === feed}
               onClick={() => {
@@ -106,7 +107,7 @@ function FeedGroup({ tag, onClick }: {
                   <IconButton
                     size="small"
                     color="inherit"
-                    sx={{ p: 0.5 }}
+                    sx={{ py: 0, px: 0.5 }}
                     onClick={e => {
                       batch(() => {
                         const { feedDialog } = appState;
@@ -132,13 +133,9 @@ function FeedGroup({ tag, onClick }: {
                   }}
                 />
               }
-              <Box sx={{
-                overflowWrap: "anywhere",
-                mr: 0.8,
-                flexGrow: 1
-              }}>
+              <span className="flex grow wrap-anywhere mr-2">
                 {getFeedTitle(feed)}
-              </Box>
+              </span>
               <Box sx={{
                 mx: 0.8,
                 mt: 0.1,
