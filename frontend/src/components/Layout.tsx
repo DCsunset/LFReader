@@ -93,6 +93,20 @@ effect(() => {
   }
 });
 
+function scrollOnSmallDevice(e: MouseEvent) {
+  if (!smallDevice.value) {
+    // Pass it to children components
+    e.preventDefault()
+    return
+  }
+
+  if (entryList.value) {
+    scrollEntryList()
+  } else {
+    scrollEntry()
+  }
+}
+
 // Time of touch start
 let touchStartTime: number | null = null;
 // Position of touch start
@@ -243,6 +257,7 @@ export default function Layout() {
             flexGrow={1}
             ml={1.5}
             className="select-none"
+            onDblClick={scrollOnSmallDevice}
           >
             <>
               <span onDblClick={scrollEntryList}>
