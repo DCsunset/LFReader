@@ -70,7 +70,12 @@ export async function checkUpdate() {
     return true
   }
   updating = true
-  const status: ServerStatus = await fetchApi("/status")
+  const status: ServerStatus = await fetchApi("status")
+  if (status === undefined) {
+    updating = false
+    return false
+  }
+
   let ok = true
   if (lastUpdated !== status.updated) {
     ok = await getData()

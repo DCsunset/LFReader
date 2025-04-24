@@ -30,7 +30,8 @@ export type FeedUserData = {
   archive_blacklist?: string,
   archive_sequential?: boolean,
   archive_interval?: number,
-  tags?: string[]
+  tags?: string[],
+  frozen?: boolean,
 };
 
 export type Feed = {

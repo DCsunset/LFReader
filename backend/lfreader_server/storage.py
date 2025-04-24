@@ -250,6 +250,8 @@ class Storage:
     # must disable requoting to prevent invalid char in url
     async with aiohttp.ClientSession(headers=self.headers, timeout=self.timeout, requote_redirect_url=False) as session:
       feeds = feeds or self.get_feeds(columns=["url", "title", "user_data"])
+      feeds = filter(lambda f: not f["user_data"].get("frozen"), feeds)
+
       feeds = await asyncio.gather(*map(partial(parse_feed, session, ignore_error), feeds))
       now = datetime.now().astimezone().isoformat()
       update_feed_field = partial(sql_update_field, "feeds")

@@ -133,7 +133,7 @@ function FeedGroup({ tag, onClick }: {
                   }}
                 />
               }
-              <span className="flex grow wrap-anywhere mr-2">
+              <span className={`flex grow wrap-anywhere mr-2 ${feed.user_data.frozen ? "opacity-80" : "" }`} >
                 {getFeedTitle(feed)}
               </span>
               <Box sx={{

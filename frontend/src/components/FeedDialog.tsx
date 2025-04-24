@@ -49,8 +49,9 @@ const archiveBlacklist = signal("");
 const archiveSequential = signal(false);
 const archiveInterval = signal("");
 const archiveIntervalError = signal(false);
-const { loading } = appState.ui;
+const frozen = signal(false)
 
+const { loading } = appState.ui;
 const { open, feed } = appState.feedDialog;
 const existing = computed(() => Boolean(lookupFeed(feed.value?.url)));
 const title = computed(() => getFeedTitle(feed.value));
@@ -73,6 +74,7 @@ const reset = () => {
     archiveSequential.value = f?.user_data.archive_sequential ?? false;
     archiveInterval.value = f?.user_data.archive_interval?.toString() ?? "";
     archiveIntervalError.value = false;
+    frozen.value = f?.user_data.frozen ?? false
   });
 };
 const save = async () => {
@@ -86,7 +88,8 @@ const save = async () => {
     playback_rate: playbackRate.value || undefined,
     archive_blacklist: archiveBlacklist.value || undefined,
     archive_sequential: archiveSequential.value || undefined,
-    archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined
+    archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined,
+    frozen: frozen.value || undefined,
   };
   const f = feed.value!;
   // Must load onSave here to keep it up to date
@@ -390,6 +393,17 @@ export default function FeedDialog() {
               }}
             />
           </Item>
+
+          <Item
+            title="Freeze Feed"
+            subtitle="no longer update the feed from source"
+          >
+            <Checkbox
+              checked={frozen.value}
+              onChange={(e: any) => frozen.value = e.target.checked}
+            />
+          </Item>
+
         </Stack>
       </DialogContent>
 
