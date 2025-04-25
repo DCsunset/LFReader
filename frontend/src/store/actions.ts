@@ -171,7 +171,16 @@ export async function loadEntryContents(entries: Entry[]) {
     return;
   }
 
-  const contents: Entry[] = await queryEntries({ entries: absentEntries });
+  // only load content
+  const contents: Entry[] = await queryEntries({
+    entries: absentEntries,
+    columns: [
+      "feed_url",
+      "id",
+      "summary",
+      "contents"
+    ]
+  });
   if (contents === undefined) {
     return;
   }

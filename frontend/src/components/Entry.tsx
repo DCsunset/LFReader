@@ -36,19 +36,20 @@ hljs.configure({
   ignoreUnescapedHTML: true
 });
 
-const entry = computedState.selectedEntry;
-const title = computed(() => getEntryTitle(entry.value));
+const { selectedEntry, selectedEntryContent } = computedState
+
+const title = computed(() => getEntryTitle(selectedEntry.value));
 const date = computed(() => {
-  return displayDate(getEntryDate(entry.value));
+  return displayDate(getEntryDate(selectedEntry.value));
 })
-const author = computed(() => entry.value?.author || feed.value?.author);
-const categories = computed(() => textCategories(entry.value?.categories));
-const feed = computed(() => lookupFeed(entry.value?.feed_url));
+const author = computed(() => selectedEntry.value?.author || feed.value?.author);
+const categories = computed(() => textCategories(selectedEntry.value?.categories));
+const feed = computed(() => lookupFeed(selectedEntry.value?.feed_url));
 const feedTitle = computed(() => getFeedTitle(feed.value));
 
 const showEnclosures = signal(true);
 const currentContents = computed(() => {
-  const e = entry.value;
+  const e = selectedEntryContent.value;
   let contents = e?.contents || [];
   if (contents.length === 0) {
     contents = e?.summary ? [e?.summary] : [];
@@ -56,7 +57,7 @@ const currentContents = computed(() => {
   return contents;
 });
 const currentEntryId = computed(() => {
-  const e = entry.value;
+  const e = selectedEntry.value;
   return e && toEntryId(e);
 })
 const entryRef = createRef<HTMLElement>();
@@ -99,7 +100,7 @@ export default function Entry() {
   useEffect(() => {
     const element = entryRef.current;
     // Subscribe to entry.value
-    if (entry.value && element) {
+    if (selectedEntry.value && element) {
       // render math formula
       renderMathInElement(element, {
         throwOnError: false
@@ -139,7 +140,7 @@ export default function Entry() {
 
   return (
     <>
-      {entry.value &&
+      {selectedEntry.value &&
         <Box
           id="lfreader-entry"
           ref={entryRef}
@@ -161,7 +162,7 @@ export default function Entry() {
               {title}
               <a
                 className="ml-2 align-middle opacity-60"
-                href={entry.value.link}
+                href={selectedEntry.value.link}
                 style={anchorNoStyle}
               >
                 <Icon size={0.9} path={mdiLinkVariant} />
@@ -205,7 +206,7 @@ export default function Entry() {
 
           </Typography>
 
-          {(entry.value?.enclosures?.length ?? 0) > 0 &&
+          {(selectedEntry.value?.enclosures?.length ?? 0) > 0 &&
             <>
               <Typography variant="info" sx={{ display: "flex" }} onClick={() => showEnclosures.value = !showEnclosures.value}>
                 <Icon
@@ -218,13 +219,13 @@ export default function Entry() {
                 />
                 <Icon path={mdiAttachment} size={0.9} />
                 <Box sx={{ ml: 0.5, mr: 1.5 }}>
-                  Enclosures: {entry.value.enclosures.length} file(s)
+                  Enclosures: {selectedEntry.value.enclosures.length} file(s)
                 </Box>
               </Typography>
 
               <Collapse in={showEnclosures.value}>
                 <List>
-                  {entry.value.enclosures.map(en => (
+                  {selectedEntry.value.enclosures.map(en => (
                     <ListItem key={en.href} dense className="overflow-x-scroll overflow-y-hidden">
                       <EnclosureView enclosure={en} />
                     </ListItem>

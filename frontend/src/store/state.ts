@@ -166,8 +166,7 @@ export function lookupEntryUrl(url?: string) {
 }
 
 export function fromEntryId(entryId: string) {
-  // Check if content is cached first
-  return appState.data.entryContents.value.get(entryId) || entryIdMap.value.get(entryId);
+  return entryIdMap.value.get(entryId);
 }
 
 export function fromFeedId(feed_id: string) {
@@ -199,6 +198,14 @@ const selectedEntry = computed(() => {
     return undefined;
   }
   return fromEntryId(entry_id);
+});
+
+const selectedEntryContent = computed(() => {
+  const entryId = appState.queryParams.value.entry
+  if (!entryId) {
+    return undefined
+  }
+  return appState.data.entryContents.value.get(entryId)
 });
 
 const selectedEntryId = computed(() => {
@@ -275,6 +282,7 @@ export const computedState = {
   entryTags: computed(() => getTags(appState.data.entries.value)),
   selectedFeed,
   selectedEntry,
+  selectedEntryContent,
   selectedEntryFeed,
   selectedEntryId,
   filterFeeds,

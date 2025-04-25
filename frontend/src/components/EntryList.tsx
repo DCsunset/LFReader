@@ -133,10 +133,7 @@ function handleMarkEntries(selected: immutable.Set<string>, read: boolean) {
   }
 
   // update user_data locally for responsiveness
-  batch(() => {
-    appState.data.entries.value = appState.data.entries.value.map(updateEntry);
-    appState.data.entryContents.value = appState.data.entryContents.value.map(updateEntry);
-  })
+  appState.data.entries.value = appState.data.entries.value.map(updateEntry);
 
   updateEntries(
     selected.toJS()
