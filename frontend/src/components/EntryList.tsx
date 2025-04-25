@@ -152,7 +152,7 @@ function handleMarkEntries(selected: immutable.Set<string>, read: boolean) {
 
 // allow passing ref inside the component
 const EntryList = forwardRef((
-  props: { onClick: (eId: string) => any },
+  props: { onClick: () => any },
   ref
 ) => {
 	return (
@@ -352,7 +352,7 @@ const EntryList = forwardRef((
                   }
 
                   previousEntry.value = entryId
-                  props.onClick(entryId)
+                  props.onClick()
                   updateQueryParams({ entry: entryId })
                 }
               }}

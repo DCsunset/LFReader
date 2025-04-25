@@ -21,7 +21,7 @@ import { SnackbarProvider, closeSnackbar, enqueueSnackbar } from "notistack";
 import { useEffect } from "preact/hooks";
 import Icon from '@mdi/react';
 import { mdiMenu, mdiCog, mdiFormatListBulleted, mdiRss, mdiRefresh, mdiWeatherNight, mdiWeatherSunny, mdiDownload, mdiPlus, mdiLeadPencil, mdiCodeTags, mdiInformationOutline, mdiClose } from '@mdi/js';
-import { computed, effect, signal, useComputed, useSignalEffect } from "@preact/signals";
+import { batch, computed, effect, signal, useComputed, useSignalEffect } from "@preact/signals";
 import SettingsDialog from "./SettingsDialog";
 import ConfirmationDialog from "./ConfirmationDialog";
 import { loadData, dispatchFeedAction } from "../store/actions";
@@ -45,18 +45,15 @@ const aboutDialog = signal(false);
 const { loading, editingFeeds, smallDevice } = appState.ui;
 const loadDataInProgress = signal(false);
 
-const { currentPage, selectedFeed, selectedEntry, selectedEntryId, selectedEntryFeed } = computedState;
+const { currentPage, selectedFeed, selectedEntry, selectedEntryFeed } = computedState;
 
 effect(() => {
-  // Hide feed list by default for small devices
-  feedList.value = !smallDevice.value
-})
-
-effect(() => {
-  // Hide entry list on entry open for small screen
-  if (smallDevice.value) {
-    entryList.value = !selectedEntry.value
-  }
+  const small = smallDevice.value
+  batch(() => {
+    // Hide feed list by default for small devices
+    feedList.value = !small
+    entryList.value = !small || Boolean(selectedEntry.peek())
+  })
 })
 
 async function fetchFeeds() {
@@ -450,9 +447,8 @@ export default function Layout() {
             height: `calc(100vh - ${toolbarHeight})`,
             borderRight: `1px solid ${theme.palette.divider}`
           }}>
-            <EntryList ref={entryListRef} onClick={eId => {
-              // List will be hidden on entry change as well on small screen
-              if (smallDevice.value && selectedEntryId.value === eId) {
+            <EntryList ref={entryListRef} onClick={() => {
+              if (smallDevice.value) {
                 entryList.value = false;
               }
             }} />
