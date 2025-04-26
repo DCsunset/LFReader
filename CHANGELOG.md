@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [3.5.1] - 2025-04-26
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Enable read/unread action only when necessary
+
+### ⚡ Performance
+
+- *(frontend)* Separate entry content from metadata to reduce page update
+- *(frontend)* Improve entry list for small device
+
 ## [3.5.0] - 2025-04-24
 
 ### 🚀 Features
@@ -12,6 +23,10 @@ All notable changes to this project will be documented in this file.
 
 - *(frontend)* Improve scrolling on small device
 - *(frontend)* Fix feed list spacing
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V3.5.0
 
 ## [3.4.2] - 2025-04-23
 
