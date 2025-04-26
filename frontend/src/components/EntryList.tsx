@@ -47,7 +47,19 @@ const searchMode = signal(false)
 const entryTitleFilter = signal("")
 const selectMode = signal(false)
 const selectedItems = signal(immutable.Set<string>())
+
 const toolbar = computed(() => !searchMode.value && !selectMode.value)
+
+const selectedItemsState = computed(() => {
+  // Find if any is read or unread
+  let state = { read: false, unread: false }
+  for (const s of selectedItems.value) {
+    const read = Boolean(fromEntryId(s)!.user_data.read)
+    state.read ||= read
+    state.unread ||= !read
+  }
+  return state
+})
 
 const sortMenuAnchor = signal<HTMLElement|null>(null)
 
@@ -315,7 +327,7 @@ const EntryList = forwardRef((
               color="inherit"
               title="Mark as read"
               onClick={() => handleMarkEntries(selectedItems.value, true)}
-              disabled={selectedItems.value.size === 0}
+              disabled={!selectedItemsState.value.unread}
             >
               <Icon path={mdiEmailOpenOutline} size={1} />
             </IconButton>
@@ -324,7 +336,7 @@ const EntryList = forwardRef((
               color="inherit"
               title="Mark as unread"
               onClick={() => handleMarkEntries(selectedItems.value, false)}
-              disabled={selectedItems.value.size === 0}
+              disabled={!selectedItemsState.value.read}
             >
               <Icon path={mdiEmailAlertOutline} size={1} />
             </IconButton>

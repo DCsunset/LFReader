@@ -28,7 +28,7 @@ import { handleExternalLink } from "../store/actions";
 import { displayDate } from "../utils/date";
 import MediaPlayer from "./MediaPlayer";
 import { Box, Chip, Collapse, Divider, List, ListItem, Typography } from "@mui/material";
-import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiLink, mdiLinkVariant, mdiRss, mdiTag } from "@mdi/js";
+import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiLinkVariant, mdiRss, mdiTag } from "@mdi/js";
 import { useEffect } from "preact/hooks";
 
 hljs.configure({
