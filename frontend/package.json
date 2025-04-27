@@ -1,39 +1,25 @@
 {
-	"private": true,
-	"type": "module",
-	"scripts": {
-		"dev": "vite",
-		"build": "npm run generate-pwa-assets && vite build",
-		"preview": "vite preview",
-		"generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/logo.svg"
-	},
-	"dependencies": {
-		"@emotion/react": "^11.14.0",
-		"@emotion/styled": "^11.14.0",
-		"@fontsource/roboto": "^5.2.5",
-		"@mdi/js": "^7.4.47",
-		"@mdi/react": "^1.6.1",
-		"@mui/lab": "^7.0.0-beta.11",
-		"@mui/material": "^7.0.2",
-		"@preact/signals": "^2.0.4",
-		"@types/katex": "^0.16.7",
-		"highlight.js": "^11.11.1",
-		"immutable": "^5.1.1",
-		"js-base64": "^3.7.7",
-		"katex": "^0.16.22",
-		"luxon": "^3.6.1",
-		"media-chrome": "^4.9.0",
-		"notistack": "^3.0.2",
-		"preact": "^10.26.5",
-		"preact-router": "^4.1.2"
-	},
-	"devDependencies": {
-		"@preact/preset-vite": "^2.10.1",
-		"@types/luxon": "^3.6.2",
-		"@vite-pwa/assets-generator": "^1.0.0",
-		"typescript": "^5.8.3",
-		"unocss": "^66.0.0",
-		"vite": "^6.3.2",
-		"vite-plugin-pwa": "^1.0.0"
-	}
+  "name": "frontend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run generate-pwa-assets && tsc -b && vite build",
+    "preview": "vite preview",
+    "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/logo.svg"
+  },
+  "dependencies": {
+    "@fontsource/open-sans": "^5.2.5",
+    "@solidjs/router": "^0.15.3",
+    "solid-js": "^1.9.5"
+  },
+  "devDependencies": {
+    "@unocss/preset-wind4": "66.1.0-beta.12",
+    "@vite-pwa/assets-generator": "^1.0.0",
+    "typescript": "~5.7.2",
+    "unocss": "66.1.0-beta.12",
+    "vite": "^6.3.1",
+    "vite-plugin-pwa": "^1.0.0",
+    "vite-plugin-solid": "^2.11.6"
+  }
 }

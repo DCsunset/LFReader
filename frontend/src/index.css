@@ -16,6 +16,10 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+:root {
+  font-family: "Open Sans", sans-serif;
+}
+
 body {
   margin: 0;
   overflow-wrap: break-word;
@@ -71,4 +75,5 @@ table {
 td {
   padding: 0;
 }
+
 
