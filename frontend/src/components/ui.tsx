@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
+// Copyright (C) 2025  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,16 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Router, Route } from "@solidjs/router";
-import Layout from './components/Layout';
+import { splitProps } from "solid-js"
 
-function App() {
-  // Use router for query parameters
-	return (
-    <Router>
-      <Route path="/" component={Layout} />
-    </Router>
+export function IconButton(props: any) {
+  const [localProps, restProps] = splitProps(props, ["class"])
+  return (
+    // Must set children to block to prevent extra gap from verticle-align
+    <button class={`*:block shadow-none bg-inherit border-none rounded-full transition-all hover:bg-white/25 hover:cursor-pointer ${localProps.class}`} {...restProps} />
   )
 }
 
-export default App;

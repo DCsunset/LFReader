@@ -18,8 +18,8 @@ export default defineConfig({
     }
   },
   plugins: [
-    solid(),
     UnoCSS(),
+    solid(),
     VitePWA({
       // devOptions: {
       //   enabled: true
