@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
-import UnoCSS from 'unocss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineConfig({
   server: {
@@ -18,7 +18,7 @@ export default defineConfig({
     }
   },
   plugins: [
-    UnoCSS(),
+    tailwindcss(),
     solid(),
     VitePWA({
       // devOptions: {

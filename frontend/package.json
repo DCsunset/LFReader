@@ -9,18 +9,18 @@
     "generate-pwa-assets": "pwa-assets-generator --preset minimal-2023 public/logo.svg"
   },
   "dependencies": {
-    "@ark-ui/react": "^5.7.0",
     "@fontsource/open-sans": "^5.2.5",
     "@solidjs/router": "^0.15.3",
+    "@tailwindcss/vite": "^4.1.4",
+    "daisyui": "^5.0.28",
     "lucide": "^0.503.0",
     "lucide-solid": "^0.503.0",
-    "solid-js": "^1.9.5"
+    "solid-js": "^1.9.5",
+    "tailwindcss": "^4.1.4"
   },
   "devDependencies": {
-    "@unocss/preset-wind4": "66.1.0-beta.12",
     "@vite-pwa/assets-generator": "^1.0.0",
     "typescript": "~5.7.2",
-    "unocss": "66.1.0-beta.12",
     "vite": "^6.3.1",
     "vite-plugin-pwa": "^1.0.0",
     "vite-plugin-solid": "^2.11.6"

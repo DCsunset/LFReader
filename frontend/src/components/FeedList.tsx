@@ -14,13 +14,29 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { splitProps } from "solid-js"
+import { For } from "solid-js"
+import ChevronDownIcon from "lucide-solid/icons/chevron-down"
 
-export function IconButton(props: any) {
-  const [localProps, restProps] = splitProps(props, ["class"])
+
+function FeedGroup(props: {
+  // _all means all feeds, _none means without tag
+  tag: string
+}) {
   return (
-    // Must set children to block to prevent extra gap from verticle-align
-    <button class={`*:block shadow-none bg-inherit border-none rounded-full transition-all hover:bg-white/25 hover:cursor-pointer ${localProps.class}`} {...restProps} />
+    <span>Tag</span>
+  )
+}
+
+export default function FeedList(props: any) {
+  const tags = () => [ "_all", "_none" ]
+  return (
+    <div {...props}>
+      <For each={tags()}>
+        {(tag, _index) => (
+          <FeedGroup tag={tag} />
+        )}
+      </For>
+    </div>
   )
 }
 

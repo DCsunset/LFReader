@@ -1,6 +1,5 @@
 /* @refresh reload */
 import { render } from 'solid-js/web'
-import 'virtual:uno.css'
 import "@fontsource/open-sans/300.css"
 import "@fontsource/open-sans/400.css"
 import "@fontsource/open-sans/500.css"
