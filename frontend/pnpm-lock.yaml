@@ -11,6 +11,9 @@ importers:
       '@fontsource/open-sans':
         specifier: ^5.2.5
         version: 5.2.5
+      '@solid-primitives/media':
+        specifier: ^2.3.1
+        version: 2.3.1(solid-js@1.9.5)
       '@solidjs/router':
         specifier: ^0.15.3
         version: 0.15.3(solid-js@1.9.5)
@@ -993,6 +996,31 @@ packages:
     resolution: {integrity: sha512-lpPE1cLfP5oPzVjKMx10pgBmKELQnFJXHgvtHCtuJWOv8MxqdEIMNtgHgBFf7Ea2/7EuVwa9fodWUfXAlXZLZQ==}
     cpu: [x64]
     os: [win32]
+
+  '@solid-primitives/event-listener@2.4.1':
+    resolution: {integrity: sha512-Xc/lBCeuh9LwzR4lYbMDtopwWK7N9b4o+FmI4uoI8DOtVGYi0Ip20DG8PtwHk+g31lHgvwtFFVKfnUx2UaqZJg==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
+  '@solid-primitives/media@2.3.1':
+    resolution: {integrity: sha512-UTX8LAaQS7k3rvekme8y5ihOrt5SJpgkw7xyUySlPhIapD7JxlhYncQoSFsys5D1XPCgI/3snobpvbanRcrTAw==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
+  '@solid-primitives/rootless@1.5.1':
+    resolution: {integrity: sha512-G4eNC6F3ufRT2Mjbodl7rSOH7uq/Emqs3S7/BIBWgh+V/IFUtvu6WELeqSrk4FJX3T/kKKvC+T8gXhepExSWyg==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
+  '@solid-primitives/static-store@0.1.1':
+    resolution: {integrity: sha512-daXWvpLjd+4hbYdGaaEJ2kKFuFhshvfIBFLveW7mfk2BWHl9lGQVwUuExp3qllkK9ONA9p+5D2cpwBQosv8odQ==}
+    peerDependencies:
+      solid-js: ^1.6.12
+
+  '@solid-primitives/utils@6.3.1':
+    resolution: {integrity: sha512-4/Z59nnwu4MPR//zWZmZm2yftx24jMqQ8CSd/JobL26TPfbn4Ph8GKNVJfGJWShg1QB98qObJSskqizbTvcLLA==}
+    peerDependencies:
+      solid-js: ^1.6.12
 
   '@solidjs/router@0.15.3':
     resolution: {integrity: sha512-iEbW8UKok2Oio7o6Y4VTzLj+KFCmQPGEpm1fS3xixwFBdclFVBvaQVeibl1jys4cujfAK5Kn6+uG2uBm3lxOMw==}
@@ -3235,6 +3263,33 @@ snapshots:
 
   '@rollup/rollup-win32-x64-msvc@4.40.0':
     optional: true
+
+  '@solid-primitives/event-listener@2.4.1(solid-js@1.9.5)':
+    dependencies:
+      '@solid-primitives/utils': 6.3.1(solid-js@1.9.5)
+      solid-js: 1.9.5
+
+  '@solid-primitives/media@2.3.1(solid-js@1.9.5)':
+    dependencies:
+      '@solid-primitives/event-listener': 2.4.1(solid-js@1.9.5)
+      '@solid-primitives/rootless': 1.5.1(solid-js@1.9.5)
+      '@solid-primitives/static-store': 0.1.1(solid-js@1.9.5)
+      '@solid-primitives/utils': 6.3.1(solid-js@1.9.5)
+      solid-js: 1.9.5
+
+  '@solid-primitives/rootless@1.5.1(solid-js@1.9.5)':
+    dependencies:
+      '@solid-primitives/utils': 6.3.1(solid-js@1.9.5)
+      solid-js: 1.9.5
+
+  '@solid-primitives/static-store@0.1.1(solid-js@1.9.5)':
+    dependencies:
+      '@solid-primitives/utils': 6.3.1(solid-js@1.9.5)
+      solid-js: 1.9.5
+
+  '@solid-primitives/utils@6.3.1(solid-js@1.9.5)':
+    dependencies:
+      solid-js: 1.9.5
 
   '@solidjs/router@0.15.3(solid-js@1.9.5)':
     dependencies:
