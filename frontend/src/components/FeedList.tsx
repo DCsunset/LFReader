@@ -16,9 +16,8 @@
 
 import { For } from "solid-js"
 import ChevronRightIcon from "lucide-solid/icons/chevron-right"
-import { state } from "../state/store"
+import { derivedState, setState, state } from "../state/store"
 import { IconButton }from "./ui"
-import { createSignal } from "solid-js"
 import { createMemo } from "solid-js"
 import { filterFeeds, getFeedTitle, toFeedId } from "../state/feed"
 import { useSearchParams } from "@solidjs/router"
@@ -28,7 +27,8 @@ function FeedGroup(props: {
   // _all means all feeds, _none means without tag
   tag?: string
 }) {
-  const [open, setOpen] = createSignal(false)
+  const tagId = () => props.tag ?? "_all"
+  const open = createMemo(() => state.ui.feedGroup[tagId()] ?? (props.tag !== "_none"))
   const [searchParams, setSearchParams] = useSearchParams<SearchParams>()
   const feeds = createMemo(() => filterFeeds(state.data.feeds, { tag: props.tag }))
 
@@ -60,7 +60,7 @@ function FeedGroup(props: {
         <IconButton
           class="d-btn-sm mr-1"
           onClick={(e: any) => {
-            setOpen(!open())
+            setState("ui", "feedGroup", tagId(), !open())
             e.stopPropagation()
           }}
         >
@@ -96,7 +96,7 @@ function FeedGroup(props: {
 }
 
 export default function FeedList(props: any) {
-  const tags = () => [ undefined, ...state.data.feedTags, "_none" ]
+  const tags = () => [ undefined, ...derivedState.feedTags(), "_none" ]
   return (
     <ul {...props}>
       <For each={tags()}>

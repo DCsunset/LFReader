@@ -14,16 +14,33 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { createStore } from "solid-js/store"
+import { createStore, unwrap } from "solid-js/store"
 import * as immutable from "immutable"
 import { Entry, Feed, getTags, toEntryId } from "./feed"
+import { createMemo } from "solid-js";
 
 export type Message = {
 	level: "success" | "info" | "warning" | "error",
 	text: string
 };
 
-export const [state, setState] = createStore({
+export const STORAGE_PREFIX = "lfreader"
+
+function loadStateByKey<T>(key: string, init: T): T {
+  try {
+    const data = localStorage.getItem(`${STORAGE_PREFIX}.${key}`);
+    return {
+      ...init,
+      ...(data && JSON.parse(data)),
+    };
+  }
+  catch (err: any) {
+    console.error(err);
+    return init;
+  }
+}
+
+const INIT_STATE = {
   settings: {
     dark: false,
     pageSize: 20,
@@ -53,30 +70,79 @@ export const [state, setState] = createStore({
     entryContents: immutable.Map<string, Entry>(),
     // Previous read entry (to mark as read later)
     previousEntry: null as string|null,
-
-    get feedTags() {
-      return getTags(state.data.feeds)
-    },
-
-    // Map to quickly look up feed or entry by url or id
-    get feedMap() {
-      return this.feeds.reduce(
-        (acc, cur) => acc.set(cur.url, cur),
-        new Map<string, Feed>()
-      )
-    },
-    get entryUrlMap() {
-      return this.entries.reduce(
-        (acc, cur) => cur.link ? acc.set(cur.link, cur) : acc,
-        new Map<string, Entry>()
-      )
-    },
-    get entryIdMap() {
-      return this.entries.reduce(
-        (acc, cur) => cur.link ? acc.set(toEntryId(cur), cur) : acc,
-        new Map<string, Entry>()
-      )
-    },
   }
-})
+}
+
+export const PERSIST_STATE_KEYS: (keyof typeof INIT_STATE)[] = [
+  "settings",
+  "ui",
+]
+
+function loadState(): typeof INIT_STATE {
+  const state: any = {}
+  for (const key of Object.keys(INIT_STATE)) {
+    const k = key as keyof typeof INIT_STATE
+    const init = INIT_STATE[k]
+    if (PERSIST_STATE_KEYS.includes(k)) {
+      state[key] = loadStateByKey(k, init)
+    } else {
+      state[k] = init
+    }
+  }
+  return state
+}
+
+
+/// State
+
+const [state, origSetState] = createStore(loadState())
+
+// Persiste state
+const setState: typeof origSetState = (...args: any[]) => {
+  (origSetState as any)(...args)
+
+  if (args.length >= 1 && PERSIST_STATE_KEYS.includes(args[0])) {
+    // TODO: debounce
+    localStorage.setItem(
+      `lfreader.${args[0]}`,
+      JSON.stringify(unwrap(state[args[0] as keyof typeof state]))
+    )
+  }
+}
+
+export { state, setState }
+
+
+/// Derived state
+
+const feedTags = createMemo(() => getTags(state.data.feeds))
+
+// Map to quickly look up feed or entry by url or id
+const feedMap = createMemo(() => (
+  state.data.feeds.reduce(
+    (acc, cur) => acc.set(cur.url, cur),
+    new Map<string, Feed>()
+  )
+))
+
+const entryUrlMap = createMemo(() => (
+  state.data.entries.reduce(
+    (acc, cur) => cur.link ? acc.set(cur.link, cur) : acc,
+    new Map<string, Entry>()
+  )
+))
+
+const entryIdMap = createMemo(() => (
+  state.data.entries.reduce(
+    (acc, cur) => cur.link ? acc.set(toEntryId(cur), cur) : acc,
+    new Map<string, Entry>()
+  )
+))
+
+export const derivedState = {
+  feedTags,
+  feedMap,
+  entryUrlMap,
+  entryIdMap,
+}
 

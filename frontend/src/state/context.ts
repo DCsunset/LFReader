@@ -1,6 +1,6 @@
 import { Accessor, createContext, createMemo } from "solid-js"
 import { Entry, Feed, filterEntries, filterFeeds, getEntryDate } from "./feed"
-import { state } from "./store"
+import { derivedState, state } from "./store"
 import { Base64 } from "js-base64"
 import { DateTime } from "luxon"
 
@@ -41,7 +41,7 @@ export function deriveCtx(searchParams: SearchParams): AppCtx {
       return undefined
     }
     const url = Base64.decode(feed_id)
-    return url ? state.data.feedMap.get(url) : undefined
+    return url ? derivedState.feedMap().get(url) : undefined
   })
 
   const currentEntry = createMemo(() => {
@@ -49,7 +49,7 @@ export function deriveCtx(searchParams: SearchParams): AppCtx {
     if (!entryId) {
       return undefined
     }
-    return state.data.entryIdMap.get(entryId)
+    return derivedState.entryIdMap().get(entryId)
   })
 
   const currentEntryContent = createMemo(() => {
@@ -62,7 +62,7 @@ export function deriveCtx(searchParams: SearchParams): AppCtx {
 
   const currentEntryFeed = createMemo(() => {
     const entry = currentEntry()
-    return entry?.feed_url ? state.data.feedMap.get(entry.feed_url) : undefined
+    return entry?.feed_url ? derivedState.feedMap().get(entry.feed_url) : undefined
   })
 
   const filteredFeeds = createMemo(() => {
