@@ -15,9 +15,30 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { Router, Route } from "@solidjs/router";
+import { createEffect } from "solid-js";
+import { unwrap } from "solid-js/store";
 import Layout from './components/Layout';
+import { loadData } from "./state/actions";
+import { state } from "./state/store";
+
+const PERSIST_STATE_KEYS: (keyof typeof state)[] = [
+  "settings",
+  "ui",
+]
 
 function App() {
+  loadData()
+
+  // Persist app state
+  for (const key of PERSIST_STATE_KEYS) {
+    createEffect(() => {
+      localStorage.setItem(
+        "lfreader.settings",
+        JSON.stringify(unwrap(state[key]))
+      )
+    })
+  }
+
   // Use router for query parameters
 	return (
     <Router>
