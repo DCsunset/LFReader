@@ -21,16 +21,19 @@ import RotateCwIcon from "lucide-solid/icons/rotate-cw"
 import CloudDownloadIcon from "lucide-solid/icons/cloud-download"
 import PlusIcon from "lucide-solid/icons/plus"
 import PencilIcon from "lucide-solid/icons/pencil"
-import { createMemo, createSignal, splitProps } from "solid-js"
+import { batch, createMemo, createSignal } from "solid-js"
 import FeedList from "./FeedList"
 import { Show, JSX } from "solid-js"
 import defaultTheme from "tailwindcss/defaultTheme"
 import { createBreakpoints } from "@solid-primitives/media"
 import { setState, state } from "../state/store"
 import { fetchFeeds, loadData } from "../state/actions"
-import { Ctx, deriveCtx } from "../state/context"
+import { Ctx, deriveCtx, SearchParams } from "../state/context"
 import { useSearchParams } from "@solidjs/router"
 import { IconButton } from "./ui"
+import { getEntryTitle, getFeedTitle, tagTitle } from "../state/feed"
+import { createEffect } from "solid-js"
+import EntryList from "./EntryList"
 
 const appBarHeight = "44px"
 const feedListWidth = "250px";
@@ -58,7 +61,7 @@ function Drawer(props: {
         onChange={e => props.onChange(e.currentTarget.checked)}
       />
       <div
-        class={`d-drawer-side ${props.class ?? ""}`}
+        class={`h-full d-drawer-side ${props.class ?? ""} ${props.color ?? ""}`}
         style={{
           width: props.modal ? undefined : "auto",
           ...props.style
@@ -67,7 +70,7 @@ function Drawer(props: {
         <Show when={props.modal}>
           <div class="d-drawer-overlay" onClick={() => props.onChange(false)} />
         </Show>
-        <div class={`h-full border-x-1 border-white/15 ${props.color ?? ""}`}>
+        <div class="h-full border-x-1 border-base-content/15">
           {props.children}
         </div>
       </div>
@@ -75,13 +78,60 @@ function Drawer(props: {
   )
 }
 
+
 export default function Layout() {
   const [ loadingData, setLoadingData ]= createSignal(false)
   const breakpoints = createBreakpoints(defaultTheme.screens)
   const actualFeedListWidth = createMemo(() => breakpoints.sm && feedList() ? feedListWidth : "0")
   const actualEntryListWidth = createMemo(() => breakpoints.sm && entryList() ? entryListWidth : "0")
-  const [searchParams, _setSearchParams] = useSearchParams()
+  const [searchParams, _setSearchParams] = useSearchParams<SearchParams>()
   const ctx = deriveCtx(searchParams)
+
+  let entryListRef!: HTMLDivElement
+  let entryRef!: HTMLDivElement
+
+  const scrollEntryList = () => {
+    entryListRef.scrollTo({ top: 0, behavior: "smooth" })
+  };
+  const scrollEntry = () => {
+    entryRef.scrollTo({ top: 0, behavior: "smooth" })
+  };
+
+  // Update visibility of lists on screen size change
+  createEffect(() => {
+    const sm = breakpoints.sm
+    batch(() => {
+      setFeedList(sm)
+      setEntryList(sm || !ctx.currentEntry())
+    })
+  })
+
+  // scroll entry list to top on page update
+  createEffect(() => {
+    ctx.currentPage()
+    entryListRef.scrollTo({ top: 0 })
+  })
+
+  // Scroll entry to top on entry change
+  createEffect(() => {
+    if (ctx.currentEntry()) {
+      entryRef.scrollTo({ top: 0 });
+    }
+  });
+
+  const scroll = (e: MouseEvent) => {
+    if (!breakpoints.sm) {
+      // Pass it to children components
+      e.preventDefault()
+      return
+    }
+
+    if (entryList()) {
+      scrollEntryList()
+    } else {
+      scrollEntry()
+    }
+  }
 
   const handleLoadData = async () => {
     setLoadingData(true);
@@ -164,8 +214,18 @@ export default function Layout() {
               <MenuIcon />
             </IconButton>
 
-            <h1 class="grow text-xl font-semibold">
-              All
+            <h1 class="grow text-xl font-semibold truncate select-none" onDblClick={scroll}>
+              <span onDblClick={scrollEntryList}>
+                {getFeedTitle(ctx.currentFeed(), tagTitle(searchParams.tag))}
+              </span>
+              {ctx.currentEntry() &&
+                <>
+                  <span class="mx-2">|</span>
+                  <span onDblClick={scrollEntry}>
+                    {getEntryTitle(ctx.currentEntry())}
+                  </span>
+                </>
+              }
             </h1>
 
             <IconButton
@@ -187,12 +247,15 @@ export default function Layout() {
               height: `calc(100dvh - ${appBarHeight})`,
             }}
           >
-            <div style={{ width: breakpoints.sm ? entryListWidth : "100dvw" }}>
-               Test
-            </div>
+            <EntryList
+              ref={entryListRef}
+              class="h-full"
+              style={{ width: breakpoints.sm ? entryListWidth : "100dvw" }}
+            />
           </Drawer>
 
           <div
+            ref={entryRef}
             class="transition-[margin-left] duration-300 ease-[ease-out]"
             style={{
               height: `calc(100% - ${appBarHeight})`,

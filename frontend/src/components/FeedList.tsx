@@ -19,7 +19,7 @@ import ChevronRightIcon from "lucide-solid/icons/chevron-right"
 import { derivedState, setState, state } from "../state/store"
 import { IconButton }from "./ui"
 import { createMemo } from "solid-js"
-import { filterFeeds, getFeedTitle, toFeedId } from "../state/feed"
+import { filterFeeds, getFeedTitle, tagTitle, toFeedId } from "../state/feed"
 import { useSearchParams } from "@solidjs/router"
 import { SearchParams } from "../state/context"
 
@@ -32,16 +32,6 @@ function FeedGroup(props: {
   const [searchParams, setSearchParams] = useSearchParams<SearchParams>()
   const feeds = createMemo(() => filterFeeds(state.data.feeds, { tag: props.tag }))
 
-  const name = () => {
-    switch (props.tag) {
-      case undefined:
-        return "All"
-      case "_none":
-        return "Untagged"
-      default:
-        return props.tag
-    }
-  }
   const isPresetTag = () => {
     return props.tag === undefined || props.tag.startsWith("_")
   }
@@ -51,7 +41,7 @@ function FeedGroup(props: {
       <input class="hidden" type="checkbox" checked={open()} />
 
       <div
-        class={`d-collapse-title flex items-center px-2 py-1.5 min-h-0 hover:bg-white/15 font-bold ${searchParams.tag === props.tag ? "bg-blue-300/25" : ""}`}
+        class={`d-collapse-title flex items-center px-2 py-1.5 min-h-0 hover:bg-base-content/15 font-bold ${searchParams.tag === props.tag ? "bg-blue-300/25" : ""}`}
         onClick={() => setSearchParams({
           tag: props.tag,
           feed: undefined,
@@ -70,7 +60,7 @@ function FeedGroup(props: {
           />
         </IconButton>
         <span class={`${isPresetTag() ? "opacity-80" : ""}`}>
-          {name()}
+          {tagTitle(props.tag)}
         </span>
       </div>
       <ul class="d-collapse-content p-0!">
@@ -78,15 +68,15 @@ function FeedGroup(props: {
           {(feed, _index) => {
             const feedId = toFeedId(feed)
             return (
-              <div
-                class={`hover:bg-white/15 cursor-pointer pl-11 p-2 ${searchParams.feed === feedId ? "bg-blue-300/25" : ""}`}
+              <li
+                class={`hover:bg-base-content/15 cursor-pointer pl-11 p-2 ${searchParams.feed === feedId ? "bg-blue-300/25" : ""}`}
                 onClick={() => setSearchParams({
                   tag: undefined,
                   feed: feedId,
                 } as SearchParams)}
               >
                 {getFeedTitle(feed)}
-              </div>
+              </li>
             )
           }}
         </For>

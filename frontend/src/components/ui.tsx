@@ -5,7 +5,7 @@ export function IconButton(props: any) {
 
   return (
     <button
-      class={`d-btn d-btn-ghost d-btn-circle hover:bg-white/15 border-none ${localProps.class}`}
+      class={`d-btn d-btn-ghost d-btn-circle hover:bg-base-content/15 border-none ${localProps.class}`}
       {...restProps}
     />
   )
@@ -16,7 +16,7 @@ export function TextButton(props: any) {
 
   return (
     <button
-      class={`hover:bg-white/15 border-none ${localProps.class}`}
+      class={`hover:bg-base-content/15 border-none ${localProps.class}`}
       {...restProps}
     />
   )
