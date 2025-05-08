@@ -48,7 +48,7 @@ const INIT_STATE = {
     forceArchive: false,
     confirmOnExternalLink: false,
     reloadInterval: 0,
-    playbackRates: null as string[]|null,
+    playbackRates: undefined as string[] | undefined,
   },
   ui: {
     // state of each feed group by tag
@@ -60,7 +60,7 @@ const INIT_STATE = {
     // Fetching data from origin
     fetching: false,
     editingFeeds: false,
-    message: null as Message|null,
+    message: undefined as Message | undefined,
   },
   data: {
     feeds: [] as Feed[],
@@ -68,8 +68,6 @@ const INIT_STATE = {
     entries: [] as Entry[],
     // Fetch content on demand and cache it
     entryContents: immutable.Map<string, Entry>(),
-    // Previous read entry (to mark as read later)
-    previousEntry: null as string|null,
   }
 }
 
@@ -114,6 +112,8 @@ export { state, setState }
 
 
 /// Derived state
+
+// TODO: fix solid-js warnings
 
 const feedTags = createMemo(() => getTags(state.data.feeds))
 

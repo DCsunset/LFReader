@@ -45,6 +45,7 @@ function FeedGroup(props: {
         onClick={() => setSearchParams({
           tag: props.tag,
           feed: undefined,
+          page: undefined,
         } as SearchParams)}
       >
         <IconButton
@@ -73,6 +74,7 @@ function FeedGroup(props: {
                 onClick={() => setSearchParams({
                   tag: undefined,
                   feed: feedId,
+                  page: undefined,
                 } as SearchParams)}
               >
                 {getFeedTitle(feed)}

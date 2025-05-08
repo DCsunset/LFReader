@@ -263,7 +263,7 @@ function Toolbar() {
 
 export default function EntryList(props: any) {
   const ctx = useContext(Ctx)!
-  const [localProps, restProps] = splitProps(props, [ "class" ])
+  const [localProps, restProps] = splitProps(props, [ "class", "ref" ])
   const [_searchParams, setSearchParams] = useSearchParams<SearchParams>()
   const maxPageNum = createMemo(() => Math.ceil(ctx.filteredEntries().length / state.settings.pageSize))
 
@@ -298,7 +298,7 @@ export default function EntryList(props: any) {
 
       <div class="d-divider m-0 h-0" />
 
-      <ol class="overflow-auto">
+      <ol ref={localProps.ref} class="overflow-auto grow">
         <For each={ctx.displayedEntries()}>
           {(e, _index) => {
             const entryId = toEntryId(e)

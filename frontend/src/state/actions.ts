@@ -125,10 +125,12 @@ async function getData() {
         "link",
         "author",
         "title",
+        "categories",
+        "enclosures",
         "published_at",
         "updated_at",
         "server_data",
-        "user_data"
+        "user_data",
       ]
     })
   ]);
@@ -159,23 +161,17 @@ export async function loadEntryContents(entries: Entry[]) {
     .map(e => ({
       feed_url: e.feed_url,
       id: e.id
-    }));
+    }))
   if (absentEntries.length === 0) {
-    return;
+    return
   }
 
   // only load content
   const contents: Entry[] = await queryEntries({
     entries: absentEntries,
-    columns: [
-      "feed_url",
-      "id",
-      "summary",
-      "contents"
-    ]
-  });
+  })
   if (contents === undefined) {
-    return;
+    return
   }
 
   setState("data", "entryContents", immutable.Map([

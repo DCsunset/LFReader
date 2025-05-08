@@ -26,7 +26,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 }
 
 body {
-  margin: 0;
   overflow-wrap: break-word;
 }
 
@@ -39,10 +38,6 @@ body {
     /* Force breaking words in verbatim block */
     word-break: break-word;
   }
-}
-
-ul, ol {
-  margin: 0
 }
 
 pre {
@@ -71,13 +66,7 @@ pre {
   color: #eeeeee;
 }
 
-figure {
-  margin: 0;
-}
 table {
   border-collapse: collapse;
-}
-td {
-  padding: 0;
 }
 

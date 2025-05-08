@@ -27,13 +27,14 @@ import { Show, JSX } from "solid-js"
 import defaultTheme from "tailwindcss/defaultTheme"
 import { createBreakpoints } from "@solid-primitives/media"
 import { setState, state } from "../state/store"
-import { fetchFeeds, loadData } from "../state/actions"
+import { fetchFeeds, loadData, loadEntryContents } from "../state/actions"
 import { Ctx, deriveCtx, SearchParams } from "../state/context"
 import { useSearchParams } from "@solidjs/router"
 import { IconButton } from "./ui"
 import { getEntryTitle, getFeedTitle, tagTitle } from "../state/feed"
 import { createEffect } from "solid-js"
 import EntryList from "./EntryList"
+import Entry from "./Entry"
 
 const appBarHeight = "44px"
 const feedListWidth = "250px";
@@ -50,7 +51,6 @@ function Drawer(props: {
   modal: boolean,
   style?: JSX.CSSProperties,
   class?: string,
-  color?: string,
 }) {
   return (
     <div class="d-drawer">
@@ -61,7 +61,7 @@ function Drawer(props: {
         onChange={e => props.onChange(e.currentTarget.checked)}
       />
       <div
-        class={`h-full d-drawer-side ${props.class ?? ""} ${props.color ?? ""}`}
+        class={`h-full d-drawer-side ${props.class ?? ""}`}
         style={{
           width: props.modal ? undefined : "auto",
           ...props.style
@@ -119,6 +119,17 @@ export default function Layout() {
     }
   });
 
+  // Fetch content on page change
+  createEffect(() => {
+    let entries = ctx.displayedEntries()
+    const current = ctx.currentEntry()
+    // update current entry as well
+    if (current && entries.findIndex(e => e.id === current.id && e.feed_url === current.feed_url) === -1) {
+      entries = entries.concat(current)
+    }
+    loadEntryContents(entries)
+  })
+
   const scroll = (e: MouseEvent) => {
     if (!breakpoints.sm) {
       // Pass it to children components
@@ -147,7 +158,6 @@ export default function Layout() {
           open={feedList()}
           onChange={setFeedList}
           modal={!breakpoints.sm}
-          color="bg-base-200"
           class="z-2"
         >
           <div class="flex my-4 justify-center items-center">
@@ -242,7 +252,6 @@ export default function Layout() {
             onChange={setEntryList}
             modal={false}
             class="absolute"
-            color="bg-base-300"
             style={{
               height: `calc(100dvh - ${appBarHeight})`,
             }}
@@ -256,13 +265,13 @@ export default function Layout() {
 
           <div
             ref={entryRef}
-            class="transition-[margin-left] duration-300 ease-[ease-out]"
+            class="transition-[margin-left] duration-300 ease-[ease-out] py-8 px-4 sm:px-8 lg:px-12 xl:px-16 overflow-y-scroll"
             style={{
               height: `calc(100% - ${appBarHeight})`,
               "margin-left": actualEntryListWidth(),
             }}
           >
-            <div>Hello</div>
+            <Entry />
           </div>
         </main>
       </div>
