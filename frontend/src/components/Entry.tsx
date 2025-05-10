@@ -165,7 +165,8 @@ export default function Entry() {
             class="inline-block ml-3 opacity-60"
             href={ctx.currentEntryContent()?.link}
           >
-            <LinkIcon size={19} />
+            {/* set min-width to prevent shrinking when not enough space */}
+            <LinkIcon class="min-w-[1.2rem] size-[1.2rem]" />
           </a>
         </h5>
 
@@ -173,24 +174,24 @@ export default function Entry() {
 
         <header class="flex flex-wrap gap-x-4 gap-y-2 opacity-75 font-semibold">
           <div class="inline-flex items-center">
-            <CalendarIcon class="mr-1.5" size={20} />
+            <CalendarIcon class="mr-1.5 min-w-[1.2rem] size-[1.2rem]" />
             {displayDate(getEntryDate(ctx.currentEntryContent()))}
           </div>
           <div class="inline-flex items-center">
-            <RssIcon class="mr-1.5" size={20} />
+            <RssIcon class="mr-1.5 min-w-[1.2rem] size-[1.2rem]" />
             <a href={ctx.currentEntryFeed()?.link}>
               {getFeedTitle(ctx.currentEntryFeed())}
             </a>
           </div>
           <Show when={ctx.currentEntryContent()?.author}>
             <div class="inline-flex items-center">
-              <UserIcon class="mr-1.5" size={20} />
+              <UserIcon class="mr-1.5 min-w-[1.2rem] size-[1.2rem]" />
               {ctx.currentEntryContent()?.author}
             </div>
           </Show>
           <Show when={(ctx.currentEntryContent()?.categories?.length ?? 0) > 0}>
             <div class="inline-flex items-center">
-              <TagIcon class="mr-1.5" size={20} />
+              <TagIcon class="mr-1.5 min-w-[1.2rem] size-[1.2rem]" />
               <span class="inline-flex flex-wrap gap-2">
                 <For each={textCategories(ctx.currentEntryContent()?.categories)}>
                   {(c, _index) => (
@@ -206,21 +207,21 @@ export default function Entry() {
             <div class="d-collapse">
               <input type="checkbox" class="hidden" checked={enclosureOpen()} />
 
+              {/* Force width to be 100% to prevent overflow */}
               <div
-                class="d-collapse-title px-0 pt-3 pb-0 min-h-0 cursor-pointer select-none inline-flex items-center"
+                class="d-collapse-title px-0 pt-3 pb-0 min-h-0 cursor-pointer select-none inline-flex items-center min-w-full max-w-full"
                 onClick={() => setEnclosureOpen(!enclosureOpen())}
               >
                 <ChevronRightIcon
-                  class={`mr-1 transition-transform ${enclosureOpen() ? "rotate-90" : ""}`}
-                  size={20}
+                  class={`mr-1.5 transition-transform size-[1.2rem] ${enclosureOpen() ? "rotate-90" : ""}`}
                 />
                 Enclosures: {ctx.currentEntryContent()?.enclosures.length} file(s)
               </div>
-              <div class="d-collapse-content pb-0!">
+              <div class="d-collapse-content pb-0! min-w-full max-w-full">
                 <For each={ctx.currentEntryContent()?.enclosures}>
                   {(e, _index) => (
                     <EnclosureItem
-                      class="mt-3"
+                      class="mt-3 overflow-x-scroll min-w-full"
                       item={e}
                       defaultRate={ctx.currentEntryFeed()?.user_data.playback_rate}
                       rates={state.settings.playbackRates}

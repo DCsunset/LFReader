@@ -25,7 +25,7 @@ export default function MediaPlayer(props: {
   rates?: string[],
 }) {
   return (
-    <media-controller audio={props.audio} class="select-none p">
+    <media-controller audio={props.audio} class="select-none [&_svg]:max-w-none">
       <Dynamic
         component={props.audio ? "audio" : "video"}
         slot="media"
@@ -44,7 +44,7 @@ export default function MediaPlayer(props: {
         <media-seek-backward-button seekoffset="10" class="p-2.5" />
         <media-playback-rate-button rates={props.rates?.join(" ")} class="p-2.5" />
         <media-mute-button class="p-2.5" />
-        <media-volume-range class="p-2.5" />
+        <media-volume-range class="p-2.5 pl-0" />
         <Show when={!props.audio}>
           <media-fullscreen-button class="p-2.5" />
         </Show>
