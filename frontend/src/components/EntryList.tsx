@@ -49,7 +49,6 @@ import { splitProps } from "solid-js"
 const [toolbarState, setToolbarState] = createStore({
   mode: null as null | "search" | "select",
   selectedEntries: immutable.Set<string>(),
-  searchString: "",
 })
 
 /// Mark entries as read/unread
@@ -77,6 +76,7 @@ function Toolbar() {
   let searchInputRef!: HTMLInputElement
 
   const ctx = useContext(Ctx)!
+  const [_searchParams, setSearchParams] = useSearchParams<SearchParams>()
   const selectedEntriesStatus = createMemo(() => {
     // Find if any is read or unread
     let status = { read: false, unread: false }
@@ -88,6 +88,12 @@ function Toolbar() {
     return status
   })
 
+  const search = () => {
+    setSearchParams({
+      entryTitle: searchInputRef.value || null,
+    })
+  }
+
   return (
     <div class="px-2.5 py-1">
       <Switch>
@@ -97,9 +103,8 @@ function Toolbar() {
             <IconButton
               class="d-btn-sm"
               onClick={() => setToolbarState(produce(v => {
-                const current = ctx.currentEntry()
                 v.mode = "select"
-                v.selectedEntries = immutable.Set(current && [ toEntryId(current) ])
+                v.selectedEntries = immutable.Set()
               }))}
             >
               <ListTodoIcon size={22} />
@@ -146,6 +151,7 @@ function Toolbar() {
                       type="checkbox"
                       class="d-checkbox d-checkbox-sm d-checkbox-info"
                       checked={state.ui.entrySortDesc}
+                      onChange={e => setState("ui", "entrySortDesc", e.target.checked)}
                     />
                     Descend
                   </label>
@@ -182,6 +188,7 @@ function Toolbar() {
               <IconButton
                 class="d-btn-sm"
                 title="Clear selection"
+                disabled={toolbarState.selectedEntries.size === 0}
                 onClick={() => setToolbarState("selectedEntries", immutable.Set())}
               >
                 <XIcon size={22} />
@@ -224,14 +231,15 @@ function Toolbar() {
 
         {/* Search mode */}
         <Match when={toolbarState.mode === "search"}>
-          <div class="flex items-center">
+          <div class="flex items-center gap-1">
             <IconButton
               class="d-btn-sm"
               title="Cancel"
-              onClick={() => setToolbarState(produce(v => {
-                v.mode = null
-                v.searchString = ""
-              }))}
+              onClick={() => {
+                setToolbarState("mode", null)
+                searchInputRef.value = ""
+                search()
+              }}
             >
               <ArrowLeftIcon size={22} />
             </IconButton>
@@ -240,20 +248,31 @@ function Toolbar() {
                 ref={searchInputRef}
                 type="text"
                 placeholder="Search title"
-                value={toolbarState.searchString}
-                onChange={e => setToolbarState("searchString", e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === "Enter") {
+                    search()
+                    e.preventDefault()
+                  }
+                }}
               />
               <IconButton
                 class="d-btn-sm"
                 title="Clear input"
                 onClick={() => {
-                  setToolbarState("searchString", "")
+                  searchInputRef.value = ""
                   searchInputRef.focus()
                 }}
               >
-                <XIcon size={22} />
+                <XIcon class="size-[1.2rem]" />
               </IconButton>
             </label>
+            <IconButton
+              class="d-btn-sm"
+              title="Search"
+              onClick={search}
+            >
+              <SearchIcon size={22} />
+            </IconButton>
           </div>
         </Match>
       </Switch>

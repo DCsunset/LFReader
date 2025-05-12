@@ -51,6 +51,7 @@ function Drawer(props: {
   modal: boolean,
   style?: JSX.CSSProperties,
   class?: string,
+  color?: string,
 }) {
   return (
     <div class="d-drawer">
@@ -70,7 +71,7 @@ function Drawer(props: {
         <Show when={props.modal}>
           <div class="d-drawer-overlay" onClick={() => props.onChange(false)} />
         </Show>
-        <div class="h-full border-x-1 border-base-content/15">
+        <div class={`h-full border-x-1 border-base-content/15 ${props.color ?? "bg-base-200"}`}>
           {props.children}
         </div>
       </div>

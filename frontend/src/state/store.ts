@@ -103,7 +103,7 @@ const setState: typeof origSetState = (...args: any[]) => {
     // TODO: debounce
     localStorage.setItem(
       `lfreader.${args[0]}`,
-      JSON.stringify(unwrap(state[args[0] as keyof typeof state]))
+      JSON.stringify(state[args[0] as keyof typeof state])
     )
   }
 }
