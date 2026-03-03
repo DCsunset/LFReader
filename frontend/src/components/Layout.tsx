@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
+// Copyright (C) 2022-2026  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -16,18 +16,18 @@
 
 import MenuIcon from "lucide-solid/icons/menu"
 import ListIcon from "lucide-solid/icons/list"
+import InfoIcon from "lucide-solid/icons/info"
+import CodeIcon from "lucide-solid/icons/code"
+import SettingsIcon from "lucide-solid/icons/settings"
+import MoonIcon from "lucide-solid/icons/moon"
+import SunIcon from "lucide-solid/icons/sun"
 import RssIcon from "lucide-solid/icons/rss"
-import RotateCwIcon from "lucide-solid/icons/rotate-cw"
-import CloudDownloadIcon from "lucide-solid/icons/cloud-download"
-import PlusIcon from "lucide-solid/icons/plus"
-import PencilIcon from "lucide-solid/icons/pencil"
 import { batch, createMemo, createSignal } from "solid-js"
 import FeedList from "./FeedList"
 import { Show, JSX } from "solid-js"
 import defaultTheme from "tailwindcss/defaultTheme"
 import { createBreakpoints } from "@solid-primitives/media"
-import { setState, state } from "../state/store"
-import { fetchFeeds, loadData, loadEntryContents } from "../state/actions"
+import { loadEntryContents } from "../state/actions"
 import { Ctx, deriveCtx, SearchParams } from "../state/context"
 import { useSearchParams } from "@solidjs/router"
 import { IconButton } from "./ui"
@@ -35,6 +35,7 @@ import { getEntryTitle, getFeedTitle, tagTitle } from "../state/feed"
 import { createEffect } from "solid-js"
 import EntryList from "./EntryList"
 import Entry from "./Entry"
+import FeedDialog from "./FeedDialog"
 
 const appBarHeight = "44px"
 const feedListWidth = "250px";
@@ -42,7 +43,6 @@ const entryListWidth = "350px";
 
 const [feedList, setFeedList] = createSignal(false)
 const [entryList, setEntryList] = createSignal(false)
-const [addFeedsDialog, setAddFeedsDialog] = createSignal(false)
 
 function Drawer(props: {
   open: boolean,
@@ -79,9 +79,39 @@ function Drawer(props: {
   )
 }
 
+function Toolbar() {
+  return (
+    <div class="flex flex-row-reverse gap-1 py-4 px-3">
+      <IconButton
+        class="d-btn-sm"
+        title="Settings"
+      >
+        <SettingsIcon class="size-[1.45rem]" />
+      </IconButton>
+      <IconButton
+        class="d-btn-sm"
+        title="Theme"
+      >
+        <MoonIcon class="size-[1.45rem]" />
+      </IconButton>
+      <IconButton
+        class="d-btn-sm"
+        title="API"
+      >
+        <CodeIcon class="size-[1.45rem]" />
+      </IconButton>
+      <IconButton
+        class="d-btn-sm"
+        title="About"
+      >
+        <InfoIcon class="size-[1.45rem]" />
+      </IconButton>
+    </div>
+  )
+}
+
 
 export default function Layout() {
-  const [ loadingData, setLoadingData ]= createSignal(false)
   const breakpoints = createBreakpoints(defaultTheme.screens)
   const actualFeedListWidth = createMemo(() => breakpoints.sm && feedList() ? feedListWidth : "0")
   const actualEntryListWidth = createMemo(() => breakpoints.sm && entryList() ? entryListWidth : "0")
@@ -145,12 +175,6 @@ export default function Layout() {
     }
   }
 
-  const handleLoadData = async () => {
-    setLoadingData(true);
-    await loadData();
-    setLoadingData(false);
-  }
-
   return (
     <Ctx.Provider value={ctx}>
       <div class="h-dvh">
@@ -161,55 +185,21 @@ export default function Layout() {
           modal={!breakpoints.sm}
           class="z-2"
         >
-          <div class="flex my-4 justify-center items-center">
-            <RssIcon class="text-amber-500 mr-2" />
-            <h5 class="text-xl font-semibold">
-              LFReader
-            </h5>
-          </div>
+          <div class="h-full flex flex-col">
+            <div class="flex py-4 justify-center items-center">
+              <RssIcon class="text-amber-500 mr-2" />
+              <h1 class="text-xl font-semibold">
+                LFReader
+              </h1>
+            </div>
 
-          <div class="flex flex-row-reverse gap-0.5 m-3">
-            <IconButton
-              class="d-btn-sm"
-              title="Loading feeds from server"
-              onClick={handleLoadData}
-              disabled={loadingData()}
-            >
-              {loadingData()
-                ? <span class="d-loading d-loading-spinner" />
-                : <RotateCwIcon size={22} />
-              }
-            </IconButton>
-            <IconButton
-              class={`d-btn-sm ${state.status.fetching ? "d-btn-disabled" : ""}`}
-              title="Fetch feeds from origin"
-              onClick={fetchFeeds}
-            >
-              {state.status.fetching
-                ? <span class="d-loading d-loading-spinner" />
-                : <CloudDownloadIcon size={22} />
-              }
-            </IconButton>
-            <IconButton
-              class="d-btn-sm"
-              title="Add feeds"
-              onClick={() => setAddFeedsDialog(true)}
-            >
-              <PlusIcon size={22} />
-            </IconButton>
-            <IconButton
-              class={`d-btn-sm ${state.status.editingFeeds ? "text-secondary" : ""}`}
-              title="Edit feeds"
-              onClick={() => setState("status", "editingFeeds", v => !v)}
-            >
-              <PencilIcon size={22} />
-            </IconButton>
-          </div>
+            <FeedList
+              class="menu"
+              style={{ width: feedListWidth }}
+            />
 
-          <FeedList
-            class="menu"
-            style={{ width: feedListWidth }}
-          />
+            <Toolbar />
+          </div>
         </Drawer>
 
         {/* Apply same transition as the drawer */}
@@ -275,6 +265,8 @@ export default function Layout() {
             <Entry />
           </div>
         </main>
+
+        <FeedDialog />
       </div>
     </Ctx.Provider>
   )

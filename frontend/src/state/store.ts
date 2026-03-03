@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
+// Copyright (C) 2022-2026  DCsunset
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -17,7 +17,8 @@
 import { createStore, unwrap } from "solid-js/store"
 import * as immutable from "immutable"
 import { Entry, Feed, getTags, toEntryId } from "./feed"
-import { createMemo } from "solid-js";
+import { createMemo, JSX } from "solid-js";
+import { FeedInfo } from "./actions";
 
 export type Message = {
 	level: "success" | "info" | "warning" | "error",
@@ -57,10 +58,19 @@ const INIT_STATE = {
     entrySortDesc: true,
   },
   status: {
-    // Fetching data from origin
-    fetching: false,
-    editingFeeds: false,
+    // Loading data from origin
+    loading: false,
     message: undefined as Message | undefined,
+    feedDialog: {
+      open: false,
+      feed: undefined as Feed | undefined,
+      onSave: undefined as ((feed: FeedInfo) => Promise<boolean>) | undefined,
+    },
+    confirmDialog: {
+      open: false,
+      content: "" as JSX.Element | string,
+      onConfirm: undefined as (() => void) | undefined,
+    },
   },
   data: {
     feeds: [] as Feed[],
@@ -93,9 +103,12 @@ function loadState(): typeof INIT_STATE {
 
 /// State
 
+// reactive state
 const [state, origSetState] = createStore(loadState())
+// non-reactive state
+const rawState = { }
 
-// Persiste state
+// Persist state
 const setState: typeof origSetState = (...args: any[]) => {
   (origSetState as any)(...args)
 
@@ -108,7 +121,7 @@ const setState: typeof origSetState = (...args: any[]) => {
   }
 }
 
-export { state, setState }
+export { state, setState, rawState }
 
 
 /// Derived state

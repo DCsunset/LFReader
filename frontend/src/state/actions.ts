@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
+// Copyright (C) 2022-2026  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -80,8 +80,8 @@ export async function checkUpdate() {
     }
   }
 
-  if (state.status.fetching !== status.loading) {
-    setState("status", "fetching", status.loading)
+  if (state.status.loading !== status.loading) {
+    setState("status", "loading", status.loading)
   }
   updating = false
   return ok
@@ -96,7 +96,7 @@ async function waitForFetching() {
     if (!ok) {
       return false
     }
-    if (!state.status.fetching) {
+    if (!state.status.loading) {
       return true
     }
     backoff = Math.min(maxBackoff, backoff * 2);
@@ -108,7 +108,7 @@ async function queryEntries(query: {
   entries?: Array<{ feed_url: string, id: string }>,
   columns?: string[]
 }) {
-  return await fetchApi("/entries/query", {
+  return await fetchApi("entries/query", {
     method: "POST",
     body: JSON.stringify(query)
   });
@@ -116,7 +116,7 @@ async function queryEntries(query: {
 
 async function getData() {
   const [feeds, entries] = await Promise.all([
-    fetchApi("/feeds"),
+    fetchApi("feeds"),
     // Only get entries without content for efficiency
     queryEntries({
       columns: [
@@ -224,13 +224,13 @@ type FeedActionArgs = FetchFeedsArgs | ArchiveFeedsArgs | CleanFeedsArgs | Delet
 const asyncFeedActions = new Set([ "fetch", "archive" ]);
 
 export async function dispatchFeedAction(args: FeedActionArgs) {
-  setState("status", "fetching", true)
-  const resp =  await fetchApi("/feeds", {
+  setState("status", "loading", true)
+  const resp =  await fetchApi("feeds", {
     method: "POST",
     body: JSON.stringify(args)
   })
   if (resp === undefined) {
-    setState("status", "fetching", false)
+    setState("status", "loading", false)
     return false
   }
 
@@ -239,7 +239,7 @@ export async function dispatchFeedAction(args: FeedActionArgs) {
     ok = await waitForFetching()
   }
   else {
-    setState("status", "fetching", false)
+    setState("status", "loading", false)
     ok = await getData();
   }
 
@@ -266,7 +266,7 @@ type UpdateEntriesArgs = {
 type EntryActionArgs = UpdateEntriesArgs
 
 export async function dispatchEntryAction(args: EntryActionArgs) {
-  const resp =  await fetchApi("/entries", {
+  const resp =  await fetchApi("entries", {
     method: "POST",
     body: JSON.stringify(args)
   })

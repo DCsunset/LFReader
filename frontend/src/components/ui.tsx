@@ -1,3 +1,19 @@
+// LFReader
+// Copyright (C) 2022-2026  DCsunset
+
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 import { splitProps } from "solid-js"
 
 export function IconButton(props: any) {
@@ -5,18 +21,24 @@ export function IconButton(props: any) {
 
   return (
     <button
-      class={`d-btn d-btn-ghost d-btn-circle hover:bg-base-content/15 border-none ${localProps.class}`}
+      class={`d-btn d-btn-ghost d-btn-circle hover:bg-base-content/10 border-none ${localProps.class}`}
       {...restProps}
     />
   )
 }
 
-export function TextButton(props: any) {
-  const [localProps, restProps] = splitProps(props, ["class"])
+export function TextButton(props: {
+  class?: string,
+  color?: string,
+  [prop: string]: any,
+}) {
+  const [localProps, restProps] = splitProps(props, ["class", "color"])
+  const color = () => localProps.color ?? "base-content"
 
+  // TODO: fix color
   return (
     <button
-      class={`hover:bg-base-content/15 border-none ${localProps.class}`}
+      class={`d-btn d-btn-ghost text-${color()} hover:bg-${color()}/10 border-none ${localProps.class ?? ""}`}
       {...restProps}
     />
   )

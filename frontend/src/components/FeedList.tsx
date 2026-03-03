@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2025  DCsunset
+// Copyright (C) 2025-2026  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,14 +14,83 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { For } from "solid-js"
+import { For, splitProps } from "solid-js"
 import ChevronRightIcon from "lucide-solid/icons/chevron-right"
+import RotateCwIcon from "lucide-solid/icons/rotate-cw"
+import CloudDownloadIcon from "lucide-solid/icons/cloud-download"
+import PlusIcon from "lucide-solid/icons/plus"
+import PencilIcon from "lucide-solid/icons/pencil"
 import { derivedState, setState, state } from "../state/store"
 import { IconButton }from "./ui"
 import { createMemo } from "solid-js"
 import { filterFeeds, getFeedTitle, tagTitle, toFeedId } from "../state/feed"
 import { useSearchParams } from "@solidjs/router"
 import { SearchParams } from "../state/context"
+import { dispatchFeedAction, FeedInfo, fetchFeeds, loadData } from "../state/actions"
+import { createStore } from "solid-js/store"
+import { Show } from "solid-js"
+import { concatClasses } from "../util/css"
+
+async function updateFeed(feed: FeedInfo) {
+  return await dispatchFeedAction({
+    action: "update",
+    feeds: [feed],
+  })
+}
+
+const [toolbarState, setToolbarState] = createStore({
+  editing: false,
+  loading: false,
+  addFeedsDialog: false,
+})
+
+function Toolbar() {
+  const handleLoadData = async () => {
+    setToolbarState("loading", true)
+    await loadData();
+    setToolbarState("loading", false)
+  }
+
+  return (
+    <div class="flex flex-row-reverse gap-1 p-3">
+      <IconButton
+        class="d-btn-sm"
+        title="Loading feeds from server"
+        onClick={handleLoadData}
+        disabled={toolbarState.loading}
+      >
+        {toolbarState.loading
+          ? <span class="d-loading d-loading-spinner" />
+          : <RotateCwIcon class="size-[1.45rem]" />
+        }
+      </IconButton>
+      <IconButton
+        class={`d-btn-sm ${state.status.loading ? "d-btn-disabled" : ""}`}
+        title="Fetch feeds from origin"
+        onClick={fetchFeeds}
+      >
+        {state.status.loading
+          ? <span class="d-loading d-loading-spinner" />
+          : <CloudDownloadIcon class="size-[1.45rem]" />
+        }
+      </IconButton>
+      <IconButton
+        class="d-btn-sm"
+        title="Add feeds"
+        onClick={() => setToolbarState("addFeedsDialog", true)}
+      >
+        <PlusIcon class="size-[1.45rem]" />
+      </IconButton>
+      <IconButton
+        class={`d-btn-sm ${toolbarState.editing ? "text-secondary" : ""}`}
+        title="Edit feeds"
+        onClick={() => setToolbarState("editing", v => !v)}
+      >
+        <PencilIcon class="size-[1.45rem]" />
+      </IconButton>
+    </div>
+  )
+}
 
 function FeedGroup(props: {
   // _all means all feeds, _none means without tag
@@ -41,7 +110,19 @@ function FeedGroup(props: {
       <input class="hidden" type="checkbox" checked={open()} />
 
       <div
-        class={`d-collapse-title flex items-center px-2 py-1.5 min-h-0 hover:bg-base-content/15 font-bold ${searchParams.tag === props.tag ? "bg-blue-300/25" : ""}`}
+        class={concatClasses([
+          "d-collapse-title",
+          "flex",
+          "items-center",
+          "px-2",
+          "py-1.5",
+          "min-h-0",
+          "hover:bg-base-content/15",
+          "font-bold",
+          {
+            "bg-blue-300/25": searchParams.tag === props.tag
+          }
+        ])}
         onClick={() => setSearchParams({
           tag: props.tag,
           feed: undefined,
@@ -70,14 +151,46 @@ function FeedGroup(props: {
             const feedId = toFeedId(feed)
             return (
               <li
-                class={`hover:bg-base-content/15 cursor-pointer pl-11 p-2 ${searchParams.feed === feedId ? "bg-blue-300/25" : ""}`}
+                class={
+                  concatClasses([
+                    "flex",
+                    "items-center",
+                    "hover:bg-base-content/15",
+                    "cursor-pointer",
+                    "p-2",
+                    {
+                      "bg-blue-300/25": searchParams.feed === feedId,
+                      "pl-10": !toolbarState.editing,
+                    }
+                  ])
+                }
                 onClick={() => setSearchParams({
                   tag: undefined,
                   feed: feedId,
                   page: undefined,
                 } as SearchParams)}
               >
-                {getFeedTitle(feed)}
+                <span class="flex items-center">
+                  <Show when={toolbarState.editing}>
+                    <IconButton
+                      class="d-btn-xs mr-1.5 ml-0.5"
+                      title="Edit"
+                      onClick={(e: Event) => {
+                        setState("status", "feedDialog", {
+                          open: true,
+                          feed,
+                          onSave: updateFeed,
+                        })
+                        e.stopPropagation()
+                      }}
+                    >
+                      <PencilIcon class="size-[1.2rem]" />
+                    </IconButton>
+                  </Show>
+                </span>
+                <span class="flex">
+                  {getFeedTitle(feed)}
+                </span>
               </li>
             )
           }}
@@ -88,15 +201,22 @@ function FeedGroup(props: {
 }
 
 export default function FeedList(props: any) {
+  const [localProps, restProps] = splitProps(props, [ "class" ])
   const tags = () => [ undefined, ...derivedState.feedTags(), "_none" ]
+
   return (
-    <ul {...props}>
-      <For each={tags()}>
-        {(tag, _index) => (
-          <FeedGroup tag={tag} />
-        )}
-      </For>
-    </ul>
+    // Parent must have overflow-y-auto to make flex child scrollable
+    <div class={`flex flex-col overflow-y-auto ${localProps.class}`} {...restProps}>
+      <Toolbar />
+
+      <ul class="overflow-y-scroll">
+        <For each={tags()}>
+          {(tag, _index) => (
+            <FeedGroup tag={tag} />
+          )}
+        </For>
+      </ul>
+    </div>
   )
 }
 

@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
+// Copyright (C) 2022-2026  DCsunset
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -317,7 +317,7 @@ export default function EntryList(props: any) {
 
       <div class="d-divider m-0 h-0" />
 
-      <ol ref={localProps.ref} class="overflow-auto grow">
+      <ol ref={localProps.ref} class="overflow-y-scroll grow">
         <For each={ctx.displayedEntries()}>
           {(e, _index) => {
             const entryId = toEntryId(e)
