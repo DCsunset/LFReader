@@ -71,6 +71,9 @@ const INIT_STATE = {
       content: "" as JSX.Element | string,
       onConfirm: undefined as (() => void) | undefined,
     },
+    newFeedDialog: {
+      open: false,
+    }
   },
   data: {
     feeds: [] as Feed[],

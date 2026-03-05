@@ -18,8 +18,11 @@ type OptionalClasses = {
   [className: string]: boolean
 }
 
-export function concatClasses(classes: (string|OptionalClasses)[]) {
+export function concatClasses(classes: (string|null|undefined|OptionalClasses)[]) {
   return classes.map(v => {
+    if (!v) {
+      return []
+    }
     if (typeof v == "string") {
       return v
     }

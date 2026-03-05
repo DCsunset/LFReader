@@ -36,6 +36,7 @@ import { createEffect } from "solid-js"
 import EntryList from "./EntryList"
 import Entry from "./Entry"
 import FeedDialog from "./FeedDialog"
+import NewFeedDialog from "./NewFeedDialog"
 
 const appBarHeight = "44px"
 const feedListWidth = "250px";
@@ -266,6 +267,8 @@ export default function Layout() {
           </div>
         </main>
 
+        {/* Add dialogs here to ensure it's centered during closing animation */}
+        <NewFeedDialog />
         <FeedDialog />
       </div>
     </Ctx.Provider>

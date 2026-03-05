@@ -41,7 +41,6 @@ async function updateFeed(feed: FeedInfo) {
 const [toolbarState, setToolbarState] = createStore({
   editing: false,
   loading: false,
-  addFeedsDialog: false,
 })
 
 function Toolbar() {
@@ -77,7 +76,7 @@ function Toolbar() {
       <IconButton
         class="d-btn-sm"
         title="Add feeds"
-        onClick={() => setToolbarState("addFeedsDialog", true)}
+        onClick={() => setState("status", "newFeedDialog", "open", true)}
       >
         <PlusIcon class="size-[1.45rem]" />
       </IconButton>

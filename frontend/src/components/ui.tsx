@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import { splitProps } from "solid-js"
+import { concatClasses } from "../util/css"
 
 export function IconButton(props: any) {
   const [localProps, restProps] = splitProps(props, ["class"])
@@ -32,13 +33,23 @@ export function TextButton(props: {
   color?: string,
   [prop: string]: any,
 }) {
-  const [localProps, restProps] = splitProps(props, ["class", "color"])
+  const [localProps, restProps] = splitProps(props, ["class", "color", "disabled"])
   const color = () => localProps.color ?? "base-content"
 
   // TODO: fix color
   return (
     <button
-      class={`d-btn d-btn-ghost text-${color()} hover:bg-${color()}/10 border-none ${localProps.class ?? ""}`}
+      class={concatClasses([
+        "d-btn",
+        "d-btn-ghost",
+        "border-none",
+        localProps.class,
+        {
+          [`hover:bg-${color()}/10`]: !localProps.disabled,
+          [`text-${color()}`]: !localProps.disabled,
+          "d-btn-disabled": localProps.disabled,
+        }
+      ])}
       {...restProps}
     />
   )

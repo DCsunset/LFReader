@@ -176,7 +176,7 @@ export default function FeedDialog() {
 
         <div class="flex flex-col px-6 gap-3 overflow-y-scroll">
           <div>
-            <h6 class="font-semibold">General</h6>
+            <h6 class="font-semibold opacity-70">General</h6>
             <div class="d-divider m-0" />
           </div>
 
@@ -284,8 +284,8 @@ export default function FeedDialog() {
             </>
           }
 
-          <div class="mt-2">
-            <h6 class="font-semibold">User Data</h6>
+          <div class="mt-4">
+            <h6 class="font-semibold opacity-70">User Data</h6>
             <div class="d-divider m-0" />
           </div>
 
