@@ -37,6 +37,8 @@ import EntryList from "./EntryList"
 import Entry from "./Entry"
 import FeedDialog from "./FeedDialog"
 import NewFeedDialog from "./NewFeedDialog"
+import SettingsDialog from "./SettingsDialog"
+import { setState } from "../state/store"
 
 const appBarHeight = "44px"
 const feedListWidth = "250px";
@@ -86,6 +88,7 @@ function Toolbar() {
       <IconButton
         class="d-btn-sm"
         title="Settings"
+        onClick={() => setState("status", "settingsDialog", "open", true)}
       >
         <SettingsIcon class="size-[1.45rem]" />
       </IconButton>
@@ -270,6 +273,7 @@ export default function Layout() {
         {/* Add dialogs here to ensure it's centered during closing animation */}
         <NewFeedDialog />
         <FeedDialog />
+        <SettingsDialog />
       </div>
     </Ctx.Provider>
   )

@@ -31,9 +31,12 @@ export function IconButton(props: any) {
 export function TextButton(props: {
   class?: string,
   color?: string,
+  disabled?: boolean,
+  loading?: boolean,
+  children: any,
   [prop: string]: any,
 }) {
-  const [localProps, restProps] = splitProps(props, ["class", "color", "disabled"])
+  const [localProps, restProps] = splitProps(props, ["class", "color", "disabled", "loading", "children"])
   const color = () => localProps.color ?? "base-content"
 
   // TODO: fix color
@@ -47,11 +50,18 @@ export function TextButton(props: {
         {
           [`hover:bg-${color()}/10`]: !localProps.disabled,
           [`text-${color()}`]: !localProps.disabled,
-          "d-btn-disabled": localProps.disabled,
+          "d-btn-disabled": Boolean(localProps.disabled),
         }
       ])}
       {...restProps}
-    />
+    >
+      {localProps.loading
+        ? <span class="loading loading-spinner loading-sm" />
+        : <>
+            {localProps.children}
+          </>
+      }
+    </button>
   )
 }
 

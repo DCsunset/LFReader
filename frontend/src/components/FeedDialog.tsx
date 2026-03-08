@@ -233,52 +233,52 @@ export default function FeedDialog() {
                 </SettingsItem>}
 
               <SettingsItem title="Operations">
-                <TextButton class="d-btn-sm text-sm px-2" color="primary" onClick={() => handleArchive(feedUrl())}>
-                  {loading()
-                    ? <span class="loading loading-spinner loading-sm" />
-                    : (
-                      <span class="flex items-center">
-                        <SaveIcon class="size-[1.3rem] mr-1" />
-                        Archive
-                      </span>
-                    )
-                  }
+                <TextButton
+                  class="d-btn-sm text-sm px-2"
+                  color="primary"
+                  loading={loading()}
+                  onClick={() => handleArchive(feedUrl())}
+                >
+                  <span class="flex items-center">
+                    <SaveIcon class="size-[1.3rem] mr-1" />
+                    Archive
+                  </span>
                 </TextButton>
 
-                <TextButton class="d-btn-sm text-sm px-2" color="success" onClick={() => handleFetch(feed())}>
-                  {loading()
-                    ? <span class="loading loading-spinner loading-sm" />
-                    : (
-                      <span class="flex items-center">
-                        <DownloadIcon class="size-[1.3rem] mr-1" />
-                        Fetch
-                      </span>
-                    )
-                  }
+                <TextButton
+                  class="d-btn-sm text-sm px-2"
+                  color="success"
+                  loading={loading()}
+                  onClick={() => handleFetch(feed())}
+                >
+                  <span class="flex items-center">
+                    <DownloadIcon class="size-[1.3rem] mr-1" />
+                    Fetch
+                  </span>
                 </TextButton>
 
-                <TextButton class="d-btn-sm text-sm px-2" color="secondary" onClick={() => handleClean(feed())}>
-                  {loading()
-                    ? <span class="loading loading-spinner loading-sm" />
-                    : (
-                      <span class="flex items-center">
-                        <BrushCleaningIcon class="size-[1.3rem] mr-1" />
-                        Clean
-                      </span>
-                    )
-                  }
+                <TextButton
+                  class="d-btn-sm text-sm px-2"
+                  color="secondary"
+                  loading={loading()}
+                  onClick={() => handleClean(feed())}
+                >
+                  <span class="flex items-center">
+                    <BrushCleaningIcon class="size-[1.3rem] mr-1" />
+                    Clean
+                  </span>
                 </TextButton>
 
-                <TextButton class="d-btn-sm text-sm px-2" color="error" onClick={() => handleDelete(feed())}>
-                  {loading()
-                    ? <span class="loading loading-spinner loading-sm" />
-                    : (
-                      <span class="flex items-center">
-                        <TrashIcon class="size-[1.3rem] mr-1" />
-                        Delete
-                      </span>
-                    )
-                  }
+                <TextButton
+                  class="d-btn-sm text-sm px-2"
+                  color="error"
+                  loading={loading()}
+                  onClick={() => handleDelete(feed())}
+                >
+                  <span class="flex items-center">
+                    <TrashIcon class="size-[1.3rem] mr-1" />
+                    Delete
+                  </span>
                 </TextButton>
               </SettingsItem>
             </>
