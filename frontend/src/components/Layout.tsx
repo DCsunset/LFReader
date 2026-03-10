@@ -39,6 +39,7 @@ import FeedDialog from "./FeedDialog"
 import NewFeedDialog from "./NewFeedDialog"
 import SettingsDialog from "./SettingsDialog"
 import { setState } from "../state/store"
+import AboutDialog from "./AboutDialog"
 
 const appBarHeight = "44px"
 const feedListWidth = "250px";
@@ -99,14 +100,18 @@ function Toolbar() {
         <MoonIcon class="size-[1.45rem]" />
       </IconButton>
       <IconButton
+        component="a"
         class="d-btn-sm"
         title="API"
+        href="/api/docs"
+        target="_blank"
       >
         <CodeIcon class="size-[1.45rem]" />
       </IconButton>
       <IconButton
         class="d-btn-sm"
         title="About"
+        onClick={() => setState("status", "aboutDialog", "open", true)}
       >
         <InfoIcon class="size-[1.45rem]" />
       </IconButton>
@@ -274,6 +279,7 @@ export default function Layout() {
         <NewFeedDialog />
         <FeedDialog />
         <SettingsDialog />
+        <AboutDialog />
       </div>
     </Ctx.Provider>
   )

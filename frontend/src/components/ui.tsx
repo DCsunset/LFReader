@@ -16,12 +16,19 @@
 
 import { splitProps } from "solid-js"
 import { concatClasses } from "../util/css"
+import { Dynamic } from "solid-js/web"
 
-export function IconButton(props: any) {
-  const [localProps, restProps] = splitProps(props, ["class"])
+export function IconButton(props: {
+  component?: any,
+  class?: string,
+  [prop: string]: any,
+}) {
+  const [localProps, restProps] = splitProps(props, ["component", "class"])
+  const component = localProps.component || "button"
 
   return (
-    <button
+    <Dynamic
+      component={component}
       class={`d-btn d-btn-ghost d-btn-circle hover:bg-base-content/10 border-none ${localProps.class}`}
       {...restProps}
     />
@@ -29,6 +36,7 @@ export function IconButton(props: any) {
 }
 
 export function TextButton(props: {
+  component?: any,
   class?: string,
   color?: string,
   disabled?: boolean,
@@ -36,12 +44,14 @@ export function TextButton(props: {
   children: any,
   [prop: string]: any,
 }) {
-  const [localProps, restProps] = splitProps(props, ["class", "color", "disabled", "loading", "children"])
+  const [localProps, restProps] = splitProps(props, ["component", "class", "color", "disabled", "loading", "children"])
   const color = () => localProps.color ?? "base-content"
+  const component = localProps.component || "button"
 
   // TODO: fix color
   return (
-    <button
+    <Dynamic
+      component={component}
       class={concatClasses([
         "d-btn",
         "d-btn-ghost",
@@ -61,7 +71,7 @@ export function TextButton(props: {
             {localProps.children}
           </>
       }
-    </button>
+    </Dynamic>
   )
 }
 

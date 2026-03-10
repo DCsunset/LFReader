@@ -77,6 +77,9 @@ const INIT_STATE = {
     settingsDialog: {
       open: false,
     },
+    aboutDialog: {
+      open: false,
+    },
   },
   data: {
     feeds: [] as Feed[],
