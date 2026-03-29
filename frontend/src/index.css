@@ -25,6 +25,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
   exclude: rootscrollgutter, rootcolor;
 }
 
+/* missing from daisy ui */
+.text-primary {
+  color: var(--color-primary);
+}
+.text-success {
+  color: var(--color-success);
+}
+
+
 :root {
   font-family: "Open Sans", sans-serif;
 }
