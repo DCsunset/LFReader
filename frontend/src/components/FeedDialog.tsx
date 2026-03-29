@@ -18,14 +18,14 @@ import { createEffect, createMemo, createSignal, For } from "solid-js"
 import { Feed, FeedUserData, getFeedTitle, textCategories } from "../state/feed"
 import { derivedState, setState, state } from "../state/store"
 import SettingsItem from "./SettingsItem"
-import { IconButton, TextButton } from "./ui"
+import { IconButton, MultiSelect, TextButton } from "./ui"
 import { dispatchFeedAction, handleExternalLink } from "../state/actions"
 import ExternalLinkIcon from "lucide-solid/icons/external-link"
 import SaveIcon from "lucide-solid/icons/save"
 import DownloadIcon from "lucide-solid/icons/download"
 import BrushCleaningIcon from "lucide-solid/icons/brush-cleaning"
 import TrashIcon from "lucide-solid/icons/trash"
-import { Select, createOptions } from "@thisbeyond/solid-select";
+import { createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
 import { batch } from "solid-js"
 
@@ -303,11 +303,9 @@ export default function FeedDialog() {
             subtitle={<>Set tags for this feed. <br /> (Type and press Enter to add new tag)</>}
             grow
           >
-            <Select
-              class="[&_.solid-select-list]:text-sm"
+            <MultiSelect
               initialValue={tags()}
               placeholder=""
-              multiple
               onChange={setTags}
               {...tagSelectOptions()}
             />

@@ -38,8 +38,9 @@ import Entry from "./Entry"
 import FeedDialog from "./FeedDialog"
 import NewFeedDialog from "./NewFeedDialog"
 import SettingsDialog from "./SettingsDialog"
-import { setState } from "../state/store"
+import { setState, state } from "../state/store"
 import AboutDialog from "./AboutDialog"
+import { Dynamic } from "solid-js/web"
 
 const appBarHeight = "44px"
 const feedListWidth = "250px";
@@ -95,9 +96,10 @@ function Toolbar() {
       </IconButton>
       <IconButton
         class="d-btn-sm"
-        title="Theme"
+        title={`${state.settings.dark ? "Light" : "Dark"} theme`}
+        onClick={() => setState("settings", "dark", !state.settings.dark)}
       >
-        <MoonIcon class="size-[1.45rem]" />
+        <Dynamic component={state.settings.dark ? SunIcon : MoonIcon} class="size-[1.45rem]" />
       </IconButton>
       <IconButton
         component="a"
@@ -203,7 +205,7 @@ export default function Layout() {
             </div>
 
             <FeedList
-              class="menu"
+              class="h-full"
               style={{ width: feedListWidth }}
             />
 
@@ -216,7 +218,7 @@ export default function Layout() {
           class="h-full transition-[margin] duration-300 ease-[ease-out]"
           style={{ "margin-left": actualFeedListWidth() }}
         >
-          <div class="d-navbar bg-primary min-h-0 px-3" style={{ height: appBarHeight }}>
+          <div class="d-navbar bg-[#1976d2] text-white dark:bg-[#2a2a2a] light: min-h-0 px-3" style={{ height: appBarHeight }}>
             <IconButton
               class="pa-1 mr-2 d-btn-sm"
               onClick={() => setFeedList(!feedList())}

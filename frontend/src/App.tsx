@@ -17,9 +17,16 @@
 import { Router, Route } from "@solidjs/router"
 import Layout from './components/Layout'
 import { loadData } from "./state/actions"
+import { createEffect } from "solid-js"
+import { state } from "./state/store"
 
 function App() {
   loadData()
+
+  createEffect(() => {
+    const theme = state.settings.dark ? "dark" : "light"
+    document.documentElement.setAttribute("data-theme", theme)
+  })
 
   // Use router for query parameters
 	return (

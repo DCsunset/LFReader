@@ -17,10 +17,10 @@
 import { batch, createEffect, createMemo } from "solid-js"
 import { setState, state } from "../state/store"
 import SettingsItem from "./SettingsItem"
-import { TextButton } from "./ui"
+import { MultiSelect, TextButton } from "./ui"
 import { concatClasses } from "../util/css"
 import { createSignal } from "solid-js"
-import { createOptions, Select } from "@thisbeyond/solid-select"
+import { createOptions } from "@thisbeyond/solid-select"
 import { parseNumber } from "../util/misc"
 import SaveIcon from "lucide-solid/icons/save"
 import BrushCleaningIcon from "lucide-solid/icons/brush-cleaning"
@@ -146,10 +146,9 @@ export default function SettingsDialog() {
             title="Playback Rates"
             subtitle={<>Available playback rates (0x, 10x] for enclosures<br /> (Press Enter to add number)</>}
           >
-            <Select
+            <MultiSelect
               class="[&_.solid-select-list]:hidden"
               placeholder="(default)"
-              multiple
               onChange={setPlaybackRates}
               {...playbackRateOptions()}
             />

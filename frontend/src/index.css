@@ -17,8 +17,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 @import "tailwindcss";
+/* Use data-theme attribute to be consistent with daisy ui */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 @plugin "daisyui" {
   prefix: "d-";
+  /* remove uncessary base layer background */
+  exclude: rootscrollgutter, rootcolor;
 }
 
 :root {

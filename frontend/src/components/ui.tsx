@@ -17,6 +17,7 @@
 import { splitProps } from "solid-js"
 import { concatClasses } from "../util/css"
 import { Dynamic } from "solid-js/web"
+import { Select } from "@thisbeyond/solid-select"
 
 export function IconButton(props: {
   component?: any,
@@ -29,7 +30,14 @@ export function IconButton(props: {
   return (
     <Dynamic
       component={component}
-      class={`d-btn d-btn-ghost d-btn-circle hover:bg-base-content/10 border-none ${localProps.class}`}
+      class={concatClasses([
+        "d-btn",
+        "d-btn-ghost",
+        "d-btn-circle",
+        "hover:bg-base-content/10",
+        "border-none",
+        localProps.class
+      ])}
       {...restProps}
     />
   )
@@ -75,4 +83,28 @@ export function TextButton(props: {
   )
 }
 
+
+export function MultiSelect(props: {
+  class?: string,
+  [prop: string]: any,
+}) {
+  const [localProps, restProps] = splitProps(props, ["class"])
+
+  return (
+    <Select
+      class={concatClasses([
+        localProps.class,
+        "[&_.solid-select-list]:text-sm",
+        "[&_.solid-select-list]:!bg-base-300",
+        "!bg-base-100",
+        "[&_.solid-select-control]:not-focus-within:!border-base-content/20",
+        "[&_.solid-select-multi-value]:!bg-base-300",
+        "[&_.solid-select-option[data-focused='true']]:!bg-base-200",
+        "[&_.solid-select-option]:hover:!bg-base-100",
+      ])}
+      multiple
+      {...(restProps as any)}
+    />
+  )
+}
 
