@@ -1,21 +1,19 @@
-import { Stack, ListItemText } from "@mui/material";
-
-export default function SettingsItem({ title, subtitle, children }: {
+export default function SettingsItem(props: {
   title: string,
   subtitle?: any,
+  grow?: boolean,
   children: any
 }) {
   return (
-    <Stack direction="row" className="w-full items-center">
-      <ListItemText
-        className="!min-w-21"
-        secondary={subtitle && <span>{subtitle}</span>}
-      >
-        {title}
-      </ListItemText>
-      <span className="grow min-w-3" />
-      <span className="text-right">{children}</span>
-    </Stack>
-  );
+    <div class="flex items-center">
+      <div class="min-w-21">
+        <h6>{props.title}</h6>
+        <div class="text-sm opacity-90">{props.subtitle}</div>
+      </div>
+      <span class={`${!props.grow ? "grow" : ""} min-w-5`} />
+      <span class={`${props.grow ? "grow" : ""} text-right`}>
+        {props.children}
+      </span>
+    </div>
+  )
 }
-

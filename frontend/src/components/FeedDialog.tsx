@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
+// Copyright (C) 2022-2026  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,405 +14,395 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Checkbox,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  Stack,
-  TextField,
-  Typography
-} from "@mui/material";
-import { batch, computed, effect, signal } from "@preact/signals";
-import { textCategories, FeedUserData, getFeedTitle } from "../store/feed";
-import { dispatchFeedAction, handleExternalLink } from "../store/actions";
-import Icon from "@mdi/react";
-import { mdiBroom, mdiContentSave, mdiDelete, mdiDownload, mdiOpenInNew } from "@mdi/js";
-import { LoadingButton } from "@mui/lab";
-import { appState, computedState, lookupFeed } from "../store/state";
-import Item from "./SettingsItem";
+import { createEffect, createMemo, createSignal, For } from "solid-js"
+import { Feed, FeedUserData, getFeedTitle, textCategories } from "../state/feed"
+import { derivedState, setState, state } from "../state/store"
+import SettingsItem from "./SettingsItem"
+import { IconButton, MultiSelect, TextButton } from "./ui"
+import { dispatchFeedAction, handleExternalLink } from "../state/actions"
+import ExternalLinkIcon from "lucide-solid/icons/external-link"
+import SaveIcon from "lucide-solid/icons/save"
+import DownloadIcon from "lucide-solid/icons/download"
+import BrushCleaningIcon from "lucide-solid/icons/brush-cleaning"
+import TrashIcon from "lucide-solid/icons/trash"
+import { createOptions } from "@thisbeyond/solid-select";
+import "@thisbeyond/solid-select/style.css";
+import { batch } from "solid-js"
 
-// local states
-const alias = signal("");
-const tags = signal([] as string[]);
-const baseUrl = signal("");
-const afterDate = signal("");
-const playbackRate = signal("");
-const archiveBlacklist = signal("");
-const archiveSequential = signal(false);
-const archiveInterval = signal("");
-const archiveIntervalError = signal(false);
-const frozen = signal(false)
+async function handleArchive(url?: string) {
+  if (!url) return
 
-const { loading } = appState.ui;
-const { open, feed } = appState.feedDialog;
-const existing = computed(() => Boolean(lookupFeed(feed.value?.url)));
-const title = computed(() => getFeedTitle(feed.value));
-const categories = computed(() => textCategories(feed.value?.categories));
-
-const close = () => {
-  open.value = false;
-};
-// reset local states
-const reset = () => {
-  // subscribe to feed
-  const f = feed.value;
-  batch(() => {
-    alias.value = f?.user_data.alias ?? "";
-    tags.value = f?.user_data.tags ?? [];
-    baseUrl.value = f?.user_data.base_url ?? "";
-    afterDate.value = f?.user_data.after_date ?? "";
-    playbackRate.value = f?.user_data.playback_rate ?? "";
-    archiveBlacklist.value = f?.user_data.archive_blacklist ?? "";
-    archiveSequential.value = f?.user_data.archive_sequential ?? false;
-    archiveInterval.value = f?.user_data.archive_interval?.toString() ?? "";
-    archiveIntervalError.value = false;
-    frozen.value = f?.user_data.frozen ?? false
-  });
-};
-const save = async () => {
-  // No need to update the feed signal as no UI depends on user_data
-  const userData: FeedUserData = {
-    ...(feed.value?.user_data || {}),
-    alias: alias.value || undefined,
-    tags: tags.value.length > 0 ? tags.value : undefined,
-    base_url: baseUrl.value || undefined,
-    after_date: afterDate.value || undefined,
-    playback_rate: playbackRate.value || undefined,
-    archive_blacklist: archiveBlacklist.value || undefined,
-    archive_sequential: archiveSequential.value || undefined,
-    archive_interval: (archiveInterval.value && parseFloat(archiveInterval.value)) || undefined,
-    frozen: frozen.value || undefined,
-  };
-  const f = feed.value!;
-  // Must load onSave here to keep it up to date
-  const ok = await appState.feedDialog.onSave?.({
-    url: f.url,
-    user_data: userData
-  });
-  if (ok) {
-    close();
-  }
-};
-
-async function handleArchive() {
-  if (feed.value) {
-    await dispatchFeedAction({
-      action: "archive",
-      feed_urls: [feed.value.url]
-    });
-  }
-}
-
-async function handleFetch() {
-  if (feed.value) {
-    await dispatchFeedAction({
-      action: "fetch",
-      feeds: [feed.value]
-    });
-  }
-}
-
-function handleDelete() {
-  batch(() => {
-    appState.confirmation.open.value = true;
-    appState.confirmation.content.value = <>Confirm deletion of feed <em>{title}</em>?</>;
-    appState.confirmation.onConfirm = async () => {
-      if (feed.value) {
-        await dispatchFeedAction({
-          action: "delete",
-          feed_urls: [feed.value.url]
-        });
-        close();
-      }
-    };
+  await dispatchFeedAction({
+    action: "archive",
+    feed_urls: [url]
   });
 }
 
-function handleClean() {
-  batch(() => {
-    appState.confirmation.open.value = true;
-    appState.confirmation.content.value = <>Confirm to remove entries before <strong>{feed.value?.user_data.after_date}</strong> for <em>{title}</em>?</>;
-    appState.confirmation.onConfirm = async () => {
-      if (feed.value) {
-        await dispatchFeedAction({
-          action: "clean",
-          feed_urls: [feed.value.url]
-        });
-        close();
-      }
-    };
+async function handleFetch(feed?: Feed) {
+  if (!feed) return
+
+  await dispatchFeedAction({
+    action: "fetch",
+    feeds: [feed]
   });
 }
 
+function handleDelete(feed?: Feed) {
+  if (!feed) return
 
-// Reset local states when feed changes
-effect(reset);
+  setState("status", "confirmDialog", {
+    open: true,
+    content: <>Confirm deletion of feed <em>{getFeedTitle(feed)}</em>?</>,
+    onConfirm: async () => {
+      await dispatchFeedAction({
+        action: "delete",
+        feed_urls: [feed.url]
+      });
+      setState("status", "feedDialog", "open", false)
+    }
+  })
+}
+
+const handleClose = () => setState("status", "feedDialog", "open", false)
+
+function handleClean(feed?: Feed) {
+  if (!feed) return
+
+  setState("status", "confirmDialog", {
+    open: true,
+    content: <>Confirm to remove entries before <strong>{feed.user_data.after_date}</strong> for <em>{getFeedTitle(feed)}</em>?</>,
+    onConfirm: async () => {
+      await dispatchFeedAction({
+        action: "clean",
+        feed_urls: [feed.url]
+      });
+      setState("status", "feedDialog", "open", false)
+    }
+  })
+}
 
 export default function FeedDialog() {
+  const feed = () => state.status.feedDialog.feed
+  const feedLink = () => feed()?.link
+  const feedUrl = () => feed()?.url
+  const title = createMemo(() => getFeedTitle(feed()))
+  const categories = createMemo(() => textCategories(feed()?.categories))
+  const existing = createMemo(() => Boolean(feedUrl() && derivedState.feedMap().get(feedUrl()!)))
+  const loading = () => state.status.loading
+
+  let ref!: HTMLDialogElement
+  let aliasRef!: HTMLInputElement
+  let baseUrlRef!: HTMLInputElement
+  let afterDateRef!: HTMLInputElement
+  let playbackRateRef!: HTMLInputElement
+  let archiveBlacklistRef!: HTMLInputElement
+  let archiveIntervalRef!: HTMLInputElement
+  let freezeFeedRef!: HTMLInputElement
+
+  // reactive values
+  const [archiveSequential, setArchiveSequential] = createSignal(false)
+  const [tags, setTags] = createSignal([] as string[])
+
+  const tagSelectOptions = createMemo(() => createOptions(
+    derivedState.feedTags,
+    {
+      createable: true,
+      // de-duplicate
+      disable: v => tags().includes(v),
+    }
+  ))
+
+  async function handleSave() {
+    const f = feed()
+    if (!f) return
+
+    const archiveInterval = archiveIntervalRef.value
+    const t = tags()
+
+    const userData: FeedUserData = {
+      ...(f?.user_data || {}),
+      alias: aliasRef.value || undefined,
+      tags: t.length > 0 ? t : undefined,
+      base_url: baseUrlRef.value || undefined,
+      after_date: afterDateRef.value || undefined,
+      playback_rate: playbackRateRef.value || undefined,
+      archive_blacklist: archiveBlacklistRef.value || undefined,
+      archive_sequential: archiveSequential() || undefined,
+      archive_interval: (archiveInterval && parseFloat(archiveIntervalRef.value)) || undefined,
+      frozen: freezeFeedRef.checked || undefined,
+    }
+
+    if (await state.status.feedDialog.onSave?.({
+      url: f.url,
+      user_data: userData,
+    })) {
+      handleClose()
+    }
+  }
+
+  function handleReset() {
+    const f = feed()
+    if (!f) return
+
+    const d = f.user_data
+    batch(() => {
+      aliasRef.value = d.alias ?? ""
+      setTags(d.tags ?? [])
+      baseUrlRef.value = d.base_url ?? ""
+      afterDateRef.value = d.after_date ?? ""
+      playbackRateRef.value = d.playback_rate ?? ""
+      archiveBlacklistRef.value = d.archive_blacklist ?? ""
+      setArchiveSequential(d.archive_sequential ?? false)
+      archiveIntervalRef.value = d.archive_interval?.toString() ?? ""
+      freezeFeedRef.checked = d.frozen ?? false
+    })
+  }
+
+  createEffect(() => {
+    if (state.status.feedDialog.open) {
+      ref?.showModal()
+    } else {
+      ref?.close()
+    }
+  })
+
+  // Reset local states whenever feed changes
+  createEffect(handleReset)
+
   return (
-    <Dialog
-      open={open.value}
-      onClose={close}
-      disableBackdropClick
-      fullWidth
-    >
-      <DialogTitle>
-        Feed Settings for <em>{title}</em>
-      </DialogTitle>
-      <DialogContent>
-        <Stack spacing={1}>
+    <dialog ref={ref} class="d-modal">
+      <div class="d-modal-box max-h-[80dvh] flex flex-col p-0">
+        <h4 class="px-6 pt-6 pb-4 text-xl font-medium">Feed Settings for <em>{title()}</em></h4>
+
+        <div class="flex flex-col px-6 gap-3 overflow-y-scroll">
           <div>
-            <Typography color="textSecondary" sx={{ mb: 0.5 }}>
-              General
-            </Typography>
-            <Divider />
+            <h6 class="font-semibold opacity-70">General</h6>
+            <div class="d-divider m-0" />
           </div>
 
-          <Item title="URL">
+          <SettingsItem title="URL">
             <IconButton
-              color="inherit"
-              target="_blank"
-              href={feed.value?.url}
+              class="d-btn-sm"
+              title="Open"
               onClick={handleExternalLink}
             >
-              <Icon path={mdiOpenInNew} size={1} />
+              <ExternalLinkIcon class="size-[1.3rem]" />
             </IconButton>
-          </Item>
+          </SettingsItem>
 
-          {feed.value?.link &&
-            <Item title="Home Page">
+          {feedLink() &&
+            <SettingsItem title="Home Page">
               <a
-                href={feed.value?.link}
+                href={feedLink()}
                 target="_blank"
+                class="opacity-75"
                 onClick={handleExternalLink}
               >
-                {title}
+                {title()}
               </a>
-            </Item>
+            </SettingsItem>
           }
 
-          {existing.value &&
+          {existing() &&
             <>
-              {feed.value?.subtitle &&
-                <Item title="Description">
-                  <div className="max-w-80 opacity-75">
-                    {feed.value?.subtitle}
+              {feed()?.subtitle &&
+                <SettingsItem title="Description">
+                  <div class="max-w-80 opacity-75">
+                    {feed()?.subtitle}
                   </div>
-                </Item>}
+                </SettingsItem>}
 
-              {categories.value.length > 0 &&
-                <Item title="Categories">
-                  <div className="max-w-80 opacity-80">
-                    {categories.value.map(c => (
-                      <Chip className="ma-0.8" size="small" key={c} label={c} />
-                    ))}
+              {categories().length > 0 &&
+                <SettingsItem title="Categories">
+                  <div class="max-w-80 opacity-80">
+                    <For each={categories()}>
+                      {(c, _index) => (
+                        <span class="d-badge d-badge-soft bg-base-content/15!">
+                          {c}
+                        </span>
+                      )}
+                    </For>
                   </div>
-                </Item>}
+                </SettingsItem>}
 
-              {feed.value?.generator &&
-                <Item title="Generator">
-                  <div className="max-w-80 opacity-75">
-                    {feed.value?.generator}
+              {feed()?.generator &&
+                <SettingsItem title="Generator">
+                  <div class="max-w-80 opacity-75">
+                    {feed()?.generator}
                   </div>
-                </Item>}
+                </SettingsItem>}
 
-              <Item title="Operations">
-                <LoadingButton
-                  loading={loading.value}
-                  loadingPosition="start"
+              <SettingsItem title="Operations">
+                <TextButton
+                  class="d-btn-sm text-sm px-2"
                   color="primary"
-                  onClick={handleArchive}
-                  startIcon={<Icon path={mdiContentSave} size={1} />}
+                  loading={loading()}
+                  onClick={() => handleArchive(feedUrl())}
                 >
-                  <Box sx={{ mt: 0.2 }}>Archive</Box>
-                </LoadingButton>
-                <LoadingButton
-                  loading={loading.value}
-                  loadingPosition="start"
+                  <span class="flex items-center">
+                    <SaveIcon class="size-[1.3rem] mr-1" />
+                    Archive
+                  </span>
+                </TextButton>
+
+                <TextButton
+                  class="d-btn-sm text-sm px-2"
                   color="success"
-                  onClick={handleFetch}
-                  startIcon={<Icon path={mdiDownload} size={1} />}
+                  loading={loading()}
+                  onClick={() => handleFetch(feed())}
                 >
-                  <Box sx={{ mt: 0.2 }}>Fetch</Box>
-                </LoadingButton>
-                <LoadingButton
-                  title="Remove entries before _AfterDate_"
-                  disabled={!feed.value?.user_data.after_date}
-                  loading={loading.value}
-                  loadingPosition="start"
+                  <span class="flex items-center">
+                    <DownloadIcon class="size-[1.3rem] mr-1" />
+                    Fetch
+                  </span>
+                </TextButton>
+
+                <TextButton
+                  class="d-btn-sm text-sm px-2"
                   color="secondary"
-                  onClick={handleClean}
-                  startIcon={<Icon path={mdiBroom} size={1} />}
+                  loading={loading()}
+                  onClick={() => handleClean(feed())}
                 >
-                  <Box sx={{ mt: 0.2 }}>Clean</Box>
-                </LoadingButton>
-                <LoadingButton
-                  loading={loading.value}
-                  loadingPosition="start"
+                  <span class="flex items-center">
+                    <BrushCleaningIcon class="size-[1.3rem] mr-1" />
+                    Clean
+                  </span>
+                </TextButton>
+
+                <TextButton
+                  class="d-btn-sm text-sm px-2"
                   color="error"
-                  onClick={handleDelete}
-                  startIcon={<Icon path={mdiDelete} size={1} />}
+                  loading={loading()}
+                  onClick={() => handleDelete(feed())}
                 >
-                  <Box sx={{ mt: 0.2 }}>Delete</Box>
-                </LoadingButton>
-              </Item>
+                  <span class="flex items-center">
+                    <TrashIcon class="size-[1.3rem] mr-1" />
+                    Delete
+                  </span>
+                </TextButton>
+              </SettingsItem>
             </>
           }
 
-
-          <div className="pt-4">
-            <Typography color="textSecondary" sx={{ mb: 0.5 }}>
-              User Data
-            </Typography>
-            <Divider />
+          <div class="mt-4">
+            <h6 class="font-semibold opacity-70">User Data</h6>
+            <div class="d-divider m-0" />
           </div>
 
-          <Item title="Alias" subtitle="an alias for feed title">
-            <TextField
-              variant="standard"
-              value={alias.value}
-              placeholder={title.value}
-              onChange={(event: any) => {
-                alias.value = event.target.value;
-              }}
+          <SettingsItem title="Alias" subtitle="an alias for feed title">
+            <input
+              ref={aliasRef}
+              class="d-input"
+              type="text"
+              placeholder={title()}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Tags"
             subtitle={<>Set tags for this feed. <br /> (Type and press Enter to add new tag)</>}
+            grow
           >
-            <Autocomplete
-              sx={{
-                width: {
-                  sm: "200px"
-                },
-                minWidth: {
-                  xs: tags.value.length > 0 ? undefined : "80px"
-                }
-              }}
-              multiple
-              freeSolo
-              options={computedState.feedTags.value}
-              value={tags.value}
-              onChange={(_e, val) => tags.value = val}
-              renderInput={params =>
-                <TextField {...params} variant="standard" />
-              }
+            <MultiSelect
+              initialValue={tags()}
+              placeholder=""
+              onChange={setTags}
+              {...tagSelectOptions()}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Resource Base URL"
             subtitle="used for archiving resources"
           >
-            <TextField
-              variant="standard"
-              value={baseUrl.value}
+            <input
+              ref={baseUrlRef}
+              class="d-input"
+              type="text"
               placeholder="(auto)"
-              onChange={(event: any) => {
-                baseUrl.value = event.target.value;
-              }}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="After Date"
             subtitle={<>only fetch entries after a date (ISO format) <br /> used by <strong>Clean</strong> to remove old entries</>}
           >
-            <TextField
-              variant="standard"
-              value={afterDate.value}
+            <input
+              ref={afterDateRef}
+              class="d-input"
+              type="text"
               placeholder="(none)"
-              onChange={(event: any) => {
-                afterDate.value = event.target.value;
-              }}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Playback Rate"
-            subtitle="default playback rate for media in enclosures"
+            subtitle="default playback rate for media"
           >
-            <TextField
-              variant="standard"
-              value={playbackRate.value}
-              placeholder="(unchanged)"
-              onChange={(event: any) => {
-                playbackRate.value = event.target.value;
-              }}
+            <input
+              ref={playbackRateRef}
+              class="d-input"
+              type="text"
+              placeholder="1"
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
-            subtitle="url regex to blacklist when archiving"
+          <SettingsItem
             title="Archive Blacklist"
+            subtitle="url regex to blacklist when archiving"
           >
-            <TextField
-              variant="standard"
-              value={archiveBlacklist.value}
+            <input
+              ref={archiveBlacklistRef}
+              class="d-input"
+              type="text"
               placeholder="(none)"
-              onChange={(event: any) => {
-                archiveBlacklist.value = event.target.value;
-              }}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Archive Sequentially"
             subtitle="archive resources sequentially instead of concurrently"
           >
-            <Checkbox
-              checked={archiveSequential.value}
-              onChange={(e: any) => archiveSequential.value = e.target.checked}
+            <input
+              class="size-[1.2rem]"
+              type="checkbox"
+              onChange={e => setArchiveSequential(e.target.checked)}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Archive Interval"
             subtitle="only applied when archiving sequentially (in seconds)"
           >
-            <TextField
-              variant="standard"
-              sx={{ maxWidth: "45px" }}
-              error={archiveIntervalError.value}
-              value={archiveInterval.value}
-              disabled={!archiveSequential.value}
-              onChange={(event: any) => {
-                const value = event.target.value;
-                archiveIntervalError.value = Boolean(value && !(parseFloat(value) > 0));
-                archiveInterval.value = value;
-              }}
+            <input
+              ref={archiveIntervalRef}
+              class="d-input"
+              type="text"
+              placeholder="(none)"
+              disabled={!archiveSequential()}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Freeze Feed"
             subtitle="no longer update the feed from source"
           >
-            <Checkbox
-              checked={frozen.value}
-              onChange={(e: any) => frozen.value = e.target.checked}
+            <input
+              ref={freezeFeedRef}
+              class="size-[1.2rem]"
+              type="checkbox"
             />
-          </Item>
+          </SettingsItem>
+        </div>
 
-        </Stack>
-      </DialogContent>
-
-      <DialogActions>
-        <Button color="inherit" onClick={close}>Cancel</Button>
-        <Button color="error" onClick={reset}>Reset</Button>
-        <Button color="primary" onClick={save}>Save</Button>
-      </DialogActions>
-    </Dialog>
-  );
+        <div class="px-4 pt-4 pb-2 flex justify-end">
+          <TextButton onClick={handleClose}>Close</TextButton>
+          <TextButton color="error" onClick={handleReset}>Reset</TextButton>
+          <TextButton color="primary" onClick={handleSave}>Save</TextButton>
+        </div>
+      </div>
+    </dialog>
+  )
 }
+
 

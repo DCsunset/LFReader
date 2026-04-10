@@ -1,251 +1,251 @@
 // LFReader
 // Copyright (C) 2022-2025  DCsunset
-
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { computed, signal } from "@preact/signals";
-import { createRef } from "preact";
-import { appState, computedState, lookupEntryUrl, lookupFeed } from "../store/state";
-import { textCategories, Enclosure, getEntryTitle, getFeedTitle, toEntryId, getEntryDate } from "../store/feed";
-import Icon from "@mdi/react";
-import renderMathInElement from "katex/contrib/auto-render";
-import hljs from "highlight.js";
-import "katex/dist/katex.css";
-import "highlight.js/styles/base16/tomorrow-night.css";
-import { anchorNoStyle } from "../utils/styles";
-import { handleExternalLink } from "../store/actions";
-import { displayDate } from "../utils/date";
+import { Show, For, useContext, createEffect } from "solid-js";
+import LinkIcon from "lucide-solid/icons/link"
+import CalendarIcon from "lucide-solid/icons/calendar"
+import RssIcon from "lucide-solid/icons/rss"
+import UserIcon from "lucide-solid/icons/user"
+import TagIcon from "lucide-solid/icons/tag"
+import ChevronRightIcon from "lucide-solid/icons/chevron-right"
+import { Ctx, SearchParams } from "../state/context";
+import { Enclosure, getEntryDate, getEntryTitle, getFeedTitle, textCategories, toEntryId } from "../state/feed";
+import { displayDate } from "../util/date";
+import { createSignal } from "solid-js";
+import { Switch } from "solid-js";
+import { Match } from "solid-js";
 import MediaPlayer from "./MediaPlayer";
-import { Box, Chip, Collapse, Divider, List, ListItem, Typography } from "@mui/material";
-import { mdiAccount, mdiAttachment, mdiCalendarMonth, mdiChevronDown, mdiLinkVariant, mdiRss, mdiTag } from "@mdi/js";
-import { useEffect } from "preact/hooks";
+import { derivedState, state } from "../state/store";
+import { createMemo } from "solid-js";
+import hljs from "highlight.js"
+import renderMathInElement from "katex/contrib/auto-render"
+import { useSearchParams } from "@solidjs/router";
+import { handleExternalLink } from "../state/actions";
 
-hljs.configure({
-  // prevent logging the errors in console
-  ignoreUnescapedHTML: true
-});
-
-const { selectedEntry, selectedEntryContent } = computedState
-
-const title = computed(() => getEntryTitle(selectedEntry.value));
-const date = computed(() => {
-  return displayDate(getEntryDate(selectedEntry.value));
-})
-const author = computed(() => selectedEntry.value?.author || feed.value?.author);
-const categories = computed(() => textCategories(selectedEntry.value?.categories));
-const feed = computed(() => lookupFeed(selectedEntry.value?.feed_url));
-const feedTitle = computed(() => getFeedTitle(feed.value));
-
-const showEnclosures = signal(true);
-const currentContents = computed(() => {
-  const e = selectedEntryContent.value;
-  let contents = e?.contents || [];
-  if (contents.length === 0) {
-    contents = e?.summary ? [e?.summary] : [];
-  }
-  return contents;
-});
-const currentEntryId = computed(() => {
-  const e = selectedEntry.value;
-  return e && toEntryId(e);
-})
-const entryRef = createRef<HTMLElement>();
+import "highlight.js/styles/base16/tomorrow-night.css"
+import "katex/dist/katex.css"
 
 
-function EnclosureView({ enclosure }: {
-  enclosure: Enclosure
-}) {
-  if (enclosure.type.startsWith("image/")) {
-    return <img src={enclosure.href} />;
-  }
-  else if (enclosure.type.startsWith("audio/")) {
-    return <MediaPlayer audio src={enclosure.href} rate={feed.value?.user_data.playback_rate} />;
-  }
-  else if (enclosure.type.startsWith("video/")) {
-    return <MediaPlayer src={enclosure.href} rate={feed.value?.user_data.playback_rate} />;
-  }
-  else {
-    return <a href={enclosure.href}>{enclosure.href}</a>;
-  }
-}
-
-function HeaderItem({ icon, children }: {
-  icon: string,
-  children: any
+function EnclosureItem(props: {
+  item: Enclosure,
+  class?: string,
+  // Playback rates
+  defaultRate?: string,
+  rates?: string[],
 }) {
   return (
-    <div className="inline-flex mb-2 mr-1 items-center">
-      <Icon path={icon} size={1} />
-      <span className="ml-1 mr-2">
-        {children}
-      </span>
+    <div class={props.class}>
+      <Switch fallback={<a href={props.item.href}>{props.item.href}</a>}>
+        <Match when={props.item.type.startsWith("image/")}>
+          <img src={props.item.href} />
+        </Match>
+        <Match when={props.item.type.startsWith("audio/")}>
+          <MediaPlayer
+            audio
+            src={props.item.href}
+            defaultRate={props.defaultRate}
+            rates={props.rates}
+          />
+        </Match>
+        <Match when={props.item.type.startsWith("video/")}>
+          <MediaPlayer
+            src={props.item.href}
+            defaultRate={props.defaultRate}
+            rates={props.rates}
+          />
+        </Match>
+      </Switch>
     </div>
-  );
+  )
 }
 
+// reference: W3C default style
+// https://html.spec.whatwg.org/multipage/rendering.html
+const entryContentClasses = [
+  "[&_p,dl,blockquote,listing,plaintext,figure,pre,xmp,ol,ul]:my-4",
+  "[&_ol_ul,ul_ol,ul_ul,ol_ol]:my-0",
+  "[&_dd,blockquote,figure,ol,ul]:ms-8",
+  "[&_h1]:text-[1.4em]",
+  "[&_h2]:text-[1.35em]",
+  "[&_h3]:text-[1.3em]",
+  "[&_h4]:text-[1.25em]",
+  "[&_h5]:text-[1.2em]",
+  "[&_h6]:text-[1.15em]",
+  "[&_abbr,acronym]:decoration-dotted",
+  "[&_u,ins,abbr,acronym,:link,:visited]:underline",
+  "[&_del,s,strike]:line-through",
+  "[&_address,cite,dfn,em,i,var]:italic",
+  "[&_h1,h2,b,strong,th]:font-bold",
+  "[&_h3,h4]:font-semibold",
+  "[&_h5,h6]:font-medium",
+  "[&_h1,h2,h3,h4,h5,h6]:my-6",
+  "[&_ul]:list-disc",
+  "[&_ol]:list-decimal",
+  "[&_table]:border-spacing-1",
+  "[&_td,th]:p-1",
+  "[&_caption]:text-center",
+  "[&_mark]:bg-secondary",
+  "[&_:link]:text-sky-400",
+  "[&_:visited]:text-violet-400",
+].join(" ")
+
 export default function Entry() {
-  // this hook runs every time entry changes
-  // must use useEffect instead of signal effect because it needs the page to load first
-  useEffect(() => {
-    const element = entryRef.current;
-    // Subscribe to entry.value
-    if (selectedEntry.value && element) {
-      // render math formula
-      renderMathInElement(element, {
-        throwOnError: false
+  const ctx = useContext(Ctx)!
+  const [searchParams, _setSearchParams] = useSearchParams<SearchParams>()
+  const [enclosureOpen, setEnclosureOpen] = createSignal(true)
+  const contents = createMemo(() => {
+    const e = ctx.currentEntryContent()
+    let c = e?.contents || [];
+    if (c.length === 0) {
+      c = e?.summary ? [e.summary] : []
+    }
+    return c
+  })
+  let ref!: HTMLDivElement
+
+  createEffect(() => {
+    // Render on entry content update
+    const entryUrlMap = derivedState.entryUrlMap()
+    if (ctx.currentEntryContent()) {
+      // render math
+      renderMathInElement(ref, { throwOnError: false })
+
+      // highlight code
+      ref.querySelectorAll("pre code:not(.hljs)").forEach(el => {
+        hljs.highlightElement(el as HTMLElement)
+      });
+      ref.querySelectorAll(".highlight pre, code:not(.hljs)").forEach(el => {
+        el.classList.add("hljs")
       });
 
-      // highlight code on update
-      element.querySelectorAll("pre code:not(.hljs)").forEach(el => {
-        hljs.highlightElement(el as HTMLElement);
-      });
-      element.querySelectorAll(".highlight pre, code:not(.hljs)").forEach(el => {
-        el.classList.add("hljs");
-      });
-
-      // open link in external page
-      element.querySelectorAll("a").forEach((el: HTMLElement) => {
+      // open link with confirmation
+      ref.querySelectorAll("a").forEach((el: HTMLElement) => {
         try {
-          const url = new URL(el.getAttribute("href") || "");
-          const e = lookupEntryUrl(url.origin);
+          const url = new URL(el.getAttribute("href") || "")
+          const e = entryUrlMap.get(url.origin)
           if (e) {
             // replace external link with internal link
             el.setAttribute("href", `/?${new URLSearchParams({
-              ...appState.queryParams.value,
+              ...searchParams,
               entry: toEntryId(e)
-            })}${url.hash}`);
+            })}${url.hash}`)
           }
           else {
-            el.setAttribute("target", "_blank");
-            el.addEventListener("click", handleExternalLink);
+            el.setAttribute("target", "_blank")
+            el.addEventListener("click", handleExternalLink)
           }
         }
         catch (_) {
-          // do nothing for relative link (including hash)
+          // do nothing for relative links to local resources
+          // (new URL() will throw if it's a relative link)
         }
-      });
+      })
     }
-  });
+  })
 
   return (
-    <>
-      {selectedEntry.value &&
-        <Box
-          id="lfreader-entry"
-          ref={entryRef}
-          sx={{
-            // prevent images and videos from overflowing
-            "& img, & video, & svg": {
-              maxWidth: "100%",
-              // overwrite existing fixed width and height
-              width: "auto",
-              height: "auto"
-            }
-          }}
-        >
-          <Typography
-            variant="h5"
-            className="mb-2! items-center font-medium!"
+    <Show when={ctx.currentEntryContent()}>
+      <div ref={ref}>
+        <h5 class="text-2xl font-semibold">
+          {getEntryTitle(ctx.currentEntryContent())}
+          <a
+            class="inline-block ml-3 opacity-60"
+            href={ctx.currentEntryContent()?.link}
           >
-            <>
-              {title}
-              <a
-                className="ml-2 align-middle opacity-60"
-                href={selectedEntry.value.link}
-                style={anchorNoStyle}
-              >
-                <Icon size={0.9} path={mdiLinkVariant} />
-              </a>
-            </>
-          </Typography>
-          <Divider sx={{ mb: 1 }} />
-          <Typography variant="info" sx={{ display: "flex", my: 1, flexWrap: "wrap" }}>
-            <HeaderItem icon={mdiCalendarMonth}>
-              {date}
-            </HeaderItem>
+            {/* set min-width to prevent shrinking when not enough space */}
+            <LinkIcon class="min-w-[1.2rem] size-[1.2rem]" />
+          </a>
+        </h5>
 
-            <HeaderItem icon={mdiRss}>
-              {/* Don't add onClick here as it's added in the hook already */}
-              <a
-                href={feed.value?.link}
-                style={anchorNoStyle}
-              >
-                {feedTitle}
-              </a>
-            </HeaderItem>
+        <div class="d-divider my-1" />
 
-            {author.value &&
-              <HeaderItem icon={mdiAccount}>
-                {author}
-              </HeaderItem>}
+        <header class="flex flex-wrap gap-x-4 gap-y-2 opacity-75 font-semibold">
+          <div class="inline-flex items-center">
+            <CalendarIcon class="mr-1.5 min-w-[1.2rem] size-[1.2rem]" />
+            {displayDate(getEntryDate(ctx.currentEntryContent()))}
+          </div>
+          <div class="inline-flex items-center">
+            <RssIcon class="mr-1.5 min-w-[1.2rem] size-[1.2rem]" />
+            <a href={ctx.currentEntryFeed()?.link}>
+              {getFeedTitle(ctx.currentEntryFeed())}
+            </a>
+          </div>
+          <Show when={ctx.currentEntryContent()?.author}>
+            <div class="inline-flex items-center">
+              <UserIcon class="mr-1.5 min-w-[1.2rem] size-[1.2rem]" />
+              {ctx.currentEntryContent()?.author}
+            </div>
+          </Show>
+          <Show when={(ctx.currentEntryContent()?.categories?.length ?? 0) > 0}>
+            <div class="inline-flex items-center">
+              <TagIcon class="mr-1.5 min-w-[1.2rem] size-[1.2rem]" />
+              <span class="inline-flex flex-wrap gap-2">
+                <For each={textCategories(ctx.currentEntryContent()?.categories)}>
+                  {(c, _index) => (
+                    <span class="d-badge d-badge-soft bg-base-content/15!">
+                      {c}
+                    </span>
+                  )}
+                </For>
+              </span>
+            </div>
+          </Show>
+          <Show when={(ctx.currentEntryContent()?.enclosures?.length ?? 0) > 0}>
+            <div class="d-collapse">
+              <input type="checkbox" class="hidden" checked={enclosureOpen()} />
 
-            {categories.value.length > 0 &&
-              <HeaderItem icon={mdiTag}>
-                <span className="opacity-80">
-                  {categories.value.map(c => (
-                    <Chip
-                      className="ma-0.8"
-                      size="small"
-                      key={c}
-                      label={c}
-                    />
-                  ))}
-                </span>
-              </HeaderItem>}
-
-          </Typography>
-
-          {(selectedEntry.value?.enclosures?.length ?? 0) > 0 &&
-            <>
-              <Typography variant="info" sx={{ display: "flex" }} onClick={() => showEnclosures.value = !showEnclosures.value}>
-                <Icon
-                  path={mdiChevronDown}
-                  style={{
-                    transform: `rotate(${showEnclosures.value ? "0" : "-90deg"})`,
-                    transition: "all 0.2s"
-                  }}
-                  size={1}
-                />
-                <Icon path={mdiAttachment} size={0.9} />
-                <Box sx={{ ml: 0.5, mr: 1.5 }}>
-                  Enclosures: {selectedEntry.value.enclosures.length} file(s)
-                </Box>
-              </Typography>
-
-              <Collapse in={showEnclosures.value}>
-                <List>
-                  {selectedEntry.value.enclosures.map(en => (
-                    <ListItem key={en.href} dense className="overflow-x-scroll overflow-y-hidden">
-                      <EnclosureView enclosure={en} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Collapse>
-            </>
-          }
-
-          {currentContents.value.map((v, i) => (
-            // If it's text/plain, content is not sanitized
-            v.type === "text/plain" ?
-              <div>{v.value}</div> :
+              {/* Force width to be 100% to prevent overflow */}
               <div
-                key={`${currentEntryId.value} ${i}`}
-                dangerouslySetInnerHTML={{ __html: v.value }}
-              />
-          ))}
-        </Box>
-      }
-    </>
-  );
+                class="d-collapse-title px-0 pt-3 pb-0 min-h-0 cursor-pointer select-none inline-flex items-center min-w-full max-w-full"
+                onClick={() => setEnclosureOpen(!enclosureOpen())}
+              >
+                <ChevronRightIcon
+                  class={`mr-1.5 transition-transform size-[1.2rem] ${enclosureOpen() ? "rotate-90" : ""}`}
+                />
+                Enclosures: {ctx.currentEntryContent()?.enclosures.length} file(s)
+              </div>
+              <div class="d-collapse-content pb-0! min-w-full max-w-full">
+                <For each={ctx.currentEntryContent()?.enclosures}>
+                  {(e, _index) => (
+                    <EnclosureItem
+                      class="mt-3 overflow-x-scroll min-w-full"
+                      item={e}
+                      defaultRate={ctx.currentEntryFeed()?.user_data.playback_rate}
+                      rates={state.settings.playbackRates}
+                    />
+                  )}
+                </For>
+              </div>
+            </div>
+          </Show>
+        </header>
+
+        <div class={entryContentClasses}>
+          <For each={contents()}>
+            {(c, _index) => {
+              const propName = c.type === "text/plain"
+                ? "children"
+                : "innerHTML"
+              const props = { [propName]: c.value }
+              return <div class="my-6" {...props} />
+            }}
+          </For>
+        </div>
+      </div>
+    </Show>
+  )
 }
+

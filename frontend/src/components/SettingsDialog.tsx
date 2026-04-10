@@ -1,243 +1,253 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
-
+// Copyright (C) 2022-2026  DCsunset
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import {
-  Autocomplete,
-  Box,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Stack,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { appState } from "../store/state";
-import { dispatchFeedAction } from "../store/actions";
-import { batch, Signal, signal } from "@preact/signals";
-import { LoadingButton } from "@mui/lab";
-import Icon from "@mdi/react";
-import { mdiBroom, mdiContentSave } from "@mdi/js";
-import Item from "./SettingsItem";
+import { batch, createEffect, createMemo } from "solid-js"
+import { setState, state } from "../state/store"
+import SettingsItem from "./SettingsItem"
+import { MultiSelect, TextButton } from "./ui"
+import { concatClasses } from "../util/css"
+import { createSignal } from "solid-js"
+import { createOptions } from "@thisbeyond/solid-select"
+import { parseNumber } from "../util/misc"
+import SaveIcon from "lucide-solid/icons/save"
+import BrushCleaningIcon from "lucide-solid/icons/brush-cleaning"
+import { dispatchFeedAction } from "../state/actions"
 
-async function archiveFeeds() {
+async function handleArchive() {
   await dispatchFeedAction({ action: "archive" });
 }
 
-async function cleanFeeds() {
+async function handleClean() {
   await dispatchFeedAction({ action: "clean" });
 }
 
-const validNumber = (value: string, min: number, max: number, int: boolean) => {
-  if (value.length === 0) {
-    return false;
-  }
-  const num = int ? parseInt(value) : parseFloat(value);
-  return num >= min && num <= max;
-};
-
-const { loading } = appState.ui;
-
-// local states
-const currentRate = signal("")
-const pageSize = signal(appState.settings.value.pageSize.toString())
-const pageSizeError = signal(false)
-const allRates = signal(appState.settings.value.playbackRates ?? [])
-const archive = signal(appState.settings.value.archive)
-const forceArchive = signal(appState.settings.value.forceArchive)
-const confirmOnExternalLink = signal(appState.settings.value.confirmOnExternalLink)
-const reloadInterval = signal(appState.settings.value.reloadInterval.toString())
-const reloadIntervalError = signal(false)
-
-// reset local states
-const reset = () => {
-  batch(() => {
-    pageSize.value = appState.settings.value.pageSize.toString()
-    pageSizeError.value = false
-    allRates.value = appState.settings.value.playbackRates ?? []
-    archive.value = appState.settings.value.archive
-    forceArchive.value = appState.settings.value.forceArchive
-    confirmOnExternalLink.value = appState.settings.value.confirmOnExternalLink
-    reloadInterval.value = appState.settings.value.reloadInterval.toString()
-    reloadIntervalError.value = false
-  });
-};
-
-export default function SettingsDialog({ open }: {
-  open: Signal<boolean>
-}) {
-  const close = () => {
-    open.value = false;
-    reset();
-  };
-  const save = () => {
-    if (!pageSizeError.value && !reloadIntervalError.value) {
-      batch(() => {
-        appState.settings.value = {
-          ...appState.settings.value,
-          pageSize: parseInt(pageSize.value),
-          playbackRates: allRates.value.length > 0 ? allRates.value : undefined,
-          archive: archive.value,
-          forceArchive: forceArchive.value,
-          confirmOnExternalLink: confirmOnExternalLink.value,
-          reloadInterval: parseInt(reloadInterval.value),
-        };
-        open.value = false;
-      });
+export default function SettingsDialog() {
+  const [pageSizeError, setPageSizeError] = createSignal(false)
+  const [playbackRates, setPlaybackRates] = createSignal<string[]>([])
+  const playbackRateOptions = createMemo(() => createOptions(
+    [],
+    {
+      // only allow adding valid numbers
+      createable: value => {
+        if (playbackRates().includes(value)) {
+          return
+        }
+        const n = parseNumber(value)
+        if (n === undefined || n <= 0 || n > 10) {
+          return
+        }
+        return [value]
+      },
     }
-  };
+  ))
+  const [reloadIntervalError, setReloadIntervalError] = createSignal(false)
+  const loading = () => state.status.loading
+  const hasError = () => pageSizeError() || reloadIntervalError()
+
+  let ref!: HTMLDialogElement
+  let pageSizeRef!: HTMLInputElement
+  let archiveRef!: HTMLInputElement
+  let forceArchiveRef!: HTMLInputElement
+  let confirmOnExternalLinkRef!: HTMLInputElement
+  let reloadIntervalRef!: HTMLInputElement
+
+  function handleReset() {
+    const s = state.settings
+    pageSizeRef.value = s.pageSize.toString()
+    setPlaybackRates(s.playbackRates ?? [])
+    archiveRef.checked = s.archive
+    forceArchiveRef.checked = s.forceArchive
+    confirmOnExternalLinkRef.checked = s.confirmOnExternalLink
+    reloadIntervalRef.value = s.reloadInterval.toString()
+  }
+
+  function handleClose() {
+    setState("status", "settingsDialog", "open", false)
+    handleReset()
+  }
+
+  function handleSave() {
+    if (hasError()) {
+      return
+    }
+
+    const rates = playbackRates()
+    batch(() => {
+      setState("settings", {
+        pageSize: parseInt(pageSizeRef.value),
+        playbackRates: rates.length > 0 ? rates : undefined,
+        archive: archiveRef.checked,
+        forceArchive: forceArchiveRef.checked,
+        confirmOnExternalLink: confirmOnExternalLinkRef.checked,
+        reloadInterval: parseInt(reloadIntervalRef.value),
+      })
+      handleClose()
+    })
+  }
+
+  createEffect(() => {
+    if (state.status.settingsDialog.open) {
+      ref?.showModal()
+    } else {
+      ref?.close()
+    }
+  })
+
+  // Reset local states whenever feed changes
+  createEffect(handleReset)
 
   return (
-    <Dialog
-      open={open.value}
-      onClose={close}
-      disableBackdropClick
-      fullWidth
-    >
-      <DialogTitle>Settings</DialogTitle>
-      <DialogContent>
-        <Stack spacing={1}>
+    <dialog ref={ref} class="d-modal">
+      <div class="d-modal-box max-h-[80dvh] flex flex-col p-0">
+        <h4 class="px-6 pt-6 pb-4 text-xl font-medium">Settings</h4>
+
+        <div class="flex flex-col px-6 gap-3 overflow-y-scroll">
           <div>
-            <Typography color="textSecondary" sx={{ mb: 0.5 }}>
-              General
-            </Typography>
-            <Divider />
+            <h6 class="font-semibold opacity-70">General</h6>
+            <div class="d-divider m-0" />
           </div>
 
-          <Item
+          <SettingsItem
             title="Number of entries per page"
             subtitle="positive integer"
           >
-            <TextField
-              variant="standard"
+            <input
+              ref={pageSizeRef}
               type="number"
-              sx={{ maxWidth: "45px" }}
-              error={pageSizeError.value}
-              value={pageSize.value}
-              onChange={(event: any) => {
-                const value = event.target.value;
-                pageSizeError.value = !validNumber(value, 1, Number.MAX_SAFE_INTEGER, true);
-                pageSize.value = value;
+              class={concatClasses([
+                "d-input",
+                "max-w-20",
+                {
+                  "d-input-error": pageSizeError()
+                }
+              ])}
+              onInput={e => {
+                // type=number will return empty string if invalid
+                const n = parseNumber(e.target.value, true)
+                setPageSizeError(n === undefined || n <= 0)
               }}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Playback Rates"
-            subtitle={<>Set playback rates (0 to 5) for enclosures. <br /> (Press Enter to add number)</>}
+            subtitle={<>Available playback rates (0x, 10x] for enclosures<br /> (Press Enter to add number)</>}
           >
-            <Autocomplete
-              className={allRates.value.length > 0 ? undefined : "min-w-15"}
-              multiple
-              freeSolo
-              options={["1", "1.1", "1.2", "1.3", "1.4", "1.5"]}
-              value={allRates.value}
-              onChange={(_e, val) => {
-                allRates.value = val.filter(v => validNumber(v, 0, 5, false));
-              }}
-              inputValue={currentRate.value}
-              onInputChange={(_e, val) => currentRate.value = val}
-              renderInput={params =>
-                <TextField {...params} variant="standard" />
-              }
+            <MultiSelect
+              class="[&_.solid-select-list]:hidden"
+              placeholder="(default)"
+              onChange={setPlaybackRates}
+              {...playbackRateOptions()}
             />
-          </Item>
+          </SettingsItem>
 
-          <Item title="Archive resources" subtitle="download resources (e.g. images) and save them locally">
-            <Checkbox
-              checked={archive.value}
-              onChange={(e: any) => archive.value = e.target.checked}
+          <SettingsItem
+            title="Archive resources"
+            subtitle="download resources (e.g. images) and save them locally"
+          >
+            <input
+              type="checkbox"
+              ref={archiveRef}
+              class="size-[1.2rem]"
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Force Archiving"
             subtitle="force archiving entries even if content doesn't change"
           >
-            <Checkbox
-              checked={forceArchive.value}
-              onChange={(e: any) => forceArchive.value = e.target.checked}
+            <input
+              type="checkbox"
+              ref={forceArchiveRef}
+              class="size-[1.2rem]"
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Confirm on External Link"
             subtitle="confirm before opening external link"
           >
-            <Checkbox
-              checked={confirmOnExternalLink.value}
-              onChange={(e: any) => confirmOnExternalLink.value = e.target.checked}
+            <input
+              type="checkbox"
+              ref={confirmOnExternalLinkRef}
+              class="size-[1.2rem]"
             />
-          </Item>
+          </SettingsItem>
 
-          <Item
+          <SettingsItem
             title="Check update from server periodically"
             subtitle="in seconds (0 means disabled)"
           >
-            <TextField
-              variant="standard"
-              sx={{ maxWidth: "45px" }}
-              error={reloadIntervalError.value}
-              value={reloadInterval.value}
-              onChange={(event: any) => {
-                const value = event.target.value;
-                reloadIntervalError.value = !validNumber(value, 0, Number.MAX_SAFE_INTEGER, true);
-                reloadInterval.value = value;
+            <input
+              ref={reloadIntervalRef}
+              class={concatClasses([
+                "d-input",
+                "max-w-20",
+                {
+                  "d-input-error": reloadIntervalError()
+                }
+              ])}
+              onInput={e => {
+                // type=number will return empty string if invalid
+                const n = parseNumber(e.target.value, true)
+                setReloadIntervalError(n === undefined || n < 0)
               }}
             />
-          </Item>
+          </SettingsItem>
 
-          <div className="pt-4">
-            <Typography color="textSecondary" sx={{ mb: 0.5 }}>
-              Database
-            </Typography>
-            <Divider />
+
+          <div class="mt-4">
+            <h6 class="font-semibold opacity-70">Database</h6>
+            <div class="d-divider m-0" />
           </div>
 
-          <Item title="Database Operations">
-            <LoadingButton
-              title="Archive all feeds"
-              loading={loading.value}
-              loadingPosition="start"
-              color="primary" onClick={archiveFeeds}
-              startIcon={<Icon path={mdiContentSave} size={1} />}
+          <SettingsItem title="Database Operations">
+            <TextButton
+              class="d-btn-sm text-sm px-2"
+              color="primary"
+              loading={loading()}
+              onClick={handleArchive}
             >
-              <Box sx={{ mt: 0.2 }}>Archive</Box>
-            </LoadingButton>
-            <LoadingButton
-              title="Remove old entries for all feeds"
-              loading={loading.value}
-              loadingPosition="start"
-              color="secondary" onClick={cleanFeeds}
-              startIcon={<Icon path={mdiBroom} size={1} />}
+              <span class="flex items-center">
+                <SaveIcon class="size-[1.3rem] mr-1" />
+                Archive
+              </span>
+            </TextButton>
+
+            <TextButton
+              class="d-btn-sm text-sm px-2"
+              color="secondary"
+              loading={loading()}
+              onClick={handleClean}
             >
-              <Box sx={{ mt: 0.2 }}>Clean</Box>
-            </LoadingButton>
-          </Item>
-        </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button color="inherit" onClick={close}>Cancel</Button>
-        <Button color="error" onClick={reset}>Reset</Button>
-        <Button color="primary" onClick={save}>Save</Button>
-      </DialogActions>
-    </Dialog>
-  );
+              <span class="flex items-center">
+                <BrushCleaningIcon class="size-[1.3rem] mr-1" />
+                Clean
+              </span>
+            </TextButton>
+          </SettingsItem>
+        </div>
+
+        <div class="px-4 pt-4 pb-2 flex justify-end">
+          <TextButton onClick={handleClose}>Close</TextButton>
+          <TextButton color="error" onClick={handleReset}>Reset</TextButton>
+          <TextButton color="primary" disabled={hasError()} onClick={handleSave}>Save</TextButton>
+        </div>
+      </div>
+    </dialog>
+  )
 }
 

@@ -16,8 +16,29 @@ You should have received a copy of the GNU Affero General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+@import "tailwindcss";
+/* Use data-theme attribute to be consistent with daisy ui */
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+@plugin "daisyui" {
+  prefix: "d-";
+  /* remove uncessary base layer background */
+  exclude: rootscrollgutter, rootcolor;
+}
+
+/* missing from daisy ui */
+.text-primary {
+  color: var(--color-primary);
+}
+.text-success {
+  color: var(--color-success);
+}
+
+
+:root {
+  font-family: "Open Sans", sans-serif;
+}
+
 body {
-  margin: 0;
   overflow-wrap: break-word;
 }
 
@@ -30,10 +51,6 @@ body {
     /* Force breaking words in verbatim block */
     word-break: break-word;
   }
-}
-
-ul, ol {
-  margin: 0
 }
 
 pre {
@@ -62,13 +79,7 @@ pre {
   color: #eeeeee;
 }
 
-figure {
-  margin: 0;
-}
 table {
   border-collapse: collapse;
-}
-td {
-  padding: 0;
 }
 

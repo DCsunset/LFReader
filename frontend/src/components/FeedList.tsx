@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
+// Copyright (C) 2025-2026  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,160 +14,208 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { Box, Collapse, IconButton, List, ListItemButton } from "@mui/material";
-import { computedState, appState } from "../store/state";
-import { filterFeeds, getFeedTitle, tagTitle, toFeedId } from "../store/feed";
-import { dispatchFeedAction, FeedInfo, updateQueryParams } from "../store/actions";
-import { batch, computed, useComputed } from "@preact/signals";
-import { mdiChevronRight, mdiLeadPencil } from "@mdi/js";
-import Icon from '@mdi/react';
-
-const selectedFeed = computedState.selectedFeed;
-const editing = appState.ui.editingFeeds;
-const { feedGroup }= appState.state;
-const allEntries = appState.data.entries;
-const queryParams = appState.queryParams;
+import { For, splitProps } from "solid-js"
+import ChevronRightIcon from "lucide-solid/icons/chevron-right"
+import RotateCwIcon from "lucide-solid/icons/rotate-cw"
+import CloudDownloadIcon from "lucide-solid/icons/cloud-download"
+import PlusIcon from "lucide-solid/icons/plus"
+import PencilIcon from "lucide-solid/icons/pencil"
+import { derivedState, setState, state } from "../state/store"
+import { IconButton }from "./ui"
+import { createMemo } from "solid-js"
+import { filterFeeds, getFeedTitle, tagTitle, toFeedId } from "../state/feed"
+import { useSearchParams } from "@solidjs/router"
+import { SearchParams } from "../state/context"
+import { dispatchFeedAction, FeedInfo, fetchFeeds, loadData } from "../state/actions"
+import { createStore } from "solid-js/store"
+import { Show } from "solid-js"
+import { concatClasses } from "../util/css"
 
 async function updateFeed(feed: FeedInfo) {
   return await dispatchFeedAction({
     action: "update",
-    feeds: [feed]
+    feeds: [feed],
   })
 }
 
-const tagId = (tag?: string) => tag ?? "_all";
+const [toolbarState, setToolbarState] = createStore({
+  editing: false,
+  loading: false,
+})
 
-function FeedGroup({ tag, onClick }: {
-  // undefined means all, _none means without tag
-  tag?: string,
-  onClick: () => any
-}) {
-  const feeds = useComputed(() => filterFeeds(appState.data.feeds.value, { tag }));
-  const visible = useComputed(() => feedGroup.value[tagId(tag)] ?? (tag !== "_none"));
+function Toolbar() {
+  const handleLoadData = async () => {
+    setToolbarState("loading", true)
+    await loadData();
+    setToolbarState("loading", false)
+  }
 
   return (
-    <>
-      <ListItemButton
-        sx={{ p: 1 }}
-        onClick={() => {
-          onClick();
-          updateQueryParams({ feed: undefined, tag }, true);
-        }}
-        selected={queryParams.value.tag === tag && !queryParams.value.feed}
+    <div class="flex flex-row-reverse gap-1 p-3">
+      <IconButton
+        class="d-btn-sm"
+        title="Loading feeds from server"
+        onClick={handleLoadData}
+        disabled={toolbarState.loading}
       >
-        <Box sx={{ mr: 0.5 }}>
-          <IconButton
-            color="inherit"
-            sx={{ p: 0.5 }}
-            onClick={e => {
-              feedGroup.value = {
-                ...feedGroup.value,
-                [tagId(tag)]: !visible.value
-              },
-              e.stopPropagation();
-            }}
-          >
-            <Icon
-              path={mdiChevronRight}
-              style={{
-                transform: `rotate(${visible.value ? "90deg" : "0"})`,
-                transition: "all 0.2s"
-              }}
-              size={0.9}
-            />
-          </IconButton>
-        </Box>
-
-        <div className="grow font-semibold">{tagTitle(tag)}</div>
-        <Box className="font-semibold" sx={{
-          mx: 0.8,
-          mt: 0.1,
-          fontSize: "0.85rem",
-          display: "inline"
-        }}>
-          ({feeds.value.length})
-        </Box>
-      </ListItemButton>
-      <Collapse in={visible.value}>
-        {feeds.value.map(feed => {
-          const feedId = toFeedId(feed);
-          return (
-            <ListItemButton
-              key={feedId}
-              className="text-base"
-              sx={{ p: 1, pl: editing.value ? 1.3 : 6 }}
-              selected={selectedFeed.value === feed}
-              onClick={() => {
-                onClick();
-                updateQueryParams({ feed: feedId, tag: undefined }, true);
-              }}
-            >
-              {editing.value &&
-                <Box sx={{ mr: 1 }}>
-                  <IconButton
-                    size="small"
-                    color="inherit"
-                    sx={{ py: 0, px: 0.5 }}
-                    onClick={e => {
-                      batch(() => {
-                        const { feedDialog } = appState;
-                        feedDialog.open.value = true;
-                        feedDialog.feed.value = feed;
-                        feedDialog.onSave = updateFeed;
-                      });
-                      e.stopPropagation();
-                    }}
-                  >
-                    <Icon path={mdiLeadPencil} size={0.9} />
-                  </IconButton>
-                </Box>
-              }
-              {feed.logo &&
-                <Box
-                  component="img"
-                  src={feed.logo}
-                  sx={{
-                    width: 20,
-                    height: 20,
-                    mr: 1
-                  }}
-                />
-              }
-              <span className={`flex grow wrap-anywhere mr-2 ${feed.user_data.frozen ? "opacity-80" : "" }`} >
-                {getFeedTitle(feed)}
-              </span>
-              <Box sx={{
-                mx: 0.8,
-                mt: 0.1,
-                fontSize: "0.85rem",
-                display: "inline"
-              }}>
-                ({allEntries.value.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
-              </Box>
-            </ListItemButton>
-          );
-        })}
-      </Collapse>
-    </>
-  );
+        {toolbarState.loading
+          ? <span class="d-loading d-loading-spinner" />
+          : <RotateCwIcon class="size-[1.45rem]" />
+        }
+      </IconButton>
+      <IconButton
+        class={`d-btn-sm ${state.status.loading ? "d-btn-disabled" : ""}`}
+        title="Fetch feeds from origin"
+        onClick={fetchFeeds}
+      >
+        {state.status.loading
+          ? <span class="d-loading d-loading-spinner" />
+          : <CloudDownloadIcon class="size-[1.45rem]" />
+        }
+      </IconButton>
+      <IconButton
+        class="d-btn-sm"
+        title="Add feeds"
+        onClick={() => setState("status", "newFeedDialog", "open", true)}
+      >
+        <PlusIcon class="size-[1.45rem]" />
+      </IconButton>
+      <IconButton
+        class={`d-btn-sm ${toolbarState.editing ? "text-secondary" : ""}`}
+        title="Edit feeds"
+        onClick={() => setToolbarState("editing", v => !v)}
+      >
+        <PencilIcon class="size-[1.45rem]" />
+      </IconButton>
+    </div>
+  )
 }
 
-function FeedList({ onClick }: {
-  onClick: () => any
+function FeedGroup(props: {
+  // _all means all feeds, _none means without tag
+  tag?: string
 }) {
-  const tags = computed(() => [
-    undefined,
-    ...computedState.feedTags.value,
-    "_none"
-  ]);
+  const tagId = () => props.tag ?? "_all"
+  const open = createMemo(() => state.ui.feedGroup[tagId()] ?? (props.tag !== "_none"))
+  const [searchParams, setSearchParams] = useSearchParams<SearchParams>()
+  const feeds = createMemo(() => filterFeeds(state.data.feeds, { tag: props.tag }))
 
-	return (
-    <>
-      <List sx={{ width: "100%" }}>
-        {tags.value.map(tag => <FeedGroup key={tag} tag={tag} onClick={onClick} />)}
-      </List>
-    </>
-	);
+  const isPresetTag = () => {
+    return props.tag === undefined || props.tag.startsWith("_")
+  }
+
+  return (
+    <li class="d-collapse rounded-none">
+      <input class="hidden" type="checkbox" checked={open()} />
+
+      <div
+        class={concatClasses([
+          "d-collapse-title",
+          "flex",
+          "items-center",
+          "px-2",
+          "py-1.5",
+          "min-h-0",
+          "hover:bg-base-content/15",
+          "font-bold",
+          {
+            "bg-blue-300/25": searchParams.tag === props.tag
+          }
+        ])}
+        onClick={() => setSearchParams({
+          tag: props.tag,
+          feed: undefined,
+          page: undefined,
+        } as SearchParams)}
+      >
+        <IconButton
+          class="d-btn-sm mr-1"
+          onClick={(e: any) => {
+            setState("ui", "feedGroup", tagId(), !open())
+            e.stopPropagation()
+          }}
+        >
+          <ChevronRightIcon
+            class={`transition-transform ${open() ? "rotate-90" : ""}`}
+            size={20}
+          />
+        </IconButton>
+        <span class={`${isPresetTag() ? "opacity-80" : ""}`}>
+          {tagTitle(props.tag)}
+        </span>
+      </div>
+      <ul class="d-collapse-content p-0!">
+        <For each={feeds()}>
+          {(feed, _index) => {
+            const feedId = toFeedId(feed)
+            return (
+              <li
+                class={
+                  concatClasses([
+                    "flex",
+                    "items-center",
+                    "hover:bg-base-content/15",
+                    "cursor-pointer",
+                    "p-2",
+                    {
+                      "bg-blue-300/25": searchParams.feed === feedId,
+                      "pl-10": !toolbarState.editing,
+                    }
+                  ])
+                }
+                onClick={() => setSearchParams({
+                  tag: undefined,
+                  feed: feedId,
+                  page: undefined,
+                } as SearchParams)}
+              >
+                <span class="flex items-center">
+                  <Show when={toolbarState.editing}>
+                    <IconButton
+                      class="d-btn-xs mr-1.5 ml-0.5"
+                      title="Edit"
+                      onClick={(e: Event) => {
+                        setState("status", "feedDialog", {
+                          open: true,
+                          feed,
+                          onSave: updateFeed,
+                        })
+                        e.stopPropagation()
+                      }}
+                    >
+                      <PencilIcon class="size-[1.2rem]" />
+                    </IconButton>
+                  </Show>
+                </span>
+                <span class="flex">
+                  {getFeedTitle(feed)}
+                </span>
+              </li>
+            )
+          }}
+        </For>
+      </ul>
+    </li>
+  )
 }
 
-export default FeedList;
+export default function FeedList(props: any) {
+  const [localProps, restProps] = splitProps(props, [ "class" ])
+  const tags = () => [ undefined, ...derivedState.feedTags(), "_none" ]
+
+  return (
+    // Parent must have overflow-y-auto to make flex child scrollable
+    <div class={`flex flex-col overflow-y-auto ${localProps.class}`} {...restProps}>
+      <Toolbar />
+
+      <ul class="overflow-y-scroll">
+        <For each={tags()}>
+          {(tag, _index) => (
+            <FeedGroup tag={tag} />
+          )}
+        </For>
+      </ul>
+    </div>
+  )
+}
+

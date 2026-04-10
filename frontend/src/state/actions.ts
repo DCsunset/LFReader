@@ -1,5 +1,5 @@
 // LFReader
-// Copyright (C) 2022-2025  DCsunset
+// Copyright (C) 2022-2026  DCsunset
 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published by
@@ -14,13 +14,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { route } from "preact-router";
-import { QueryParams, appState } from "./state";
-import { batch } from "@preact/signals";
-import { AlertColor } from "@mui/material";
+import { Message, setState, state } from "./store";
 import { Entry, EntryUserData, FeedUserData, toEntryId } from "./feed";
-import { Base64 } from "js-base64";
 import * as immutable from "immutable"
+
+export function notify(level: Message["level"], text: Message["text"]) {
+  setState("status", "message", { level, text })
+}
 
 export async function fetchApi(url: string, options?: any) {
   try {
@@ -43,7 +43,7 @@ export async function fetchApi(url: string, options?: any) {
 }
 
 export function handleExternalLink(e: MouseEvent) {
-  if (appState.settings.value.confirmOnExternalLink) {
+  if (state.settings.confirmOnExternalLink) {
     // use getAttribute to get the raw href value
     const link = (e.currentTarget as HTMLAnchorElement | null)?.getAttribute("href") || "";
     if (/^\w+:/.test(link) && !confirm(`Confirm to open external link ${link}`)) {
@@ -51,10 +51,6 @@ export function handleExternalLink(e: MouseEvent) {
       e.preventDefault();
     }
   }
-}
-
-export function notify(color: AlertColor, text: string) {
-  appState.notification.value = { color, text };
 }
 
 type ServerStatus = {
@@ -84,15 +80,14 @@ export async function checkUpdate() {
     }
   }
 
-  const { loading } = appState.ui
-  if (loading.value !== status.loading) {
-    loading.value = status.loading
+  if (state.status.loading !== status.loading) {
+    setState("status", "loading", status.loading)
   }
   updating = false
   return ok
 }
 
-async function waitForLoading() {
+async function waitForFetching() {
   const maxBackoff = 10000
   let backoff = 500
   while (true) {
@@ -101,7 +96,7 @@ async function waitForLoading() {
     if (!ok) {
       return false
     }
-    if (!appState.ui.loading) {
+    if (!state.status.loading) {
       return true
     }
     backoff = Math.min(maxBackoff, backoff * 2);
@@ -113,7 +108,7 @@ async function queryEntries(query: {
   entries?: Array<{ feed_url: string, id: string }>,
   columns?: string[]
 }) {
-  return await fetchApi("/entries/query", {
+  return await fetchApi("entries/query", {
     method: "POST",
     body: JSON.stringify(query)
   });
@@ -121,7 +116,7 @@ async function queryEntries(query: {
 
 async function getData() {
   const [feeds, entries] = await Promise.all([
-    fetchApi("/feeds"),
+    fetchApi("feeds"),
     // Only get entries without content for efficiency
     queryEntries({
       columns: [
@@ -130,10 +125,12 @@ async function getData() {
         "link",
         "author",
         "title",
+        "categories",
+        "enclosures",
         "published_at",
         "updated_at",
         "server_data",
-        "user_data"
+        "user_data",
       ]
     })
   ]);
@@ -141,11 +138,10 @@ async function getData() {
     return false;
   }
 
-  batch(() => {
-    appState.data.feeds.value = feeds
-    appState.data.entries.value = entries
-    // clear cached entry contents
-    appState.data.entryContents.value = immutable.Map()
+  setState("data", {
+    feeds,
+    entries,
+    entryContents: immutable.Map(),
   })
   return true;
 }
@@ -160,72 +156,28 @@ export async function loadData() {
 
 export async function loadEntryContents(entries: Entry[]) {
   // prevent depending on itself
-  const entryContents = appState.data.entryContents.peek();
   const absentEntries = entries
-    .filter(e => !entryContents.has(toEntryId(e)))
+    .filter(e => !state.data.entryContents.has(toEntryId(e)))
     .map(e => ({
       feed_url: e.feed_url,
       id: e.id
-    }));
+    }))
   if (absentEntries.length === 0) {
-    return;
+    return
   }
 
   // only load content
   const contents: Entry[] = await queryEntries({
     entries: absentEntries,
-    columns: [
-      "feed_url",
-      "id",
-      "summary",
-      "contents"
-    ]
-  });
+  })
   if (contents === undefined) {
-    return;
+    return
   }
 
-  appState.data.entryContents.value = immutable.Map([
-    ...entryContents.entries(),
+  setState("data", "entryContents", immutable.Map([
+    ...state.data.entryContents.entries(),
     ...contents.map(e => [toEntryId(e), e] as [string, Entry])
-  ]);
-}
-
-function encodeQueryItem(item?: string) {
-  return item && Base64.encode(item, true);
-}
-
-function decodeQueryItem(item: string) {
-  return Base64.isValid(item) ? Base64.decode(item) : undefined;
-}
-
-// update query params
-export function updateQueryParams(params: QueryParams, reset: boolean = false) {
-  // merge with original params if not resetting
-  const newParams = reset ? params : {
-    ...appState.queryParams.value,
-    ...params,
-  };
-  // Encode items
-  newParams.tag = encodeQueryItem(newParams.tag);
-
-  // remove undefined fields
-  for (const key of Object.keys(newParams)) {
-    const k = key as keyof QueryParams;
-    if (newParams[k] === undefined) {
-      delete newParams[k];
-    }
-  }
-  route(`/?${new URLSearchParams(newParams)}`);
-}
-
-// Decode some fields from raw query params
-export function parseRawQueryParams(params: any): QueryParams {
-  return {
-    ...params,
-    // Decode items
-    tag: decodeQueryItem(params.tag)
-  };
+  ]))
 }
 
 
@@ -272,24 +224,22 @@ type FeedActionArgs = FetchFeedsArgs | ArchiveFeedsArgs | CleanFeedsArgs | Delet
 const asyncFeedActions = new Set([ "fetch", "archive" ]);
 
 export async function dispatchFeedAction(args: FeedActionArgs) {
-  const { loading } = appState.ui;
-
-  loading.value = true
-  const resp =  await fetchApi("/feeds", {
+  setState("status", "loading", true)
+  const resp =  await fetchApi("feeds", {
     method: "POST",
     body: JSON.stringify(args)
   })
   if (resp === undefined) {
-    loading.value = false
+    setState("status", "loading", false)
     return false
   }
 
   let ok
   if (asyncFeedActions.has(args.action)) {
-    ok = await waitForLoading()
+    ok = await waitForFetching()
   }
   else {
-    loading.value = false
+    setState("status", "loading", false)
     ok = await getData();
   }
 
@@ -316,7 +266,7 @@ type UpdateEntriesArgs = {
 type EntryActionArgs = UpdateEntriesArgs
 
 export async function dispatchEntryAction(args: EntryActionArgs) {
-  const resp =  await fetchApi("/entries", {
+  const resp =  await fetchApi("entries", {
     method: "POST",
     body: JSON.stringify(args)
   })
@@ -329,5 +279,14 @@ export async function dispatchEntryAction(args: EntryActionArgs) {
   return true
 }
 
-
+export async function fetchFeeds() {
+  const { archive, forceArchive } = state.settings;
+  await dispatchFeedAction({
+    action: "fetch",
+    archive,
+    force_archive: forceArchive,
+    // ignore error when updating all feeds
+    ignore_error: true
+  })
+}
 

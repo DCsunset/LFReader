@@ -1,9 +1,8 @@
-import { defineConfig } from 'vite';
-import preact from '@preact/preset-vite';
-import UnoCSS from 'unocss/vite';
-import { VitePWA } from 'vite-plugin-pwa';
+import { defineConfig } from 'vite'
+import solid from 'vite-plugin-solid'
+import { VitePWA } from 'vite-plugin-pwa'
+import tailwindcss from '@tailwindcss/vite'
 
-// https://vitejs.dev/config/
 export default defineConfig({
   server: {
     port: 8080,
@@ -18,9 +17,9 @@ export default defineConfig({
       "Content-Security-Policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:"
     }
   },
-	plugins: [
-    preact(),
-    UnoCSS(),
+  plugins: [
+    tailwindcss(),
+    solid(),
     VitePWA({
       // devOptions: {
       //   enabled: true
@@ -61,6 +60,6 @@ export default defineConfig({
         // make it able to pass request to backend
         navigateFallbackDenylist: [/^\/api\//]
       }
-    })
+    }),
   ],
-});
+})
