@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 @plugin "daisyui" {
   prefix: "d-";
   /* remove uncessary base layer background */
-  exclude: rootcolor;
+  exclude: rootscrollgutter, rootcolor;
 }
 
 /* missing from daisy ui */
