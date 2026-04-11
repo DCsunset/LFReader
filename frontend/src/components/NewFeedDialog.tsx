@@ -35,7 +35,12 @@ export default function NewFeedDialog() {
     setFeeds(
       feeds().map(f => {
         if (f.url === feed.url) {
-          f.user_data = feed.user_data;
+          // Must create a new object for reactivity
+          const url = feed.new_url ? feed.new_url : f.url
+          return {
+            url,
+            user_data: feed.user_data
+          }
         }
         return f;
       })

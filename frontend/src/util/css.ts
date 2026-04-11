@@ -15,7 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 type OptionalClasses = {
-  [className: string]: boolean
+  [className: string]: boolean | undefined | null
 }
 
 export function concatClasses(classes: (string|null|undefined|OptionalClasses)[]) {

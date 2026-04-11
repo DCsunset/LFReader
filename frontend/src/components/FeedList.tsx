@@ -81,7 +81,10 @@ function Toolbar() {
         <PlusIcon class="size-[1.45rem]" />
       </IconButton>
       <IconButton
-        class={`d-btn-sm ${toolbarState.editing ? "text-secondary" : ""}`}
+        class={concatClasses([
+          "d-btn-sm",
+          { "text-secondary": toolbarState.editing }
+        ])}
         title="Edit feeds"
         onClick={() => setToolbarState("editing", v => !v)}
       >

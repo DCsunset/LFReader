@@ -185,7 +185,9 @@ export async function loadEntryContents(entries: Entry[]) {
 
 export type FeedInfo = {
   url: string,
-  user_data: FeedUserData
+  user_data: FeedUserData,
+  // only used when updating feed url
+  new_url?: string,
 }
 
 type FetchFeedsArgs = {

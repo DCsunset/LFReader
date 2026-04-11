@@ -20,7 +20,7 @@ import { derivedState, setState, state } from "../state/store"
 import SettingsItem from "./SettingsItem"
 import { IconButton, MultiSelect, TextButton } from "./ui"
 import { dispatchFeedAction, handleExternalLink } from "../state/actions"
-import ExternalLinkIcon from "lucide-solid/icons/external-link"
+import PencilIcon from "lucide-solid/icons/pencil"
 import SaveIcon from "lucide-solid/icons/save"
 import DownloadIcon from "lucide-solid/icons/download"
 import BrushCleaningIcon from "lucide-solid/icons/brush-cleaning"
@@ -28,6 +28,7 @@ import TrashIcon from "lucide-solid/icons/trash"
 import { createOptions } from "@thisbeyond/solid-select";
 import "@thisbeyond/solid-select/style.css";
 import { batch } from "solid-js"
+import { concatClasses } from "../util/css"
 
 async function handleArchive(url?: string) {
   if (!url) return
@@ -102,6 +103,8 @@ export default function FeedDialog() {
   // reactive values
   const [archiveSequential, setArchiveSequential] = createSignal(false)
   const [tags, setTags] = createSignal([] as string[])
+  const [url, setUrl] = createSignal("")
+  const [editUrl, setEditUrl] = createSignal(false)
 
   const tagSelectOptions = createMemo(() => createOptions(
     derivedState.feedTags,
@@ -132,9 +135,12 @@ export default function FeedDialog() {
       frozen: freezeFeedRef.checked || undefined,
     }
 
+
+    const u = url()
     if (await state.status.feedDialog.onSave?.({
       url: f.url,
       user_data: userData,
+      new_url: f.url === u ? undefined : u
     })) {
       handleClose()
     }
@@ -146,6 +152,8 @@ export default function FeedDialog() {
 
     const d = f.user_data
     batch(() => {
+      setUrl(f.url)
+      setEditUrl(false)
       aliasRef.value = d.alias ?? ""
       setTags(d.tags ?? [])
       baseUrlRef.value = d.base_url ?? ""
@@ -171,7 +179,7 @@ export default function FeedDialog() {
 
   return (
     <dialog ref={ref} class="d-modal">
-      <div class="d-modal-box max-h-[80dvh] flex flex-col p-0">
+      <div class="d-modal-box max-h-[85dvh] flex flex-col p-0">
         <h4 class="px-6 pt-6 pb-4 text-xl font-medium">Feed Settings for <em>{title()}</em></h4>
 
         <div class="flex flex-col px-6 gap-3 overflow-y-scroll">
@@ -181,12 +189,20 @@ export default function FeedDialog() {
           </div>
 
           <SettingsItem title="URL">
+            {editUrl()
+              ? <input class="d-input" type="text" value={url()} onChange={e => setUrl(e.target.value)} />
+              : <a class="truncate" href={url()} target="_blank" onClick={handleExternalLink}>{url()}</a>
+            }
+
             <IconButton
-              class="d-btn-sm"
+              class={concatClasses([
+                "d-btn-sm", "ml-1",
+                { "text-secondary": editUrl() }
+              ])}
               title="Open"
-              onClick={handleExternalLink}
+              onClick={() => setEditUrl(v => !v)}
             >
-              <ExternalLinkIcon class="size-[1.3rem]" />
+              <PencilIcon class="size-[1.2rem]" />
             </IconButton>
           </SettingsItem>
 
@@ -304,6 +320,7 @@ export default function FeedDialog() {
             grow
           >
             <MultiSelect
+              class="grow"
               initialValue={tags()}
               placeholder=""
               onChange={setTags}
