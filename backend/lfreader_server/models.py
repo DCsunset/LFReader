@@ -56,6 +56,7 @@ class FeedInfo(BaseModel):
   # put it in body to prevent encoding
   url: str
   user_data: dict
+  new_url: str | None = None
 
   # allow using subscript to access
   def __getitem__(self, item):

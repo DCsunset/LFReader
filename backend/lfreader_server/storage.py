@@ -114,6 +114,7 @@ class Storage:
     # create parent directories to prevent error
     Path(config.db_file).parent.mkdir(parents=True, exist_ok=True)
     self.db = sqlite3.connect(config.db_file)
+    self.db.execute("PRAGMA foreign_keys = ON")
     self.db.row_factory = dict_row_factory
     self.init_db()
     self.archiver = Archiver(self.db, config.archiver)
@@ -191,6 +192,10 @@ class Storage:
           PRIMARY KEY (feed_url, entry_id, url),
           FOREIGN KEY (feed_url) REFERENCES feeds(url)
             ON UPDATE CASCADE
+            ON DELETE CASCADE,
+          FOREIGN KEY (feed_url, entry_id) REFERENCES entries(feed_url, id)
+            ON UPDATE CASCADE
+            ON DELETE CASCADE
         )
       ''')
 
@@ -502,6 +507,11 @@ class Storage:
         "UPDATE feeds SET user_data = ? WHERE url = ?",
         (pack_data(f.user_data), f.url)
       )
+      if f.new_url is not None:
+        cur.execute(
+          "UPDATE feeds SET url = ? WHERE url = ?",
+          (f.new_url, f.url)
+        )
     self.db.commit()
 
   def delete_feeds(self, feed_urls: list[str]):
@@ -511,9 +521,8 @@ class Storage:
     for f in feed_urls:
       self.archiver.delete_resources(f)
 
+    # entries rows will be deleted due to cascading
     self.db.execute(f"DELETE FROM feeds WHERE url IN ({placeholders})", feed_urls)
-    # delete associated entries
-    self.db.execute(f"DELETE FROM entries WHERE feed_url IN ({placeholders})", feed_urls)
     # delete will create a tx. Must commit to save data
     self.db.commit()
 
