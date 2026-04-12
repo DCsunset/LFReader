@@ -177,25 +177,26 @@ class Storage:
           user_data TEXT,
 
           PRIMARY KEY (feed_url, id),
+          -- Use RESTRICT to prevent accidental deletion
           FOREIGN KEY (feed_url) REFERENCES feeds(url)
             ON UPDATE CASCADE
-            ON DELETE CASCADE
+            ON DELETE RESTRICT
         )
       ''')
       self.db.execute('''
         -- Record references to resources
         CREATE TABLE IF NOT EXISTS resources (
           feed_url TEXT NOT NULL,
-          entry_id TEXT NOT NULL,  -- could be entry_id or emptry string '' to denote feed itself (shouldn't be null as it's used as primary key)
+          entry_id TEXT NOT NULL,  -- could be entry_id or empty string to denote feed itself (shouldn't be null as it's used as primary key)
           url TEXT NOT NULL,  -- original resource url (or archived url for backward compatibility)
 
           PRIMARY KEY (feed_url, entry_id, url),
           FOREIGN KEY (feed_url) REFERENCES feeds(url)
             ON UPDATE CASCADE
-            ON DELETE CASCADE,
+            ON DELETE RESTRICT,
           FOREIGN KEY (feed_url, entry_id) REFERENCES entries(feed_url, id)
             ON UPDATE CASCADE
-            ON DELETE CASCADE
+            ON DELETE RESTRICT
         )
       ''')
 
@@ -288,10 +289,6 @@ class Storage:
         if "added_at" not in f_server_data:
           f_server_data["added_at"] = now
 
-        logo = f.feed.get("logo")
-        if archive and logo:
-          logo = (await self.archiver.archive_resource(session, url, "@", logo, f.feed.get("link", url), f_user_data)) or logo
-
         self.db.execute(
           f'''
           INSERT INTO feeds VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -324,6 +321,13 @@ class Storage:
             pack_data(f_user_data)
           )
         )
+        # add empty entry to denote the feed itself for resources foreign key
+        self.db.execute("INSERT OR IGNORE INTO entries(feed_url, id) VALUES (?, ?)", (url, ""))
+
+        logo = f.feed.get("logo")
+        if archive and logo:
+          # empty str for entry_id to denote the feed itself
+          logo = (await self.archiver.archive_resource(session, url, "", logo, f.feed.get("link", url), f_user_data)) or logo
 
         after_date_raw = f_user_data.get("after_date")
         after_date = None
@@ -521,7 +525,8 @@ class Storage:
     for f in feed_urls:
       self.archiver.delete_resources(f)
 
-    # entries rows will be deleted due to cascading
+    # delete associated entries first to avoid violating foreign key constraints
+    self.db.execute(f"DELETE FROM entries WHERE feed_url IN ({placeholders})", feed_urls)
     self.db.execute(f"DELETE FROM feeds WHERE url IN ({placeholders})", feed_urls)
     # delete will create a tx. Must commit to save data
     self.db.commit()
