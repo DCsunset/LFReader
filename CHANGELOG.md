@@ -2,6 +2,48 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.0] - 2026-04-12
+
+### 🚀 Features
+
+- *(frontend)* [**breaking**] Switch to solid.js framework
+- *(backend)* [**breaking**] Support updating feed url
+- *(frontend)* Add ui for editing feed url
+- *(backend)* [**breaking**] Update foreign key constraints and add placeholder entry
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Fix entry ui styles
+- *(frontend)* Fix text button color
+- *(frontend)* Fix style
+- *(frontend)* Rename constants file
+
+### 🚜 Refactor
+
+- *(frontend)* Migrate app bar and ui component
+- *(frontend)* Switch to daisyUI and tailwindcss
+- *(frontend)* Migrate responsive layout for different screen sizes
+- *(frontend)* Migrate app state and feed list
+- *(frontend)* Fix state persistence
+- *(frontend)* Migrate entry list and fix some styles
+- *(frontend)* Migrate entry and fix styles
+- *(frontend)* Fix some bugs and functionality
+- *(frontend)* Implement feed dialog and fix layout
+- *(frontend)* Add NewFeedDialog
+- *(frontend)* Add SettingsDialog
+- *(frontend)* Add AboutDialog and implement more toolbar buttons
+- *(frontend)* Add dark theme support
+
+### ⚙️ Miscellaneous Tasks
+
+- *(frontend)* Reset tsconfig.json
+- *(flake)* Update flake inputs
+- *(flake)* Update inputs
+- *(frontend)* Update dependencies
+- *(flake)* Update inputs
+- Add migration script and doc
+- Fix release script
+
 ## [3.5.1] - 2025-04-26
 
 ### 🐛 Bug Fixes
@@ -12,6 +54,10 @@ All notable changes to this project will be documented in this file.
 
 - *(frontend)* Separate entry content from metadata to reduce page update
 - *(frontend)* Improve entry list for small device
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V3.5.1
 
 ## [3.5.0] - 2025-04-24
 
