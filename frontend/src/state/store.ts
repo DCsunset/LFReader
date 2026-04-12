@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import { createStore, unwrap } from "solid-js/store"
+import { createStore } from "solid-js/store"
 import * as immutable from "immutable"
 import { Entry, Feed, getTags, toEntryId } from "./feed"
 import { createMemo, JSX } from "solid-js";
