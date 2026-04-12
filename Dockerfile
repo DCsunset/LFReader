@@ -1,6 +1,6 @@
-FROM docker.io/node:latest AS frontend-build
+FROM docker.io/node:alpine AS frontend-build
 COPY frontend /app/frontend
-RUN cd /app/frontend && npm ci && npm run build
+RUN apk add --no-cache pnpm && cd /app/frontend && pnpm install && pnpm run build
 
 FROM docker.io/alpine:latest
 LABEL MAINTAINER="DCsunset"
