@@ -69,7 +69,7 @@
 
               ver=''${1:-$(git cliff --bumped-version)}
 
-              sed -i "s/version = \".*\"/version = \"$ver\"/" frontend/src/_version.ts
+              sed -i "s/version = \".*\"/version = \"$ver\"/" frontend/src/constants.ts
               git cliff --bump -o CHANGELOG.md
               git add -A
               git commit -m "chore(release): $ver"
