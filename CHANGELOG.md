@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.1] - 2026-04-13
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Remove unused import
+
+### 💼 Other
+
+- Fix dockerfile
+
 ## [4.0.0] - 2026-04-12
 
 ### 🚀 Features
@@ -43,6 +53,7 @@ All notable changes to this project will be documented in this file.
 - *(flake)* Update inputs
 - Add migration script and doc
 - Fix release script
+- *(release)* V4.0.0
 
 ## [3.5.1] - 2025-04-26
 
