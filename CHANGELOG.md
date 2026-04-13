@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.2] - 2026-04-13
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Add missing swipe gesture support
+
 ## [4.0.1] - 2026-04-13
 
 ### 🐛 Bug Fixes
@@ -11,6 +17,10 @@ All notable changes to this project will be documented in this file.
 ### 💼 Other
 
 - Fix dockerfile
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V4.0.1
 
 ## [4.0.0] - 2026-04-12
 
