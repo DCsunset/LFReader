@@ -22,7 +22,7 @@ import SettingsIcon from "lucide-solid/icons/settings"
 import MoonIcon from "lucide-solid/icons/moon"
 import SunIcon from "lucide-solid/icons/sun"
 import RssIcon from "lucide-solid/icons/rss"
-import { batch, createMemo, createSignal } from "solid-js"
+import { batch, createMemo, createSignal, onCleanup, onMount } from "solid-js"
 import FeedList from "./FeedList"
 import { Show, JSX } from "solid-js"
 import defaultTheme from "tailwindcss/defaultTheme"
@@ -48,6 +48,51 @@ const entryListWidth = "350px";
 
 const [feedList, setFeedList] = createSignal(false)
 const [entryList, setEntryList] = createSignal(false)
+
+// Time of touch start
+let touchStartTime: number | null = null;
+// Position of touch start
+let touchStart: Touch | null = null;
+const touchThreshold = 60;
+
+// Handle swipe event to open/close drawers
+function onTouchStart(e: TouchEvent) {
+  touchStartTime = performance.now();
+  touchStart = e.changedTouches[0];
+}
+function onTouchEnd(e: TouchEvent) {
+  if (touchStart != null) {
+    const elapsed = performance.now() - touchStartTime!
+    const elem = e.target as Element
+    const scrollable = elem.scrollWidth > elem.clientWidth
+
+    // swipe only when elapsed time is short (ms) and target is not scrollable
+    if (elapsed < 400 && !scrollable) {
+      const distanceX = e.changedTouches[0].clientX - touchStart.clientX
+      const distanceY = e.changedTouches[0].clientY - touchStart.clientY
+      if (Math.abs(distanceY) < Math.abs(distanceX) * 2/3) {
+        if (distanceX > touchThreshold) {
+          // left-to-right swiping
+          if (entryList()) {
+            setFeedList(true)
+          } else {
+            setEntryList(true)
+          }
+        }
+        else if (distanceX < -touchThreshold) {
+          // right-to-left swiping
+          if (feedList()) {
+            setFeedList(false)
+          } else {
+            setEntryList(false)
+          }
+        }
+      }
+    }
+    touchStart = null;
+    touchStartTime = null;
+  }
+}
 
 function Drawer(props: {
   open: boolean,
@@ -121,7 +166,6 @@ function Toolbar() {
   )
 }
 
-
 export default function Layout() {
   const breakpoints = createBreakpoints(defaultTheme.screens)
   const actualFeedListWidth = createMemo(() => breakpoints.sm && feedList() ? feedListWidth : "0")
@@ -172,6 +216,17 @@ export default function Layout() {
     loadEntryContents(entries)
   })
 
+  // Swipe handler
+  onMount(() => {
+    // Capture all touch events
+    document.addEventListener("touchstart", onTouchStart);
+    document.addEventListener("touchend", onTouchEnd);
+  })
+  onCleanup(() => {
+    document.removeEventListener("touchstart", onTouchStart);
+    document.removeEventListener("touchend", onTouchEnd);
+  });
+
   const scroll = (e: MouseEvent) => {
     if (!breakpoints.sm) {
       // Pass it to children components
@@ -189,30 +244,6 @@ export default function Layout() {
   return (
     <Ctx.Provider value={ctx}>
       <div class="h-dvh">
-        {/* Feed drawer should be above entry drawer */}
-        <Drawer
-          open={feedList()}
-          onChange={setFeedList}
-          modal={!breakpoints.sm}
-          class="z-2"
-        >
-          <div class="h-full flex flex-col">
-            <div class="flex py-4 justify-center items-center">
-              <RssIcon class="text-amber-500 mr-2" />
-              <h1 class="text-xl font-semibold">
-                LFReader
-              </h1>
-            </div>
-
-            <FeedList
-              class="h-full"
-              style={{ width: feedListWidth }}
-            />
-
-            <Toolbar />
-          </div>
-        </Drawer>
-
         {/* Apply same transition as the drawer */}
         <main
           class="h-full transition-[margin] duration-300 ease-[ease-out]"
@@ -276,6 +307,29 @@ export default function Layout() {
             <Entry />
           </div>
         </main>
+
+        {/* Feed drawer should be above entry drawer (thus put at the end) */}
+        <Drawer
+          open={feedList()}
+          onChange={setFeedList}
+          modal={!breakpoints.sm}
+        >
+          <div class="h-full flex flex-col">
+            <div class="flex py-4 justify-center items-center">
+              <RssIcon class="text-amber-500 mr-2" />
+              <h1 class="text-xl font-semibold">
+                LFReader
+              </h1>
+            </div>
+
+            <FeedList
+              class="h-full"
+              style={{ width: feedListWidth }}
+            />
+
+            <Toolbar />
+          </div>
+        </Drawer>
 
         {/* Add dialogs here to ensure it's centered during closing animation */}
         <NewFeedDialog />
