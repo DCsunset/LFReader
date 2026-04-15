@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.3] - 2026-04-15
+
+### 🐛 Bug Fixes
+
+- *(backend)* Fix variable scope
+
 ## [4.0.2] - 2026-04-13
 
 ### 🐛 Bug Fixes
 
 - *(frontend)* Add missing swipe gesture support
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V4.0.2
 
 ## [4.0.1] - 2026-04-13
 
