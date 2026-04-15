@@ -284,6 +284,7 @@ class Storage:
         ).fetchone()
         f_server_data = f_data["server_data"] if f_data else {}
         f_user_data = f_user_data or (f_data["user_data"] if f_data else {})
+        logo = f.feed.get("logo")
 
         f_server_data["fetched_at"] = now
         if "added_at" not in f_server_data:
@@ -324,7 +325,6 @@ class Storage:
         # add empty entry to denote the feed itself for resources foreign key
         self.db.execute("INSERT OR IGNORE INTO entries(feed_url, id) VALUES (?, ?)", (url, ""))
 
-        logo = f.feed.get("logo")
         if archive and logo:
           # empty str for entry_id to denote the feed itself
           logo = (await self.archiver.archive_resource(session, url, "", logo, f.feed.get("link", url), f_user_data)) or logo
