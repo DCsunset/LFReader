@@ -55,30 +55,49 @@ export function TextButton(props: {
   const [localProps, restProps] = splitProps(props, ["component", "class", "color", "disabled", "loading", "children"])
   const color = () => localProps.color ?? "base-content"
   const component = localProps.component || "button"
+  const disabled = () => localProps.disabled || localProps.loading
 
-  // TODO: fix color
+  // Use grid and put loading icon and text in the same coordinate
+  // to keep the width when changing state
   return (
     <Dynamic
       component={component}
       class={concatClasses([
+        "grid",
         "d-btn",
         "d-btn-ghost",
         "border-none",
         localProps.class,
         {
-          [`hover:bg-${color()}/10`]: !localProps.disabled,
-          [`text-${color()}`]: !localProps.disabled,
-          "d-btn-disabled": Boolean(localProps.disabled),
+          [`hover:bg-${color()}/10`]: !disabled(),
+          [`text-${color()}`]: !disabled(),
+          "d-btn-disabled": disabled(),
         }
       ])}
       {...restProps}
     >
-      {localProps.loading
-        ? <span class="loading loading-spinner loading-sm" />
-        : <>
-            {localProps.children}
-          </>
-      }
+      <span class={concatClasses([
+        "w-full",
+        "flex",
+        "items-center",
+        "justify-center",
+        "col-start-1",
+        "row-start-1",
+        { "invisible": !localProps.loading }
+      ])}>
+        <span class="d-loading d-loading-spinner d-loading-sm" />
+      </span>
+      <span class={concatClasses([
+        "col-start-1",
+        "row-start-1",
+        "w-full",
+        "flex",
+        "items-center",
+        "justify-center",
+        { "invisible": localProps.loading }
+      ])}>
+        {localProps.children}
+      </span>
     </Dynamic>
   )
 }

@@ -171,12 +171,10 @@ export default function NewFeedDialog() {
           <TextButton
             color="primary"
             onClick={handleSubmit}
-            disabled={feeds().length === 0 || state.status.loading}
+            loading={state.status.loading}
+            disabled={feeds().length === 0}
           >
-            {state.status.loading
-              ? <span class="d-loading d-loading-spinner" />
-              : <span>Submit</span>
-            }
+            Submit
           </TextButton>
         </div>
       </div>
