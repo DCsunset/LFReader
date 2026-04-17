@@ -2,11 +2,21 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.4] - 2026-04-17
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Fix loading state for text button
+
 ## [4.0.3] - 2026-04-15
 
 ### 🐛 Bug Fixes
 
 - *(backend)* Fix variable scope
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V4.0.3
 
 ## [4.0.2] - 2026-04-13
 
