@@ -13,7 +13,8 @@ export default function SettingsItem(props: {
         <div class="text-sm opacity-90">{props.subtitle}</div>
       </div>
       <span class={concatClasses([
-        "min-w-4",
+        "xs:min-w-4",
+        "md:min-w-6",
         { grow: !props.grow }
       ])} />
       <span class={concatClasses([
