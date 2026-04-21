@@ -316,7 +316,7 @@ export default function FeedDialog() {
 
           <SettingsItem
             title="Tags"
-            subtitle={<>Set tags for this feed. <br /> (Type and press Enter to add new tag)</>}
+            subtitle={<>Set tags for this feed. <br /> (Enter to add new tag)</>}
             grow
           >
             <MultiSelect

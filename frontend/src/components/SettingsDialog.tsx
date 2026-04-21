@@ -144,11 +144,11 @@ export default function SettingsDialog() {
 
           <SettingsItem
             title="Playback Rates"
-            subtitle={<>Available playback rates (0x, 10x] for enclosures<br /> (Press Enter to add number)</>}
+            subtitle={<>Enclosure playback rates (0, 10]<br /> (Enter to add number)</>}
           >
             <MultiSelect
               class="[&_.solid-select-list]:hidden"
-              placeholder="(default)"
+              placeholder="default"
               onChange={setPlaybackRates}
               {...playbackRateOptions()}
             />
