@@ -362,6 +362,8 @@ class Storage:
           if "added_at" not in e_server_data:
             e_server_data["added_at"] = now
 
+          # must insert the entry placeholder first to pass foreign key check when archiving
+          self.db.execute("INSERT OR IGNORE INTO entries(feed_url, id) VALUES (?, ?)", (url, e_id))
 
           # base url for feed resources
           base_url = urljoin(f.feed.get("link", url), e.get("link"))
