@@ -149,6 +149,7 @@ export default function SettingsDialog() {
             <MultiSelect
               class="[&_.solid-select-list]:hidden"
               placeholder="default"
+              initialValue={playbackRates()}
               onChange={setPlaybackRates}
               {...playbackRateOptions()}
             />

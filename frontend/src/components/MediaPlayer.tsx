@@ -32,7 +32,7 @@ export default function MediaPlayer(props: {
         src={props.src}
         ref={(el: HTMLMediaElement) => {
           if (props.defaultRate) {
-            el.playbackRate = parseFloat(props.defaultRate)
+            el.defaultPlaybackRate = parseFloat(props.defaultRate)
           }
         }}
       />
