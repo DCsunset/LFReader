@@ -464,12 +464,12 @@ class Storage:
     columns: list[str] | None = None
   ) -> list[dict]:
     cols = ", ".join(columns) if columns else "*"
-    query = f"SELECT {cols} FROM entries"
+    query = f"SELECT {cols} FROM entries WHERE id != ''"
     args = []
     if feed_urls is not None:
       # use placeholder to prevent SQL injection
       placeholders = ", ".join(repeat("?", len(feed_urls)))
-      query += f" WHERE feed_url IN ({placeholders})"
+      query += f" AND feed_url IN ({placeholders})"
       args.extend(feed_urls)
     if entries is not None:
       if len(entries) == 0:
@@ -478,7 +478,7 @@ class Storage:
         raise HTTPException(status_code=400, detail=f"Invalid query with both feed_urls and entries set")
       # use placeholder to prevent SQL injection
       placeholders = " OR ".join(repeat("(feed_url = ? AND id = ?)", len(entries)))
-      query += f" WHERE {placeholders}"
+      query += f" AND ({placeholders})"
       args.extend(chain(*map(lambda e: [e.feed_url, e.id], entries)))
 
     # -1 means no limit or offset
