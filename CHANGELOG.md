@@ -2,11 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.5] - 2026-04-21
+
+### 🐛 Bug Fixes
+
+- *(backend)* Fix foreign key constraint error when archiving
+- *(backend)* Exclude placeholder entry
+- *(frontend)* Fix button layout in settings
+- *(frontend)* Fix spacing and tags setting item
+- *(frontend)* Fix media playback rates
+
 ## [4.0.4] - 2026-04-17
 
 ### 🐛 Bug Fixes
 
 - *(frontend)* Fix loading state for text button
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V4.0.4
 
 ## [4.0.3] - 2026-04-15
 
