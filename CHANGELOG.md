@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.6] - 2026-04-22
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Add back confirm dialog for risky operations
+- *(frontend)* Add opacity to frozen feeds
+
 ## [4.0.5] - 2026-04-21
 
 ### 🐛 Bug Fixes
@@ -11,6 +18,10 @@ All notable changes to this project will be documented in this file.
 - *(frontend)* Fix button layout in settings
 - *(frontend)* Fix spacing and tags setting item
 - *(frontend)* Fix media playback rates
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V4.0.5
 
 ## [4.0.4] - 2026-04-17
 
