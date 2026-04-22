@@ -190,7 +190,10 @@ function FeedGroup(props: {
                     </IconButton>
                   </Show>
                 </span>
-                <span class="flex">
+                <span class={concatClasses([
+                  "flex",
+                  { "opacity-60": feed.user_data.frozen }
+                ])}>
                   {getFeedTitle(feed)}
                 </span>
               </li>
