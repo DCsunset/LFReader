@@ -80,9 +80,7 @@ export async function checkUpdate() {
     }
   }
 
-  if (state.status.loading !== status.loading) {
-    setState("status", "loading", status.loading)
-  }
+  setState("status", "loading", status.loading)
   updating = false
   return ok
 }

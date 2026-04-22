@@ -16,12 +16,13 @@
 
 import { Router, Route } from "@solidjs/router"
 import Layout from './components/Layout'
-import { loadData } from "./state/actions"
-import { createEffect } from "solid-js"
+import { checkUpdate } from "./state/actions"
+import { createEffect, onMount } from "solid-js"
 import { state } from "./state/store"
 
 function App() {
-  loadData()
+  // Fetch status and data on init
+  onMount(checkUpdate)
 
   createEffect(() => {
     const theme = state.settings.dark ? "dark" : "light"

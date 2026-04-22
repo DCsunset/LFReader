@@ -41,6 +41,7 @@ import SettingsDialog from "./SettingsDialog"
 import { setState, state } from "../state/store"
 import AboutDialog from "./AboutDialog"
 import { Dynamic } from "solid-js/web"
+import ConfirmDialog from "./ConfirmDialog"
 
 const appBarHeight = "44px"
 const feedListWidth = "250px";
@@ -336,6 +337,7 @@ export default function Layout() {
         <FeedDialog />
         <SettingsDialog />
         <AboutDialog />
+        <ConfirmDialog />
       </div>
     </Ctx.Provider>
   )
