@@ -3,7 +3,7 @@
 [![Docker Image Version](https://img.shields.io/docker/v/dcsunset/lfreader?label=docker)](https://hub.docker.com/r/dcsunset/lfreader)
 [![GitHub License](https://img.shields.io/github/license/DCsunset/LFReader)](https://github.com/DCsunset/LFReader)
 
-LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python and Preact/React.
+LFReader is a self-hosted **L**ocal-first **F**eed **Reader** written in Python and Solid.js.
 
 > [!NOTE]
 > This app is still in its early stage. Breaking changes may occur from time to time.
@@ -101,8 +101,8 @@ Then, build the frontend (bundled files are in directory `frontend/dist`):
 
 ```sh
 cd frontend
-npm i
-npm run build
+pnpm install
+pnpm build
 cd ..
 ```
 
@@ -158,7 +158,7 @@ Please see refer to `Config` class in file `backend/config.py` for available opt
 
 Change directory to `frontend`.
 Create a symlink `public/archives`to the backend archive directory to serve resources.
-Finally, run `npm run dev`.
+Finally, run `pnpm install` and `pnpm dev`.
 
 ### Backend
 
