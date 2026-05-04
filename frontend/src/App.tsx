@@ -17,7 +17,7 @@
 import { Router, Route } from "@solidjs/router"
 import Layout from './components/Layout'
 import { checkUpdate } from "./state/actions"
-import { createEffect, onMount } from "solid-js"
+import { createEffect, onMount, onCleanup } from "solid-js"
 import { state } from "./state/store"
 
 function App() {
@@ -27,6 +27,15 @@ function App() {
   createEffect(() => {
     const theme = state.settings.dark ? "dark" : "light"
     document.documentElement.setAttribute("data-theme", theme)
+  })
+
+  createEffect(() => {
+    // Periodically fetch updates
+    let interval = state.settings.reloadInterval
+    if (interval > 0) {
+      let id = setInterval(checkUpdate, interval * 1000)
+      onCleanup(() => clearInterval(id))
+    }
   })
 
   // Use router for query parameters

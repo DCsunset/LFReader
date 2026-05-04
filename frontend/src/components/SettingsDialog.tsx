@@ -203,7 +203,7 @@ export default function SettingsDialog() {
               ])}
               onInput={e => {
                 // type=number will return empty string if invalid
-                const n = parseNumber(e.target.value, true)
+                const n = parseNumber(e.target.value)
                 setReloadIntervalError(n === undefined || n < 0)
               }}
             />
