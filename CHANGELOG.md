@@ -2,12 +2,29 @@
 
 All notable changes to this project will be documented in this file.
 
+## [4.0.7] - 2026-05-04
+
+### 🐛 Bug Fixes
+
+- *(frontend)* Fix periodical reloading
+- *(frontend)* Support decoding text in categories
+- *(frontend)* Add back entry count in feed list
+- *(frontend)* Fix entry link substitution
+
+### 📚 Documentation
+
+- Update description and some commands
+
 ## [4.0.6] - 2026-04-22
 
 ### 🐛 Bug Fixes
 
 - *(frontend)* Add back confirm dialog for risky operations
 - *(frontend)* Add opacity to frozen feeds
+
+### ⚙️ Miscellaneous Tasks
+
+- *(release)* V4.0.6
 
 ## [4.0.5] - 2026-04-21
 
