@@ -135,7 +135,7 @@ export default function Entry() {
       ref.querySelectorAll("a").forEach((el: HTMLElement) => {
         try {
           const url = new URL(el.getAttribute("href") || "")
-          const e = entryUrlMap.get(url.origin)
+          const e = entryUrlMap.get(url.origin + url.pathname)
           if (e) {
             // replace external link with internal link
             el.setAttribute("href", `/?${new URLSearchParams({
