@@ -153,7 +153,7 @@ export function filterEntries(entries: Entry[], { feeds, titleRegex }: {
 
 // Get categories in text (de-duplicated)
 export function textCategories(categories?: Category[]) {
-  return [...new Set(categories?.map(c => c.term || c.label))];
+  return [...new Set(categories?.map(c => decodeURIComponent(c.term || c.label || "")))];
 }
 
 // Get tags from feeds
