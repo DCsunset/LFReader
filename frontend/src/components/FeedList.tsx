@@ -151,6 +151,7 @@ function FeedGroup(props: {
         <For each={feeds()}>
           {(feed, _index) => {
             const feedId = toFeedId(feed)
+
             return (
               <li
                 class={
@@ -192,9 +193,13 @@ function FeedGroup(props: {
                 </span>
                 <span class={concatClasses([
                   "flex",
+                  "grow",
                   { "opacity-60": feed.user_data.frozen }
                 ])}>
                   {getFeedTitle(feed)}
+                </span>
+                <span class="text-[0.85rem] mx-1.5">
+                  ({state.data.entries.reduce((acc, e) => e.feed_url === feed.url ? acc+1 : acc, 0)})
                 </span>
               </li>
             )
